@@ -7,6 +7,10 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
+@Deprecated(
+    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+            "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
+)
 fun <T> transformInstructionsPatch(
     filterMap: (ClassDef, Method, Instruction, Int) -> T?,
     transform: (MutableMethod, T) -> Unit,

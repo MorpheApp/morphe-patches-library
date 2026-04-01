@@ -9,7 +9,25 @@ import com.android.tools.smali.dexlib2.iface.Method
 import java.net.URLDecoder
 import java.util.jar.JarFile
 
-internal const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/shared/Utils;"
+const val UTILS_EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/shared/Utils;"
+
+/**
+ * A patch to extend with an extension shared with multiple patches.
+ *
+ * @param extensionNames The name of the extensions to extend with.
+ */
+fun sharedExtensionPatch(
+    extensionNames: List<String>,
+    vararg hooks: ExtensionHook,
+) = bytecodePatch(
+    default = false
+) {
+    dependsOn(sharedExtensionPatch(*hooks))
+
+    extensionNames.forEach { extensionName ->
+        extendWith("extensions/$extensionName.mpe")
+    }
+}
 
 /**
  * A patch to extend with an extension shared with multiple patches.
@@ -19,13 +37,7 @@ internal const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/shared/Ut
 fun sharedExtensionPatch(
     extensionName: String,
     vararg hooks: ExtensionHook,
-) = bytecodePatch(
-    default = false
-) {
-    dependsOn(sharedExtensionPatch(*hooks))
-
-    extendWith("extensions/$extensionName.mpe")
-}
+) = sharedExtensionPatch(listOf(extensionName), *hooks)
 
 /**
  * A patch to extend with the "shared" extension.
@@ -42,12 +54,12 @@ fun sharedExtensionPatch(
 
     execute {
         // Verify the extension class exists.
-        classDefBy(EXTENSION_CLASS_DESCRIPTOR)
+        classDefBy(UTILS_EXTENSION_CLASS_DESCRIPTOR)
     }
 
     finalize {
         // The hooks are made in finalize to ensure that the context is hooked before any other patches.
-        hooks.forEach { hook -> hook(EXTENSION_CLASS_DESCRIPTOR) }
+        hooks.forEach { hook -> hook(UTILS_EXTENSION_CLASS_DESCRIPTOR) }
 
         // Modify Utils method to include the patches release version.
         MorpheUtilsPatchesVersionFingerprint.method.apply {
@@ -91,7 +103,7 @@ fun sharedExtensionPatch(
  * can be reached before the main activity is fully created.
  */
 open class ExtensionHook(
-    internal val fingerprint: Fingerprint,
+    val fingerprint: Fingerprint,
     private val insertIndexResolver: BytecodePatchContext.(Method) -> Int = { 0 },
     private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "p0" },
 ) {

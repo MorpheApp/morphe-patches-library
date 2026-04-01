@@ -10,6 +10,10 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 typealias Instruction35cInfo = Triple<IMethodCall, Instruction35c, Int>
 
+@Deprecated(
+    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+            "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
+)
 interface IMethodCall {
     val definedClassName: String
     val methodName: String
@@ -49,6 +53,10 @@ interface IMethodCall {
     }
 }
 
+@Deprecated(
+    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+            "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
+)
 inline fun <reified E> fromMethodReference(
     methodReference: MethodReference,
 )
@@ -59,6 +67,10 @@ inline fun <reified E> fromMethodReference(
         search.returnType == methodReference.returnType
 }
 
+@Deprecated(
+    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+            "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
+)
 inline fun <reified E> filterMapInstruction35c(
     extensionClassDescriptorPrefix: String,
     classDef: ClassDef,
