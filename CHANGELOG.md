@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.0...v1.0.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* Add hexPatch and make utils extension class descriptor public ([be8547f](https://github.com/MorpheApp/morphe-patches-library/commit/be8547f15d9420474261d6bc770c1c07d50d6d30))
+* Expose old partial replacement logic ([83ce898](https://github.com/MorpheApp/morphe-patches-library/commit/83ce898d80d40a910cb720b53b7ff75763afe55a))
+
 ## [1.0.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.0...v1.0.1-dev.1) (2026-04-01)
 
 
