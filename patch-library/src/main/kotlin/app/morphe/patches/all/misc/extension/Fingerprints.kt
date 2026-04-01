@@ -8,6 +8,6 @@ internal object MorpheUtilsPatchesVersionFingerprint : Fingerprint(
     returnType = "Ljava/lang/String;",
     parameters = listOf(),
     custom = { method, _ ->
-        method.name == "getPatchesReleaseVersion" && method.definingClass == EXTENSION_CLASS_DESCRIPTOR
+        method.name == "getPatchesReleaseVersion" && method.definingClass == UTILS_EXTENSION_CLASS_DESCRIPTOR
     }
 )
