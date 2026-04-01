@@ -29,11 +29,13 @@ jobs:
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid --no-daemon
+        run: ./gradlew build --no-daemon
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
           archive: false
-          path: patches/build/libs
+          path: |
+            patch-library/build/libs
+            extension-library/build/outputs/aar
 

@@ -31,7 +31,7 @@ jobs:
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid clean
+        run: ./gradlew build
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -53,5 +53,7 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: 'Morphe Patches Library ${{ steps.release.outputs.new_release_git_tag }}'
-          subject-path: patches/build/libs/patches-*.mpp
+          subject-path: |
+            patch-library/build/libs/morphe-patches-library-*.jar
+            extension-library/build/outputs/aar/morphe-extensions-library-*.aar
 
