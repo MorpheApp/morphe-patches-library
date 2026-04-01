@@ -41,6 +41,17 @@ dependencies {
 
 afterEvaluate {
     publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/MorpheApp/morphe-patches-library")
+                credentials {
+                    username = providers.gradleProperty("gpr.user").getOrElse(System.getenv("GITHUB_ACTOR"))
+                    password = providers.gradleProperty("gpr.key").getOrElse(System.getenv("GITHUB_TOKEN"))
+                }
+            }
+        }
+
         publications {
             create<MavenPublication>("release") {
                 from(components["release"])
