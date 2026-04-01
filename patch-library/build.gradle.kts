@@ -22,6 +22,9 @@ kotlin {
 }
 
 dependencies {
+    // Used by JsonGenerator.
+    implementation(libs.gson)
+
     implementation(libs.morphe.patcher)
     implementation(libs.smali)
 }
