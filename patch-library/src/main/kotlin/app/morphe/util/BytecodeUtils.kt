@@ -170,10 +170,10 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
  *
  * @param fieldName The name of the field to find. Partial matches are allowed.
  */
-context(BytecodePatchContext)
+context(ctx: BytecodePatchContext)
 fun Method.findMethodFromToString(fieldName: String) : MutableMethod {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName, false)
-    return navigate(this).to(methodUsageIndex).stop()
+    return ctx.navigate(this).to(methodUsageIndex).stop()
 }
 
 /**
@@ -497,9 +497,9 @@ inline fun <reified T : Reference> Instruction.getReference() = (this as? Refere
 /**
  * @return The mutable method for this method call reference.
  */
-context(BytecodePatchContext)
+context(ctx: BytecodePatchContext)
 fun MethodReference.getMutableMethod(): MutableMethod {
-    return mutableClassDefBy(this.definingClass).methods.first { classMethod ->
+    return ctx.mutableClassDefBy(this.definingClass).methods.first { classMethod ->
         MethodUtil.methodSignaturesMatch(classMethod, this@getMutableMethod)
     }
 }
@@ -826,9 +826,9 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
  *
  * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
  */
-context(BytecodePatchContext)
+context(ctx: BytecodePatchContext)
 fun Method.cloneMutableAndPreserveParameters() = cloneMutableAndPreserveParameters(
-    mutableClassDefBy(definingClass)
+    ctx.mutableClassDefBy(definingClass)
 )
 
 /**
@@ -1376,7 +1376,7 @@ fun BytecodePatchContext.addStaticFieldToExtension(
     }
 }
 
-context(BytecodePatchContext)
+context(ctx: BytecodePatchContext)
 fun setExtensionIsPatchIncluded(patchExtensionClassType: String) {
     val methodName = "isPatchIncluded"
     val returnType = "Z"
