@@ -1,13 +1,17 @@
 package app.morphe.patches.all.misc.string
 
+import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patches.all.misc.transformation.transformInstructionsPatch
-import app.morphe.util.getReference
-import com.android.tools.smali.dexlib2.ReferenceType
+import app.morphe.patcher.string
+import app.morphe.util.findInstructionIndicesReversedOrThrow
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 
+@Suppress("unused")
 fun replaceStringPatch(
     from: String,
     to: String
@@ -15,25 +19,24 @@ fun replaceStringPatch(
     description = "Replaces occurrences of '$from' with '$to' in string references.",
     default = false,
 ) {
-    dependsOn(
-        transformInstructionsPatch(
-            filterMap = filterMap@{ _, _, instruction, instructionIndex ->
-                if (instruction.opcode.referenceType != ReferenceType.STRING) return@filterMap null
+    execute {
+        val stringFilter = string(from)
 
-                val stringReference = instruction.getReference<StringReference>()!!.string
-                if (from !in stringReference) return@filterMap null
-
-                Triple(instructionIndex, instruction as OneRegisterInstruction, stringReference)
-            },
-            transform = transform@{ mutableMethod, entry ->
-                val (instructionIndex, instruction, stringReference) = entry
-
-                val newString = stringReference.replace(from, to)
-                mutableMethod.replaceInstruction(
-                    instructionIndex,
-                    "${instruction.opcode.name} v${instruction.registerA}, \"$newString\"",
-                )
-            },
-        )
-    )
+        Fingerprint(
+            filters = listOf(stringFilter)
+        ).matchAllOrNull()?.forEach { match ->
+            match.method.apply {
+                findInstructionIndicesReversedOrThrow(stringFilter).forEach { index ->
+                    replaceInstruction(
+                        index,
+                        BuilderInstruction21c(
+                            Opcode.CONST_STRING,
+                            getInstruction<OneRegisterInstruction>(index).registerA,
+                            ImmutableStringReference(to),
+                        )
+                    )
+                }
+            }
+        }
+    }
 }
