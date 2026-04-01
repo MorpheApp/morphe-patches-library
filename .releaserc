@@ -32,7 +32,10 @@
       {
         "assets": [
           {
-            "path": "patches/build/libs/patches-!(*sources*|*javadoc*).mpp?(.asc)"
+            "path": "patch-library/build/libs/morphe-patches-library-!(*sources*|*javadoc*).jar"
+          },
+          {
+            "path": "extension-library/build/outputs/aar/morphe-extensions-library-release.aar"
           }
         ],
         "successComment": false
