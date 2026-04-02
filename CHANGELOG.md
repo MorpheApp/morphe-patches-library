@@ -1,3 +1,17 @@
+## [1.0.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.1...v1.0.2-dev.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* Bump AGP version to 9.1.0 ([8c8c41a](https://github.com/MorpheApp/morphe-patches-library/commit/8c8c41a517168d4bf551c143481fe90f1aa164ea))
+
+## [1.0.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.1...v1.0.2-dev.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* Use same license notice as patches-template ([bfe47ec](https://github.com/MorpheApp/morphe-patches-library/commit/bfe47ec991392d3364b5ff4f0f6441f186b75e8b))
+
 ## [1.0.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.0...v1.0.1) (2026-04-01)
 
 
