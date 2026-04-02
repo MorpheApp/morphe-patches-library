@@ -36,7 +36,8 @@ fun replaceStringPatch(
                         StringComparisonType.EQUALS -> to
                         else -> {
                             getInstruction<ReferenceInstruction>(index)
-                                .getReference<StringReference>()!!.string.replace(from, to)
+                                .getReference<StringReference>()!!.string
+                                .replace(from, to)
                         }
                     }
 
