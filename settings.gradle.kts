@@ -38,7 +38,7 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://jitpack.io")
             content {
-                includeGroup("com.github.iBotPeaches.smali")
+                includeGroup("com.github.MorpheApp.smali")
                 includeGroup("com.github.MorpheApp")
             }
         }
