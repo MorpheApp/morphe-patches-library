@@ -1,3 +1,10 @@
+## [1.0.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.2...v1.0.2-dev.3) (2026-04-07)
+
+
+### Bug Fixes
+
+* Move logging internal collection logic to Logger class ([e8868c3](https://github.com/MorpheApp/morphe-patches-library/commit/e8868c3208de964340f8cd9886e8ea046a69954c))
+
 ## [1.0.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.1...v1.0.2-dev.2) (2026-04-02)
 
 
