@@ -576,8 +576,7 @@ fun Method.indexOfFirstInstructionOrThrow(startIndex: Int = 0, filter: Instructi
 
 fun Method.indexOfFirstStringInstruction(str: String) =
     indexOfFirstInstruction {
-        opcode == CONST_STRING &&
-                getReference<StringReference>()?.string == str
+        getReference<StringReference>()?.string == str
     }
 
 fun Method.indexOfFirstStringInstructionOrThrow(str: String): Int {
