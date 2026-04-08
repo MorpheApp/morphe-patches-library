@@ -1,3 +1,10 @@
+## [1.0.2-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.3...v1.0.2-dev.4) (2026-04-08)
+
+
+### Bug Fixes
+
+* Handle indexOfFirstStringInstruction for jumbo strings ([653717e](https://github.com/MorpheApp/morphe-patches-library/commit/653717ed6fd2df52c9aa138c64d582dd04e2a1aa))
+
 ## [1.0.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.2...v1.0.2-dev.3) (2026-04-07)
 
 
