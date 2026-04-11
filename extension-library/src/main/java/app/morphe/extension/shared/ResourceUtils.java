@@ -2,6 +2,7 @@ package app.morphe.extension.shared;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -11,6 +12,7 @@ import android.view.animation.AnimationUtils;
 import androidx.annotation.Nullable;
 
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Scanner;
 
 import app.morphe.extension.shared.settings.Setting;
@@ -196,6 +198,29 @@ public class ResourceUtils {
 
     public static String getStringOrThrow(String name) {
         return checkResourceNotNull(getString(name), ResourceType.STRING, name);
+    }
+
+    @Nullable
+    public static String getStringByLocale(String name, Locale locale) {
+        final int identifier = getStringIdentifier(name);
+        if (identifier == 0) {
+            handleException(ResourceType.STRING, name);
+            return name;
+        }
+
+        Context context = getActivityOrContext();
+        Configuration config = new Configuration(context.getResources().getConfiguration());
+
+        String country = locale.getCountry();
+        String language = locale.getLanguage();
+        if (Utils.isNotEmpty(language)) {
+            config.setLocale(Utils.isNotEmpty(country)
+                    ? new Locale(language, country)
+                    : new Locale(language)
+            );
+        }
+
+        return context.createConfigurationContext(config).getResources().getString(identifier);
     }
 
     public static String[] getStringArray(String name) {
