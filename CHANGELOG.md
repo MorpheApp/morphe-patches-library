@@ -1,3 +1,10 @@
+## [1.0.2-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.4...v1.0.2-dev.5) (2026-04-11)
+
+
+### Bug Fixes
+
+* Add changes from morphe-patches ([547161d](https://github.com/MorpheApp/morphe-patches-library/commit/547161d490bc5ca97090948d04a1b61bdc99c392))
+
 ## [1.0.2-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.3...v1.0.2-dev.4) (2026-04-08)
 
 
