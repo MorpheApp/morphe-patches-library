@@ -1,7 +1,7 @@
 package app.morphe.extension.shared.settings.preference;
 
-import static app.morphe.extension.shared.ResourceUtils.getIdentifierOrThrow;
 import static app.morphe.extension.shared.StringRef.str;
+import static app.morphe.extension.shared.ResourceUtils.getIdentifierOrThrow;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -284,6 +284,13 @@ public class ColorPickerPreference extends EditTextPreference {
         }
     }
 
+    /**
+     * @return If the dialog uses {@link Dialog#setCanceledOnTouchOutside(boolean)}.
+     */
+    protected boolean cancelDialogOnTouchOutside() {
+        return false;
+    }
+
     @Override
     protected void showDialog(Bundle state) {
         Context context = getContext();
@@ -423,7 +430,7 @@ public class ColorPickerPreference extends EditTextPreference {
 
         // Configure and show the dialog.
         Dialog dialog = dialogPair.first;
-        dialog.setCanceledOnTouchOutside(false);
+        dialog.setCanceledOnTouchOutside(cancelDialogOnTouchOutside());
         dialog.show();
     }
 
