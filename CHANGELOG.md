@@ -1,3 +1,10 @@
+## [1.0.2-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.6...v1.0.2-dev.7) (2026-04-16)
+
+
+### Bug Fixes
+
+* Multiple extension loading ([c26ce08](https://github.com/MorpheApp/morphe-patches-library/commit/c26ce0881a0279eb77618e1330313b7883e1a244))
+
 ## [1.0.2-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.5...v1.0.2-dev.6) (2026-04-16)
 
 
