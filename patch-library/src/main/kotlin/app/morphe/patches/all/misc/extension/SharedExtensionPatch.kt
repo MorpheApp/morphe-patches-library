@@ -58,10 +58,30 @@ fun sharedExtensionPatch(
 ) = bytecodePatch(
     default = false
 ) {
-    extendWith("extensions/shared.mpe")
-    extensionNames.forEach { extensionName ->
-        extendWith("extensions/$extensionName.mpe")
-    }
+    val hookList = hooks.toList()
+    dependsOn(
+        sharedExtensionPatch(*hooks),
+        *extensionNames.filter { it != "shared" }.map { sharedExtensionPatch(it, hookList) }.toTypedArray(),
+    )
+}
+
+/**
+ * A patch to extend with the "shared" extension.
+ *
+ * @param hooks The hooks to get the application context for use in the extension,
+ * commonly for the onCreate method of exported activities.
+ */
+fun sharedExtensionPatch(
+    vararg hooks: ExtensionHook,
+) = sharedExtensionPatch("shared", hooks.toList())
+
+private fun sharedExtensionPatch(
+    extensionName: String,
+    hooks: List<ExtensionHook>,
+) = bytecodePatch(
+    default = false
+) {
+    extendWith("extensions/$extensionName.mpe")
 
     execute {
         // Verify the extension class exists.
@@ -107,26 +127,6 @@ fun sharedExtensionPatch(
         }
     }
 }
-
-/**
- * A patch to extend with an extension shared with multiple patches.
- *
- * @param extensionName The name of the extension to extend with.
- */
-fun sharedExtensionPatch(
-    extensionName: String,
-    vararg hooks: ExtensionHook,
-) = sharedExtensionPatch(listOf(extensionName), *hooks)
-
-/**
- * A patch to extend with the "shared" extension.
- *
- * @param hooks The hooks to get the application context for use in the extension,
- * commonly for the onCreate method of exported activities.
- */
-fun sharedExtensionPatch(
-    vararg hooks: ExtensionHook,
-) = sharedExtensionPatch(emptyList(), *hooks)
 
 /**
  * Handles passing the application context to the extension code. Typically, the main activity
