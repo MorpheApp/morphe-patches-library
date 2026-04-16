@@ -1,3 +1,39 @@
+/*
+ * Copyright 2025 Morphe.
+ * https://github.com/MorpheApp/morphe-patches-library
+ *
+ * Original code hard forked from:
+ * https://github.com/ReVanced/revanced-patches/blob/724e6d61b2ecd868c1a9a37d465a688e83a74799/patches/src/main/kotlin/app/revanced/util/BytecodeUtils.kt
+ *
+ * File-Specific License Notice (GPLv3 Section 7 Terms)
+ *
+ * This file is part of the Morphe patches project and is licensed under
+ * the GNU General Public License version 3 (GPLv3), with the Additional
+ * Terms under Section 7 described in the Morphe patches
+ * LICENSE file: https://github.com/MorpheApp/morphe-patches/blob/main/NOTICE
+ *
+ * https://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * File-Specific Exception to Section 7b:
+ * -------------------------------------
+ * Section 7b (Attribution Requirement) of the Morphe patches LICENSE
+ * does not apply to THIS FILE. Use of this file does NOT require any
+ * user-facing, in-application, or UI-visible attribution.
+ *
+ * For this file only, attribution under Section 7b is satisfied by
+ * retaining this comment block in the source code of this file.
+ *
+ * Distribution and Derivative Works:
+ * ----------------------------------
+ * This comment block MUST be preserved in all copies, distributions,
+ * and derivative works of this file, whether in source or modified
+ * form.
+ *
+ * All other terms of the Morphe Patches LICENSE, including Section 7c
+ * (Project Name Restriction) and the GPLv3 itself, remain fully
+ * applicable to this file.
+ */
+
 package app.morphe.patches.all.misc.extension
 
 import app.morphe.patcher.Fingerprint
@@ -9,7 +45,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import java.net.URLDecoder
 import java.util.jar.JarFile
 
-const val UTILS_EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/shared/Utils;"
+const val SHARED_UTILS_EXTENSION_CLASS = "Lapp/morphe/extension/shared/Utils;"
 
 /**
  * A patch to extend with an extension shared with multiple patches.
@@ -22,22 +58,12 @@ fun sharedExtensionPatch(
 ) = bytecodePatch(
     default = false
 ) {
-    dependsOn(sharedExtensionPatch(*hooks))
-
-    extensionNames.forEach { extensionName ->
-        extendWith("extensions/$extensionName.mpe")
-    }
+    val hookList = hooks.toList()
+    dependsOn(
+        sharedExtensionPatch(*hooks),
+        *extensionNames.filter { it != "shared" }.map { sharedExtensionPatch(it, hookList) }.toTypedArray(),
+    )
 }
-
-/**
- * A patch to extend with an extension shared with multiple patches.
- *
- * @param extensionName The name of the extension to extend with.
- */
-fun sharedExtensionPatch(
-    extensionName: String,
-    vararg hooks: ExtensionHook,
-) = sharedExtensionPatch(listOf(extensionName), *hooks)
 
 /**
  * A patch to extend with the "shared" extension.
@@ -47,19 +73,24 @@ fun sharedExtensionPatch(
  */
 fun sharedExtensionPatch(
     vararg hooks: ExtensionHook,
+) = sharedExtensionPatch("shared", hooks.toList())
+
+private fun sharedExtensionPatch(
+    extensionName: String,
+    hooks: List<ExtensionHook>,
 ) = bytecodePatch(
     default = false
 ) {
-    extendWith("extensions/shared.mpe")
+    extendWith("extensions/$extensionName.mpe")
 
     execute {
         // Verify the extension class exists.
-        classDefBy(UTILS_EXTENSION_CLASS_DESCRIPTOR)
+        classDefBy(SHARED_UTILS_EXTENSION_CLASS)
     }
 
     finalize {
         // The hooks are made in finalize to ensure that the context is hooked before any other patches.
-        hooks.forEach { hook -> hook(UTILS_EXTENSION_CLASS_DESCRIPTOR) }
+        hooks.forEach { hook -> hook(SHARED_UTILS_EXTENSION_CLASS) }
 
         // Modify Utils method to include the patches release version.
         MorpheUtilsPatchesVersionFingerprint.method.apply {
@@ -98,20 +129,20 @@ fun sharedExtensionPatch(
 }
 
 /**
- * Handles passing the application context to the extension code. Typically the main activity
+ * Handles passing the application context to the extension code. Typically, the main activity
  * onCreate() method is hooked, but sometimes additional hooks are required if extension code
  * can be reached before the main activity is fully created.
  */
 open class ExtensionHook(
     val fingerprint: Fingerprint,
     private val insertIndexResolver: BytecodePatchContext.(Method) -> Int = { 0 },
-    private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "p0" },
+    private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "v${it.implementation!!.registerCount - it.parameters.size - 1}" },
 ) {
-    context(ctx: BytecodePatchContext)
+    context(patchContext: BytecodePatchContext)
     operator fun invoke(extensionClassDescriptor: String) {
         fingerprint.method.apply {
-            val insertIndex = ctx.insertIndexResolver(this)
-            val contextRegister = ctx.contextRegisterResolver(this)
+            val insertIndex = patchContext.insertIndexResolver(this)
+            val contextRegister = patchContext.contextRegisterResolver(this)
 
             addInstruction(
                 insertIndex,

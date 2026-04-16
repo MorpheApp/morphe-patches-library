@@ -1,3 +1,52 @@
+## [1.0.2-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.6...v1.0.2-dev.7) (2026-04-16)
+
+
+### Bug Fixes
+
+* Multiple extension loading ([c26ce08](https://github.com/MorpheApp/morphe-patches-library/commit/c26ce0881a0279eb77618e1330313b7883e1a244))
+
+## [1.0.2-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.5...v1.0.2-dev.6) (2026-04-16)
+
+
+### Bug Fixes
+
+* Add changes from morphe-patches 1.24.0-dev.8 ([134df23](https://github.com/MorpheApp/morphe-patches-library/commit/134df23890413a1825ce42e98b0a13fa610ba99d))
+
+## [1.0.2-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.4...v1.0.2-dev.5) (2026-04-11)
+
+
+### Bug Fixes
+
+* Add changes from morphe-patches ([547161d](https://github.com/MorpheApp/morphe-patches-library/commit/547161d490bc5ca97090948d04a1b61bdc99c392))
+
+## [1.0.2-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.3...v1.0.2-dev.4) (2026-04-08)
+
+
+### Bug Fixes
+
+* Handle indexOfFirstStringInstruction for jumbo strings ([653717e](https://github.com/MorpheApp/morphe-patches-library/commit/653717ed6fd2df52c9aa138c64d582dd04e2a1aa))
+
+## [1.0.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.2...v1.0.2-dev.3) (2026-04-07)
+
+
+### Bug Fixes
+
+* Move logging internal collection logic to Logger class ([e8868c3](https://github.com/MorpheApp/morphe-patches-library/commit/e8868c3208de964340f8cd9886e8ea046a69954c))
+
+## [1.0.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2-dev.1...v1.0.2-dev.2) (2026-04-02)
+
+
+### Bug Fixes
+
+* Bump AGP version to 9.1.0 ([8c8c41a](https://github.com/MorpheApp/morphe-patches-library/commit/8c8c41a517168d4bf551c143481fe90f1aa164ea))
+
+## [1.0.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.1...v1.0.2-dev.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* Use same license notice as patches-template ([bfe47ec](https://github.com/MorpheApp/morphe-patches-library/commit/bfe47ec991392d3364b5ff4f0f6441f186b75e8b))
+
 ## [1.0.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.0...v1.0.1) (2026-04-01)
 
 

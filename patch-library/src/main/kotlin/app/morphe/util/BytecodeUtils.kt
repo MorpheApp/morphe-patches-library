@@ -1,6 +1,6 @@
 /*
  * Copyright 2025 Morphe.
- * https://github.com/MorpheApp/morphe-patches
+ * https://github.com/MorpheApp/morphe-patches-library
  *
  * Original code hard forked from:
  * https://github.com/ReVanced/revanced-patches/blob/724e6d61b2ecd868c1a9a37d465a688e83a74799/patches/src/main/kotlin/app/revanced/util/BytecodeUtils.kt
@@ -34,6 +34,8 @@
  * applicable to this file.
  */
 
+@file:Suppress("unused")
+
 package app.morphe.util
 
 import app.morphe.patcher.Fingerprint
@@ -54,17 +56,14 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMuta
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.all.misc.resources.ResourceType
 import app.morphe.patches.all.misc.resources.getResourceId
-import app.morphe.patches.all.misc.resources.resourceMappingPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.Opcode.CONST_STRING
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_OBJECT
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT_WIDE
 import com.android.tools.smali.dexlib2.Opcode.RETURN
 import com.android.tools.smali.dexlib2.Opcode.RETURN_OBJECT
 import com.android.tools.smali.dexlib2.Opcode.RETURN_WIDE
-import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodParameter
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -170,10 +169,10 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
  *
  * @param fieldName The name of the field to find. Partial matches are allowed.
  */
-context(ctx: BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 fun Method.findMethodFromToString(fieldName: String) : MutableMethod {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName, false)
-    return ctx.navigate(this).to(methodUsageIndex).stop()
+    return patchContext.navigate(this).to(methodUsageIndex).stop()
 }
 
 /**
@@ -497,9 +496,9 @@ inline fun <reified T : Reference> Instruction.getReference() = (this as? Refere
 /**
  * @return The mutable method for this method call reference.
  */
-context(ctx: BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 fun MethodReference.getMutableMethod(): MutableMethod {
-    return ctx.mutableClassDefBy(this.definingClass).methods.first { classMethod ->
+    return patchContext.mutableClassDefBy(this.definingClass).methods.first { classMethod ->
         MethodUtil.methodSignaturesMatch(classMethod, this@getMutableMethod)
     }
 }
@@ -576,8 +575,7 @@ fun Method.indexOfFirstInstructionOrThrow(startIndex: Int = 0, filter: Instructi
 
 fun Method.indexOfFirstStringInstruction(str: String) =
     indexOfFirstInstruction {
-        opcode == CONST_STRING &&
-                getReference<StringReference>()?.string == str
+        getReference<StringReference>()?.string == str
     }
 
 fun Method.indexOfFirstStringInstructionOrThrow(str: String): Int {
@@ -826,9 +824,9 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
  *
  * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
  */
-context(ctx: BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 fun Method.cloneMutableAndPreserveParameters() = cloneMutableAndPreserveParameters(
-    ctx.mutableClassDefBy(definingClass)
+    patchContext.mutableClassDefBy(definingClass)
 )
 
 /**
@@ -911,7 +909,7 @@ fun Method.cloneMutable(
 
             // Handle `this`.
             if (isNotStatic) {
-                addInstructions(insertIndex++, "move-object/from16 v$destReg, p$pReg")
+                addInstructions(insertIndex++, "move-object/from16 v$destReg, p0")
                 addedInstructions++
                 destReg += 1
                 pReg += 1
@@ -1007,6 +1005,13 @@ val Method.p0Register: Int
 
         return totalRegs - paramRegs
     }
+
+/**
+ * Adapted from BiliRoamingX:
+ * https://github.com/BiliRoamingX/BiliRoamingX/blob/ae58109f3acdd53ec2d2b3fb439c2a2ef1886221/patches/src/main/kotlin/app/revanced/patches/bilibili/utils/Extenstions.kt#L151
+ */
+fun MutableMethod.fiveRegisters(index: Int) = getInstruction<FiveRegisterInstruction>(index)
+    .registersUsed.joinToString(",") { "v$it" }
 
 private const val RETURN_TYPE_MISMATCH = "Mismatch between override type and Method return type"
 
@@ -1376,7 +1381,7 @@ fun BytecodePatchContext.addStaticFieldToExtension(
     }
 }
 
-context(ctx: BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 fun setExtensionIsPatchIncluded(patchExtensionClassType: String) {
     val methodName = "isPatchIncluded"
     val returnType = "Z"
@@ -1399,14 +1404,3 @@ fun setExtensionIsPatchIncluded(patchExtensionClassType: String) {
 
     fingerprint.method.returnEarly(true)
 }
-
-/**
- * Set the custom condition for this fingerprint to check for a literal value.
- *
- * @param customLiteral The literal value.
- */
-@Deprecated("Instead use InstructionFilter and `literal()`")
-fun customLiteral(literalSupplier: () -> Long): ((method: Method, classDef: ClassDef) -> Boolean) =
-    { method, _ ->
-        method.containsLiteralInstruction(literalSupplier())
-    }

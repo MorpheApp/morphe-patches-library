@@ -1,6 +1,43 @@
+/*
+ * Copyright 2025 Morphe.
+ * https://github.com/MorpheApp/morphe-patches-library
+ *
+ * Original code hard forked from:
+ * https://github.com/ReVanced/revanced-patches/blob/724e6d61b2ecd868c1a9a37d465a688e83a74799/patches/src/main/kotlin/app/revanced/patches/shared/misc/mapping/ResourceMappingPatch.kt
+ *
+ * File-Specific License Notice (GPLv3 Section 7 Terms)
+ *
+ * This file is part of the Morphe patches project and is licensed under
+ * the GNU General Public License version 3 (GPLv3), with the Additional
+ * Terms under Section 7 described in the Morphe patches
+ * LICENSE file: https://github.com/MorpheApp/morphe-patches/blob/main/NOTICE
+ *
+ * https://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * File-Specific Exception to Section 7b:
+ * -------------------------------------
+ * Section 7b (Attribution Requirement) of the Morphe patches LICENSE
+ * does not apply to THIS FILE. Use of this file does NOT require any
+ * user-facing, in-application, or UI-visible attribution.
+ *
+ * For this file only, attribution under Section 7b is satisfied by
+ * retaining this comment block in the source code of this file.
+ *
+ * Distribution and Derivative Works:
+ * ----------------------------------
+ * This comment block MUST be preserved in all copies, distributions,
+ * and derivative works of this file, whether in source or modified
+ * form.
+ *
+ * All other terms of the Morphe Patches LICENSE, including Section 7c
+ * (Project Name Restriction) and the GPLv3 itself, remain fully
+ * applicable to this file.
+ */
+
 package app.morphe.patches.all.misc.resources
 
 import app.morphe.patcher.InstructionLocation
+import app.morphe.patcher.LiteralFilter
 import app.morphe.patcher.OpcodesFilter
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.resourcePatch
@@ -9,7 +46,6 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import org.w3c.dom.Element
-import java.util.Collections
 
 enum class ResourceType(val value: String) {
     ANIM("anim"),
@@ -62,11 +98,6 @@ fun getResourceId(type: ResourceType, name: String) = resourceMappings[type.valu
     ?: throw PatchException("Could not find resource type: $type name: $name")
 
 /**
- * @return All resource elements. If a single resource id is needed instead use [getResourceId].
- */
-fun getResourceElements() = Collections.unmodifiableCollection(resourceMappings.values)
-
-/**
  * @return If the resource exists.
  */
 fun hasResourceId(type: ResourceType, name: String) = resourceMappings[type.value + name] != null
@@ -103,7 +134,7 @@ class ResourceLiteralFilter(
 }
 
 /**
- * Identical to [app.morphe.patcher.LiteralFilter] except uses a decoded resource literal value.
+ * Identical to [LiteralFilter] except uses a decoded resource literal value.
  *
  * Any patch with fingerprints of this filter must
  * also declare [resourceMappingPatch] as a dependency.
@@ -126,7 +157,7 @@ val resourceMappingPatch = resourcePatch(
 ) {
     execute {
         // Use a stream of the file, since no modifications are done
-        // and using a File parameter causes the file to be re-wrote when closed.
+        // and using a File parameter causes the file to be re-written when closed.
         document(get("res/values/public.xml").inputStream()).use { document ->
             val resources = document.documentElement.childNodes
             val resourcesLength = resources.length

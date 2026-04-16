@@ -34,12 +34,13 @@
  * applicable to this file.
  */
 
+@file:Suppress("unused")
+
 package app.morphe.util
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.ResourcePatchContext
 import app.morphe.patcher.util.Document
-import app.morphe.util.resource.BaseResource
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -119,10 +120,10 @@ fun ResourcePatchContext.copyResources(
 
             val resourceFile = "${resourceGroup.resourceDirectoryName}/$resource"
             val stream = inputStreamFromBundledResource(sourceResourceDirectory, resourceFile)
-            if (stream == null) {
-                throw IllegalArgumentException("Could not find resource: $resourceFile " +
-                        "in directory: $sourceResourceDirectory")
-            }
+                ?: throw IllegalArgumentException(
+                    "Could not find resource: $resourceFile " +
+                            "in directory: $sourceResourceDirectory"
+                )
             Files.copy(
                 stream,
                 targetResourceDirectory.resolve(resourceFile).toPath(),
@@ -182,19 +183,6 @@ fun String.copyXmlNode(
         source.close()
         target.close()
     }
-}
-
-/**
- * Add a resource node child.
- *
- * @param resource The resource to add.
- * @param resourceCallback Called when a resource has been processed.
- */
-fun Node.addResource(
-    resource: BaseResource,
-    resourceCallback: (BaseResource) -> Unit = { },
-) {
-    appendChild(resource.serialize(ownerDocument, resourceCallback))
 }
 
 fun Document.getNode(tagName: String) = getElementsByTagName(tagName).item(0)

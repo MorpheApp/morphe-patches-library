@@ -2,6 +2,7 @@ package app.morphe.patches.all.misc.transformation
 
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.util.fiveRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -11,14 +12,14 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 typealias Instruction35cInfo = Triple<IMethodCall, Instruction35c, Int>
 
 @Deprecated(
-    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+    "This code may be deleted in the future. Instead use Fingerprint.matchAll() " +
             "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
 )
 interface IMethodCall {
     val definedClassName: String
     val methodName: String
     val methodParams: Array<String>
-    val returnType: String
+    val methodReturnType: String
 
     /**
      * Replaces an invoke-virtual instruction with an invoke-static instruction,
@@ -36,25 +37,23 @@ interface IMethodCall {
     fun replaceInvokeVirtualWithExtension(
         definingClassDescriptor: String,
         method: MutableMethod,
-        instruction: Instruction35c,
         instructionIndex: Int,
     ) {
-        val args = with(instruction) {
-            arrayOf(registerC, registerD, registerE, registerF, registerG)
-                .take(registerCount).joinToString(", ") { "v$it" }
-        }
-        val replacementMethod =
-            "$methodName(${definedClassName}${methodParams.joinToString(separator = "")})$returnType"
+        method.apply {
+            val args = fiveRegisters(instructionIndex)
+            val replacementMethod =
+                "$methodName(${definedClassName}${methodParams.joinToString(separator = "")})$methodReturnType"
 
-        method.replaceInstruction(
-            instructionIndex,
-            "invoke-static { $args }, $definingClassDescriptor->$replacementMethod",
-        )
+            replaceInstruction(
+                instructionIndex,
+                "invoke-static { $args }, $definingClassDescriptor->$replacementMethod",
+            )
+        }
     }
 }
 
 @Deprecated(
-    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+    "This code may be deleted in the future. Instead use Fingerprint.matchAll() " +
             "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
 )
 inline fun <reified E> fromMethodReference(
@@ -62,13 +61,13 @@ inline fun <reified E> fromMethodReference(
 )
         where E : Enum<E>, E : IMethodCall = enumValues<E>().firstOrNull { search ->
     search.definedClassName == methodReference.definingClass &&
-        search.methodName == methodReference.name &&
-        methodReference.parameterTypes.toTypedArray().contentEquals(search.methodParams) &&
-        search.returnType == methodReference.returnType
+            search.methodName == methodReference.name &&
+            methodReference.parameterTypes.toTypedArray().contentEquals(search.methodParams) &&
+            search.methodReturnType == methodReference.returnType
 }
 
 @Deprecated(
-    "This class may be deleted in the future. Instead use Fingerprint.matchAll() " +
+    "This code may be deleted in the future. Instead use Fingerprint.matchAll() " +
             "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"
 )
 inline fun <reified E> filterMapInstruction35c(
