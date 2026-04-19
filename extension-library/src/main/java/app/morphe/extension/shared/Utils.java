@@ -930,7 +930,7 @@ public class Utils {
     @ColorInt
     private static int getThemeColor(String resourceName, int defaultColor) {
         try {
-            return getColorFromString(resourceName);
+            return ResourceUtils.getColor(resourceName, defaultColor);
         } catch (Exception ex) {
             // This code can never be reached since a bad custom color will
             // fail during resource compilation. So no localized strings are needed here.
@@ -1043,17 +1043,6 @@ public class Utils {
                 setPreferenceTitlesToMultiLineIfNeeded(subGroup);
             }
         }
-    }
-
-    /**
-     * Parse a color resource or hex code to an int representation of the color.
-     */
-    @ColorInt
-    public static int getColorFromString(String colorString) throws IllegalArgumentException, Resources.NotFoundException {
-        if (colorString.startsWith("#")) {
-            return Color.parseColor(colorString);
-        }
-        return ResourceUtils.getColor(colorString);
     }
 
     /**
