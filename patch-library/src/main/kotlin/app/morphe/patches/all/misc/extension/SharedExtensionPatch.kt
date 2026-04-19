@@ -58,10 +58,9 @@ fun sharedExtensionPatch(
 ) = bytecodePatch(
     default = false
 ) {
-    val hookList = hooks.toList()
     dependsOn(
         sharedExtensionPatch(*hooks),
-        *extensionNames.filter { it != "shared" }.map { sharedExtensionPatch(it, hookList) }.toTypedArray(),
+        *extensionNames.filter { it != "shared" }.map { sharedExtensionPatch(it, emptyList()) }.toTypedArray(),
     )
 }
 
