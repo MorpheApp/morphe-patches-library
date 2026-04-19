@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2...v1.0.3) (2026-04-19)
+
+
+### Bug Fixes
+
+* Add default color value if resource is not found ([92cabb8](https://github.com/MorpheApp/morphe-patches-library/commit/92cabb8f231abb39a8891dfb48c644ec6a13ad96))
+
 ## [1.0.3-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2...v1.0.3-dev.1) (2026-04-19)
 
 
