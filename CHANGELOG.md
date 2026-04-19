@@ -1,3 +1,10 @@
+## [1.0.4-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.3...v1.0.4-dev.1) (2026-04-19)
+
+
+### Bug Fixes
+
+* Apply utils context hook once ([f33ab23](https://github.com/MorpheApp/morphe-patches-library/commit/f33ab2339f15ece089b32d86803642ec5876f7e6))
+
 ## [1.0.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.2...v1.0.3) (2026-04-19)
 
 
