@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
 import java.io.InputStream;
@@ -95,14 +96,20 @@ public class ResourceUtils {
         return getIdentifier(ResourceType.COLOR, name);
     }
 
-    public static int getColor(String name) throws Resources.NotFoundException {
+    @ColorInt
+    public static int getColor(String name) throws IllegalArgumentException, Resources.NotFoundException {
+        return getColor(name, 0x777777);
+    }
+
+    @ColorInt
+    public static int getColor(String name, int defaultColor) throws IllegalArgumentException, Resources.NotFoundException {
         if (name.startsWith("#")) {
             return Color.parseColor(name);
         }
         final int identifier = getColorIdentifier(name);
         if (identifier == 0) {
             handleException(ResourceType.COLOR, name);
-            return 0;
+            return defaultColor;
         }
         return Utils.getResources().getColor(identifier);
     }

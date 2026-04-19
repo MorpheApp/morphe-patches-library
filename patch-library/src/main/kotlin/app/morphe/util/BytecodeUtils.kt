@@ -581,7 +581,7 @@ fun Method.indexOfFirstStringInstruction(str: String) =
 fun Method.indexOfFirstStringInstructionOrThrow(str: String): Int {
     val index = indexOfFirstStringInstruction(str)
     if (index < 0) {
-        throw PatchException("Found string value for: '$str' but method does not contain the id: $this")
+        throw PatchException("Could not find string instruction: '$str' in $this")
     }
 
     return index
