@@ -85,7 +85,7 @@ class Replacement(
      *
      * @param targetFileBytes The bytes of the file to make the changes in.
      */
-    internal fun replacePattern(targetFileBytes: ByteArray) {
+    fun replacePattern(targetFileBytes: ByteArray) {
         val startIndex = indexOfPatternIn(targetFileBytes)
 
         if (startIndex == -1) {
