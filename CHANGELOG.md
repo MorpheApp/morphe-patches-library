@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.4...v1.1.0) (2026-04-26)
+
+
+### Features
+
+* Add `accentOkButton` option to `CustomDialog` ([c8e35f4](https://github.com/MorpheApp/morphe-patches-library/commit/c8e35f492e57ee5928df67fe69310e5f4851c757))
+
 # [1.1.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.0.4...v1.1.0-dev.1) (2026-04-26)
 
 
