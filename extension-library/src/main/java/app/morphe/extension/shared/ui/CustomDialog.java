@@ -59,10 +59,21 @@ public class CustomDialog {
                                                     @Nullable CharSequence neutralButtonText,
                                                     @Nullable Runnable onNeutralClick,
                                                     boolean dismissDialogOnNeutralClick) {
+        return create(context, title, message, editText, okButtonText, onOkClick, onCancelClick,
+                neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick, true);
+    }
+
+    public static Pair<Dialog, LinearLayout> create(Context context, CharSequence title, CharSequence message,
+                                                    @Nullable EditText editText, CharSequence okButtonText,
+                                                    Runnable onOkClick, Runnable onCancelClick,
+                                                    @Nullable CharSequence neutralButtonText,
+                                                    @Nullable Runnable onNeutralClick,
+                                                    boolean dismissDialogOnNeutralClick,
+                                                    boolean accentOkButton) {
         Logger.printDebug(() -> "Creating custom dialog with title: " + title);
         CustomDialog customDialog = new CustomDialog(context, title, message, editText,
                 okButtonText, onOkClick, onCancelClick,
-                neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick);
+                neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick, accentOkButton);
         return new Pair<>(customDialog.dialog, customDialog.mainLayout);
     }
 
@@ -83,7 +94,7 @@ public class CustomDialog {
     private CustomDialog(Context context, CharSequence title, CharSequence message, @Nullable EditText editText,
                          CharSequence okButtonText, Runnable onOkClick, Runnable onCancelClick,
                          @Nullable CharSequence neutralButtonText, @Nullable Runnable onNeutralClick,
-                         boolean dismissDialogOnNeutralClick) {
+                         boolean dismissDialogOnNeutralClick, boolean accentOkButton) {
         this.context = context;
         this.dialog = new Dialog(context);
         this.dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // Remove default title bar.
@@ -92,7 +103,7 @@ public class CustomDialog {
         mainLayout = createMainLayout();
         addTitle(title);
         addContent(message, editText);
-        addButtons(okButtonText, onOkClick, onCancelClick, neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick);
+        addButtons(okButtonText, onOkClick, onCancelClick, neutralButtonText, onNeutralClick, dismissDialogOnNeutralClick, accentOkButton);
 
         // Set dialog content and window attributes.
         dialog.setContentView(mainLayout);
@@ -222,7 +233,7 @@ public class CustomDialog {
      */
     private void addButtons(CharSequence okButtonText, Runnable onOkClick, Runnable onCancelClick,
                             @Nullable CharSequence neutralButtonText, @Nullable Runnable onNeutralClick,
-                            boolean dismissDialogOnNeutralClick) {
+                            boolean dismissDialogOnNeutralClick, boolean accentOkButton) {
         // Button container.
         LinearLayout buttonContainer = new LinearLayout(context);
         buttonContainer.setOrientation(LinearLayout.VERTICAL);
@@ -249,7 +260,7 @@ public class CustomDialog {
         if (onOkClick != null) {
             Button okButton = createButton(context, dialog,
                     okButtonText != null ? okButtonText : context.getString(android.R.string.ok),
-                    onOkClick, true, true);
+                    onOkClick, accentOkButton, true);
             buttons.add(okButton);
             buttonWidths.add(measureButtonWidth(okButton));
         }
