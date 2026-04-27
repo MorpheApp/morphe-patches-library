@@ -10,3 +10,16 @@ internal object MorpheUtilsPatchesVersionFingerprint : Fingerprint(
     returnType = "Ljava/lang/String;",
     parameters = listOf(),
 )
+
+internal fun getMainOnCreateFingerprint(activityClassType: String, targetBundleMethod: Boolean = true): Fingerprint {
+    require(activityClassType.endsWith(';')) {
+        "Class type must end with a semicolon: $activityClassType"
+    }
+
+    return Fingerprint(
+        name = "onCreate",
+        definingClass = activityClassType,
+        returnType = "V",
+        parameters = if (targetBundleMethod) { listOf("Landroid/os/Bundle;") } else { listOf() },
+    )
+}
