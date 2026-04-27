@@ -2,6 +2,7 @@ package app.morphe.patches.all.misc.hex
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.rawResourcePatch
+import app.morphe.util.byteArrayOf
 import kotlin.math.max
 
 fun hexPatch(ignoreMissingTargetFiles: Boolean = false, block: HexPatchBuilder.() -> Unit) =
@@ -130,20 +131,4 @@ class Replacement(
         }
         return -1
     }
-}
-
-/**
- * Convert a string representing a pattern of hexadecimal bytes to a byte array.
- *
- * @return The byte array representing the pattern.
- * @throws PatchException If the pattern is invalid.
- */
-private fun byteArrayOf(pattern: String) = try {
-    pattern.split(" ").map { it.toInt(16).toByte() }.toByteArray()
-} catch (e: NumberFormatException) {
-    throw PatchException(
-        "Could not parse pattern: $pattern. A pattern is a sequence of case insensitive strings " +
-                "representing hexadecimal bytes separated by spaces",
-        e,
-    )
 }

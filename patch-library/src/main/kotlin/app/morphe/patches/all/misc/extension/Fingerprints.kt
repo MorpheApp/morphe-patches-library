@@ -16,19 +16,10 @@ internal fun getMainOnCreateFingerprint(activityClassType: String, targetBundleM
         "Class type must end with a semicolon: $activityClassType"
     }
 
-    val fullClassType = activityClassType.startsWith('L')
-
     return Fingerprint(
+        name = "onCreate",
+        definingClass = activityClassType,
         returnType = "V",
-        parameters = if (targetBundleMethod) {
-            listOf("Landroid/os/Bundle;")
-        } else {
-            listOf()
-        },
-        custom = { method, classDef ->
-            method.name == "onCreate" &&
-                    if (fullClassType) classDef.type == activityClassType
-                    else classDef.type.endsWith(activityClassType)
-        }
+        parameters = if (targetBundleMethod) { listOf("Landroid/os/Bundle;") } else { listOf() },
     )
 }
