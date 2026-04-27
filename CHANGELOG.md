@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.1.0...v1.1.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* Use new Compatibility API in 'PatchListGenerator' ([dc0870d](https://github.com/MorpheApp/morphe-patches-library/commit/dc0870ddeda5d416b24c091189a55fe5eda54ae1))
+
 ## [1.1.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.1.0...v1.1.1-dev.1) (2026-04-26)
 
 
