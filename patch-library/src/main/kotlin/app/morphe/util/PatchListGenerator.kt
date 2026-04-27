@@ -72,7 +72,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
         JsonPatch(
             name = patch.name!!,
             description = patch.description,
-            use = patch.default,
+            default = patch.default,
             dependencies = patch.dependencies.map { it.javaClass.simpleName },
             // Map each Compatibility to a JsonCompatibility object with full metadata.
             // Patches with null compatiblePackages are universal (apply to any app).
@@ -105,7 +105,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
                     default = option.default,
                     values = option.values,
                 )
-            },
+            }
         )
     }
 
@@ -127,7 +127,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
 private class JsonPatch(
     val name: String? = null,
     val description: String? = null,
-    val use: Boolean = true,
+    val default: Boolean = true,
     val dependencies: List<String>,
     /** Null means the patch is universal and applies to any app. */
     val compatiblePackages: List<JsonCompatibility>? = null,
