@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.1.1...v1.2.0) (2026-04-28)
+
+
+### Features
+
+* Add common helper methods ([#13](https://github.com/MorpheApp/morphe-patches-library/issues/13)) ([964c660](https://github.com/MorpheApp/morphe-patches-library/commit/964c660c2a71bfc6379280a227a3ae1610e4dc31))
+
 # [1.2.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.1.1...v1.2.0-dev.1) (2026-04-27)
 
 
