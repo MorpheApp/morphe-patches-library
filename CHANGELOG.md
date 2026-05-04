@@ -1,3 +1,10 @@
+# [1.3.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.2.0...v1.3.0-dev.1) (2026-05-04)
+
+
+### Features
+
+* Add remove link verification patch ([81a31f4](https://github.com/MorpheApp/morphe-patches-library/commit/81a31f4182c7f4bed284d1b5e306a64497469001))
+
 # [1.2.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.1.1...v1.2.0) (2026-04-28)
 
 
