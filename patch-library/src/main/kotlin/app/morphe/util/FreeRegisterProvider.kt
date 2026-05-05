@@ -53,7 +53,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import java.util.EnumSet
-import java.util.LinkedList
 
 /**
  * Finds free registers at a specific index in a method.
@@ -107,7 +106,9 @@ class FreeRegisterProvider internal constructor(
         vararg registersToExclude: Int
     ) : this(method, index, numberOfFreeRegistersNeeded, registersToExclude.toList())
 
-    private var freeRegisters: MutableList<Int> = LinkedList(
+    // Cannot use MutableList because removeFirst() crashes on older Android devices.
+    // https://youtrack.jetbrains.com/issue/KT-71375/
+    private var freeRegisters: ArrayDeque<Int> = ArrayDeque(
         method.findFreeRegisters(index, numberOfFreeRegistersNeeded, registersToExclude)
     )
 
