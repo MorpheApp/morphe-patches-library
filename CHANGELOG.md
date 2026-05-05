@@ -1,3 +1,10 @@
+# [1.3.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* Patching can crash on Android 14 and lower ([fdea53d](https://github.com/MorpheApp/morphe-patches-library/commit/fdea53d8fb9c5f49338f0b1f0bad3100c59150fb))
+
 # [1.3.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.2.0...v1.3.0-dev.1) (2026-05-04)
 
 
