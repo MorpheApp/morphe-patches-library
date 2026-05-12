@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.2...v1.3.3) (2026-05-12)
+
+
+### Bug Fixes
+
+* Use correct literal format for float/long returnEarly() ([833b2a9](https://github.com/MorpheApp/morphe-patches-library/commit/833b2a9b69bf19beb90ee1ff2c8d8cc8fdd55924))
+
 ## [1.3.3-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.2...v1.3.3-dev.1) (2026-05-12)
 
 
