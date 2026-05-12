@@ -1097,7 +1097,7 @@ fun MutableMethod.returnEarly(value: Int) {
  */
 fun MutableMethod.returnEarly(value: Long) {
     check(returnType.first() == 'J') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), false)
+    overrideReturnValue("${value}L", false)
 }
 
 /**
@@ -1108,7 +1108,7 @@ fun MutableMethod.returnEarly(value: Long) {
  */
 fun MutableMethod.returnEarly(value: Float) {
     check(returnType.first() == 'F') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), false)
+    overrideReturnValue("${value}F", false)
 }
 
 /**
@@ -1222,7 +1222,7 @@ fun MutableMethod.returnLate(value: Int) {
  */
 fun MutableMethod.returnLate(value: Long) {
     check(returnType.first() == 'J') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), true)
+    overrideReturnValue("${value}L", true)
 }
 
 /**
@@ -1233,7 +1233,7 @@ fun MutableMethod.returnLate(value: Long) {
  */
 fun MutableMethod.returnLate(value: Float) {
     check(returnType.first() == 'F') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), true)
+    overrideReturnValue("${value}F", true)
 }
 
 /**
