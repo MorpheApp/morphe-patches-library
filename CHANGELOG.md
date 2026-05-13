@@ -1,3 +1,10 @@
+## [1.3.4-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.3...v1.3.4-dev.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* Change all language preferences to use multiline ([9999289](https://github.com/MorpheApp/morphe-patches-library/commit/9999289b11082b86e137bbe81d5ad33ecc255564))
+
 ## [1.3.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.2...v1.3.3) (2026-05-12)
 
 
