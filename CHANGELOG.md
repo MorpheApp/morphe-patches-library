@@ -1,3 +1,10 @@
+# [1.4.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-05-18)
+
+
+### Bug Fixes
+
+* Cleanup logging ([63c5ce5](https://github.com/MorpheApp/morphe-patches-library/commit/63c5ce570154618827ab2e004741104882cb4801))
+
 # [1.4.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.4...v1.4.0-dev.1) (2026-05-18)
 
 
