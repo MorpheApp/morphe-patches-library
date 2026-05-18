@@ -179,6 +179,35 @@ fun Method.findFieldFromToString(fieldName: String) : FieldReference {
 }
 
 /**
+ * Iterate across all method indexes that match an [InstructionFilter].
+ *
+ * @param filter Filter to iterate using.
+ * @param nullAllowed If false and no matches exist, an exception is thrown.
+ * @param block Method iteration block. Indexes are iterated from last to first.
+ */
+context(patchContext: BytecodePatchContext)
+fun iterateInstructionsUsingFilter(
+    filter: InstructionFilter,
+    nullAllowed: Boolean = true,
+    block: MutableMethod.(Int) -> Unit
+) {
+    val matches = Fingerprint(
+        filters = listOf(filter)
+    ).matchAllOrNull()
+    if (matches == null) {
+        if (nullAllowed) return
+        throw PatchException("Could not find any matches of $filter")
+    }
+
+    matches.forEach { match ->
+        val method = match.method
+        method.findInstructionIndicesReversedOrThrow(filter).forEach { index ->
+            block(method, index)
+        }
+    }
+}
+
+/**
  * Adds public [AccessFlags] and removes private and protected flags (if present).
  */
 fun Int.toPublicAccessFlags(): Int {
