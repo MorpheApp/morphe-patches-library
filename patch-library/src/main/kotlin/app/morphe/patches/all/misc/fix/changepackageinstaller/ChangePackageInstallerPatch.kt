@@ -12,7 +12,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.fieldAccess
 import app.morphe.patcher.methodCall
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.util.getReference
 import app.morphe.util.iterateInstructionsUsingFilter
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -54,8 +53,6 @@ fun changePackageInstallerPatch(installerPackageName : String = "com.android.ven
                     returnIndex,
                     "const-string v$register, \"$installerPackageName\""
                 )
-
-                println("replaced: " + getInstruction(index).getReference())
             }
         }
     }
