@@ -1,3 +1,10 @@
+# [1.4.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.4...v1.4.0-dev.1) (2026-05-18)
+
+
+### Features
+
+* Add change package installer patch ([136bb71](https://github.com/MorpheApp/morphe-patches-library/commit/136bb711083aa2d397290db366fe7ea5ae30635e))
+
 ## [1.3.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.3...v1.3.4) (2026-05-14)
 
 
