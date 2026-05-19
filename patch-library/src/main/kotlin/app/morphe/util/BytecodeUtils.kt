@@ -178,27 +178,53 @@ fun Method.findFieldFromToString(fieldName: String) : FieldReference {
     return getInstruction<ReferenceInstruction>(methodUsageIndex).getReference<FieldReference>()!!
 }
 
+// TODO If this function remains unchanged for a while then move this to morphe-patcher.
 /**
  * Iterate across all method indexes that match an [InstructionFilter].
  *
- * @param filter Filter to iterate using.
- * @param nullAllowed If false and no matches exist, an exception is thrown.
+ * This is only a simple helper method to call [Fingerprint.matchAllMethodIndicesForEach].
+ *
+ * @param requireMatches If true and no matches exist, an exception is thrown.
  * @param block Method iteration block. Indexes are iterated from last to first.
  */
 context(patchContext: BytecodePatchContext)
-fun iterateInstructionsUsingFilter(
-    filter: InstructionFilter,
-    nullAllowed: Boolean = true,
+fun InstructionFilter.matchAllMethodIndicesForEach(
+    requireMatches: Boolean = true,
+    block: MutableMethod.(Int) -> Unit
+) = Fingerprint(filters = listOf(this)).matchAllMethodIndicesForEach(
+    requireMatches,
+    block
+)
+
+// TODO If this function remains unchanged for a while then move this to morphe-patcher.
+/**
+ * Iterate across all method indexes that match an [Fingerprint].
+ * At this time, only a single [InstructionFilter] is supported.
+ *
+ * This differs from using [Fingerprint.matchAll] as this matches multiple instruction
+ * indexes in the same method and [Fingerprint.matchAll] matches only the first index
+ * of each method.
+ *
+ * @param requireMatches If true and no matches exist, an exception is thrown.
+ * @param block Method iteration block. Indexes are iterated from last to first.
+ */
+context(patchContext: BytecodePatchContext)
+fun Fingerprint.matchAllMethodIndicesForEach(
+    requireMatches: Boolean = true,
     block: MutableMethod.(Int) -> Unit
 ) {
-    val matches = Fingerprint(
-        filters = listOf(filter)
-    ).matchAllOrNull()
-    if (matches == null) {
-        if (nullAllowed) return
-        throw PatchException("Could not find any matches of $filter")
+    requireNotNull(filters)
+    require(filters!!.size == 1) {
+        "Fingerprint must contain exactly 1 filter"
     }
 
+    val matches = matchAllOrNull()
+    if (matches == null) {
+        if (requireMatches) throw PatchException("Could not find any matches of $this")
+        return
+    }
+
+    val filter = filters!!.first()
     matches.forEach { match ->
         val method = match.method
         method.findInstructionIndicesReversedOrThrow(filter).forEach { index ->
