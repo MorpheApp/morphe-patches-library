@@ -1,3 +1,10 @@
+# [1.4.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-05-19)
+
+
+### Bug Fixes
+
+* Ignore replacing `packageName` field ([9e24bc5](https://github.com/MorpheApp/morphe-patches-library/commit/9e24bc531ff604b95e328ca230ea7044f68456bf))
+
 # [1.4.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.1...v1.4.0-dev.2) (2026-05-18)
 
 
