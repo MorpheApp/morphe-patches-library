@@ -1,3 +1,10 @@
+# [1.4.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.3...v1.4.0-dev.4) (2026-05-20)
+
+
+### Bug Fixes
+
+* Fix refactoring ([cb0cdc3](https://github.com/MorpheApp/morphe-patches-library/commit/cb0cdc34470976783dc6155b4dcd2532541b9f29))
+
 # [1.4.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.2...v1.4.0-dev.3) (2026-05-19)
 
 
