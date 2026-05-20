@@ -35,7 +35,7 @@ fun changePackageInstallerPatch(installerPackageName : String = "com.android.ven
             "Landroid/content/pm/InstallSourceInfo;->getOriginatingPackageName()Ljava/lang/String;",
             "Landroid/content/pm/InstallSourceInfo;->getInitiatingPackageName()Ljava/lang/String;"
         ).forEach { smali ->
-            methodCall(smali).matchAllMethodIndicesForEach { index ->
+            methodCall(smali).matchAllMethodIndicesForEach(requireMatches = false) { index ->
                 val returnIndex = index + 1
                 val instruction = getInstruction(returnIndex)
                 if (instruction.opcode != Opcode.MOVE_RESULT_OBJECT) {
