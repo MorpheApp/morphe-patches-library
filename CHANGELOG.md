@@ -1,3 +1,10 @@
+# [1.4.0-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.4...v1.4.0-dev.5) (2026-05-25)
+
+
+### Bug Fixes
+
+* `Dim` metrics values do not update when changing foldable device screen ([#28](https://github.com/MorpheApp/morphe-patches-library/issues/28)) ([0d254c1](https://github.com/MorpheApp/morphe-patches-library/commit/0d254c1a21dd2aa8cda3ecb82337754867aa0288))
+
 # [1.4.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.3...v1.4.0-dev.4) (2026-05-20)
 
 
