@@ -10,10 +10,6 @@ import android.util.TypedValue;
 public final class Dim {
     private Dim() {} // Prevent instantiation.
 
-    private static final DisplayMetrics METRICS = Resources.getSystem().getDisplayMetrics();
-    public static final int SCREEN_WIDTH = METRICS.widthPixels;
-    public static final int SCREEN_HEIGHT = METRICS.heightPixels;
-
     // DP constants (density-independent pixels).
     public static final int dp1  = dp(1);
     public static final int dp2  = dp(2);
@@ -32,6 +28,18 @@ public final class Dim {
     public static final int dp40 = dp(40);
     public static final int dp48 = dp(48);
 
+    public static DisplayMetrics getMetrics() {
+        return Resources.getSystem().getDisplayMetrics();
+    }
+
+    public static int getScreenWidth() {
+        return getMetrics().widthPixels;
+    }
+
+    public static int getScreenHeight() {
+        return getMetrics().heightPixels;
+    }
+
     /**
      * Converts dp (density-independent pixels) to actual device pixels.
      * Uses Android's official TypedValue.applyDimension() for accurate rounding.
@@ -41,7 +49,7 @@ public final class Dim {
      */
     public static int dp(float dp) {
         return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, dp, METRICS);
+                TypedValue.COMPLEX_UNIT_DIP, dp, getMetrics());
     }
 
     /**
@@ -51,7 +59,7 @@ public final class Dim {
      * @return The pixel value corresponding to the percentage of screen height.
      */
     public static int pctHeight(int percent) {
-        return (SCREEN_HEIGHT * percent) / 100;
+        return (getScreenHeight() * percent) / 100;
     }
 
     /**
@@ -61,7 +69,7 @@ public final class Dim {
      * @return The pixel value corresponding to the percentage of screen width.
      */
     public static int pctWidth(int percent) {
-        return (SCREEN_WIDTH * percent) / 100;
+        return (getScreenWidth() * percent) / 100;
     }
 
     /**
@@ -71,7 +79,7 @@ public final class Dim {
      * @return The pixel value.
      */
     public static int pctPortraitWidth(int percent) {
-        final int portraitWidth = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
+        final int portraitWidth = Math.min(getScreenWidth(), getScreenHeight());
         return (int) (portraitWidth * (percent / 100.0f));
     }
 

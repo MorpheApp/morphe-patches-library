@@ -323,7 +323,7 @@ public class CustomDialog {
      * Dialog window = 90% of screen width; mainLayout horizontal padding = dp24 * 2.
      */
     private int buttonAreaWidth() {
-        return (int) (Dim.SCREEN_WIDTH * 0.9f) - Dim.dp24 * 2;
+        return (int) (Dim.getScreenWidth() * 0.9f) - Dim.dp24 * 2;
     }
 
     /**
