@@ -1,3 +1,10 @@
+# [1.4.0-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.5...v1.4.0-dev.6) (2026-05-28)
+
+
+### Features
+
+* Add ViewAnimations fade in/out utilities ([01027db](https://github.com/MorpheApp/morphe-patches-library/commit/01027db87738609ddda6fe9b11878de284b99b26))
+
 # [1.4.0-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.4...v1.4.0-dev.5) (2026-05-25)
 
 
