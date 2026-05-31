@@ -1,3 +1,10 @@
+# [1.4.0-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.6...v1.4.0-dev.7) (2026-05-31)
+
+
+### Bug Fixes
+
+* Update to latest patcher ([b1051aa](https://github.com/MorpheApp/morphe-patches-library/commit/b1051aaf3724a79ccc8343f112aa4ad2f1ef987d))
+
 # [1.4.0-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.5...v1.4.0-dev.6) (2026-05-28)
 
 
