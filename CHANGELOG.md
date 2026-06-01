@@ -1,3 +1,10 @@
+# [1.4.0-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.7...v1.4.0-dev.8) (2026-06-01)
+
+
+### Features
+
+* Add `Fingerprint.matchSingle()`` ([1c7f805](https://github.com/MorpheApp/morphe-patches-library/commit/1c7f8057a154b23ad9ae8cbcad9abe8e1849d1af))
+
 # [1.4.0-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.6...v1.4.0-dev.7) (2026-05-31)
 
 
