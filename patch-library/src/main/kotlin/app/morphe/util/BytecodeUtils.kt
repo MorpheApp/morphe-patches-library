@@ -196,6 +196,17 @@ fun InstructionFilter.matchAllMethodIndicesForEach(
     block
 )
 
+/**
+ * Verify exactly one match exists. This is the equivalent of calling [Fingerprint.matchAll]
+ * with a range of `1 .. 1`. This can be useful for fragile fingerprints that may match
+ * unrelated methods. This is an exhaustive search and will always be slower than the first match
+ * that [Fingerprint.match] provides.
+ *
+ * An exception is thrown if no matches exist or more than 1 match exists.
+ */
+context(patchContext: BytecodePatchContext)
+fun Fingerprint.matchSingle() = matchAll(1 .. 1).first()
+
 // TODO If this function remains unchanged for a while then move this to morphe-patcher.
 /**
  * Iterate across all method indexes that match an [Fingerprint].
