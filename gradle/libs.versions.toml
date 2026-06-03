@@ -6,7 +6,7 @@ morphe-patcher = "1.5.2-dev.1" # TODO: Change to 1.5.2 stable
 smali = "d92701d947"
 agp = "9.1.0"
 gson = "2.14.0"
-kotlin = "2.2.21" # Do not update until patcher is using 2.3.21+
+kotlin = "2.4.0" # Do not update until patcher is using 2.3.21+
 annotation = "1.10.0"
 
 [libraries]
