@@ -1,3 +1,21 @@
+# [1.4.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.4...v1.4.0) (2026-06-12)
+
+
+### Bug Fixes
+
+* `Dim` metrics values do not update when changing foldable device screen ([#28](https://github.com/MorpheApp/morphe-patches-library/issues/28)) ([0d254c1](https://github.com/MorpheApp/morphe-patches-library/commit/0d254c1a21dd2aa8cda3ecb82337754867aa0288))
+* Cleanup logging ([63c5ce5](https://github.com/MorpheApp/morphe-patches-library/commit/63c5ce570154618827ab2e004741104882cb4801))
+* Fix refactoring ([cb0cdc3](https://github.com/MorpheApp/morphe-patches-library/commit/cb0cdc34470976783dc6155b4dcd2532541b9f29))
+* Ignore replacing `packageName` field ([9e24bc5](https://github.com/MorpheApp/morphe-patches-library/commit/9e24bc531ff604b95e328ca230ea7044f68456bf))
+* Update to latest patcher ([b1051aa](https://github.com/MorpheApp/morphe-patches-library/commit/b1051aaf3724a79ccc8343f112aa4ad2f1ef987d))
+
+
+### Features
+
+* Add `Fingerprint.matchSingle()`` ([1c7f805](https://github.com/MorpheApp/morphe-patches-library/commit/1c7f8057a154b23ad9ae8cbcad9abe8e1849d1af))
+* Add change package installer patch ([136bb71](https://github.com/MorpheApp/morphe-patches-library/commit/136bb711083aa2d397290db366fe7ea5ae30635e))
+* Add ViewAnimations fade in/out utilities ([01027db](https://github.com/MorpheApp/morphe-patches-library/commit/01027db87738609ddda6fe9b11878de284b99b26))
+
 # [1.4.0-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0-dev.7...v1.4.0-dev.8) (2026-06-01)
 
 
