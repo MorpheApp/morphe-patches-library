@@ -7,6 +7,7 @@ import android.util.TypedValue;
 /**
  * Utility class for converting design units (dp) and screen percentages to pixels.
  */
+@SuppressWarnings("unused")
 public final class Dim {
     private Dim() {} // Prevent instantiation.
 
