@@ -1,3 +1,10 @@
+## [1.4.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0...v1.4.1-dev.1) (2026-06-13)
+
+
+### Bug Fixes
+
+* Fix dim flash when closing nested `SheetBottomDialog` ([68637ef](https://github.com/MorpheApp/morphe-patches-library/commit/68637efc3ab797482f7c7569eef80d2b36eaf59b))
+
 # [1.4.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.3.4...v1.4.0) (2026-06-12)
 
 
