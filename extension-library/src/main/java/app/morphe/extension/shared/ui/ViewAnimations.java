@@ -7,6 +7,7 @@ import android.view.View;
 /**
  * Utility methods for animating view visibility transitions (fade in/out with VISIBLE/GONE).
  */
+@SuppressWarnings("unused")
 public final class ViewAnimations {
     private ViewAnimations() {}
 
