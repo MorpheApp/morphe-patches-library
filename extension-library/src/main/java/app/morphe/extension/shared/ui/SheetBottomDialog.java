@@ -20,11 +20,13 @@ package app.morphe.extension.shared.ui;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -32,6 +34,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -64,6 +67,7 @@ public class SheetBottomDialog {
      * @param animationDuration The duration of the slide-in and slide-out animations in milliseconds.
      * @return A configured {@link SlideDialog} instance ready to be shown.
      */
+    @SuppressWarnings({"deprecation", "RedundantSuppression"})
     public static SlideDialog createSlideDialog(@NonNull Context context, @NonNull View contentView, int animationDuration) {
         SlideDialog dialog = new SlideDialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -86,9 +90,9 @@ public class SheetBottomDialog {
         LinearLayout wrapperLayout = new LinearLayout(context);
         wrapperLayout.setOrientation(LinearLayout.VERTICAL);
         root.addView(wrapperLayout, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
+                Dim.pctPortraitWidth(100),
                 FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM));
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
 
         // Drag container.
         DraggableLinearLayout dragContainer = new DraggableLinearLayout(context, animationDuration);
@@ -110,16 +114,40 @@ public class SheetBottomDialog {
         wrapperLayout.addView(dragContainer);
         dialog.setContentView(root);
 
-        // Full-screen transparent window - dim is handled by dimView, not the system.
+        // Sheet content sits above the nav bar while dimView extends behind it.
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            int bottom = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                    ? insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+                    : insets.getSystemWindowInsetBottom();
+            wrapperLayout.setPadding(0, 0, 0, bottom);
+            return insets;
+        });
+
+        // Full-screen transparent window - dim is handled by dimView.
         Window window = dialog.getWindow();
         if (window != null) {
             window.setWindowAnimations(0);
             window.setBackgroundDrawable(null);
             window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            // Makes window edge-to-edge so dimView can cover system bar areas.
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            window.setStatusBarColor(Color.TRANSPARENT);
+            window.setNavigationBarColor(Color.TRANSPARENT);
             WindowManager.LayoutParams params = window.getAttributes();
             params.width = WindowManager.LayoutParams.MATCH_PARENT;
             params.height = WindowManager.LayoutParams.MATCH_PARENT;
             window.setAttributes(params);
+            // LAYOUT_* extends layout behind bars; host flags preserve immersive state.
+            int visibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            Activity host = Utils.getActivity();
+            if (host != null) {
+                visibility |= host.getWindow().getDecorView().getSystemUiVisibility();
+            }
+            window.getDecorView().setSystemUiVisibility(visibility);
         }
 
         dialog.setAnimView(dragContainer);
