@@ -1,3 +1,10 @@
+## [1.4.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.2...v1.4.1-dev.3) (2026-06-14)
+
+
+### Bug Fixes
+
+* Revert to system dim to fix landscape strips ([520dbe6](https://github.com/MorpheApp/morphe-patches-library/commit/520dbe6460c73d5a909c6e04fba804721e21e322))
+
 ## [1.4.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.1...v1.4.1-dev.2) (2026-06-14)
 
 
