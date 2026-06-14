@@ -1,3 +1,10 @@
+## [1.4.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.1...v1.4.1-dev.2) (2026-06-14)
+
+
+### Bug Fixes
+
+* Fix landscape width and dim in `SheetBottomDialog` ([10d40bb](https://github.com/MorpheApp/morphe-patches-library/commit/10d40bbc1595a7a7fe5f7b5c73c56d3bcfd28790))
+
 ## [1.4.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0...v1.4.1-dev.1) (2026-06-13)
 
 
