@@ -20,13 +20,10 @@ package app.morphe.extension.shared.ui;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
-import android.os.Build;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -34,10 +31,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
@@ -67,32 +61,14 @@ public class SheetBottomDialog {
      * @param animationDuration The duration of the slide-in and slide-out animations in milliseconds.
      * @return A configured {@link SlideDialog} instance ready to be shown.
      */
-    @SuppressWarnings({"deprecation", "RedundantSuppression"})
     public static SlideDialog createSlideDialog(@NonNull Context context, @NonNull View contentView, int animationDuration) {
         SlideDialog dialog = new SlideDialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(true);
-        dialog.setCanceledOnTouchOutside(false); // handled by dimView click listener
+        dialog.setCanceledOnTouchOutside(true);
 
-        // Full-screen root: dim overlay at the back, content wrapper pinned to the bottom.
-        FrameLayout root = new FrameLayout(context);
-
-        // Custom dim overlay - replaces FLAG_DIM_BEHIND so we can animate it ourselves
-        // without the system-level flash that occurs when two SlideDialogs are stacked.
-        View dimView = new View(context);
-        dimView.setBackgroundColor(Color.BLACK);
-        dimView.setOnClickListener(v -> dialog.cancel());
-        root.addView(dimView, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
-
-        // Content wrapper pinned to the bottom.
         LinearLayout wrapperLayout = new LinearLayout(context);
         wrapperLayout.setOrientation(LinearLayout.VERTICAL);
-        root.addView(wrapperLayout, new FrameLayout.LayoutParams(
-                Dim.pctPortraitWidth(100),
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
 
         // Drag container.
         DraggableLinearLayout dragContainer = new DraggableLinearLayout(context, animationDuration);
@@ -112,46 +88,15 @@ public class SheetBottomDialog {
         dragContainer.addView(contentView);
 
         wrapperLayout.addView(dragContainer);
-        dialog.setContentView(root);
+        dialog.setContentView(wrapperLayout);
 
-        // Sheet content sits above the nav bar while dimView extends behind it.
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            int bottom = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-                    ? insets.getInsets(WindowInsets.Type.navigationBars()).bottom
-                    : insets.getSystemWindowInsetBottom();
-            wrapperLayout.setPadding(0, 0, 0, bottom);
-            return insets;
-        });
-
-        // Full-screen transparent window - dim is handled by dimView.
         Window window = dialog.getWindow();
         if (window != null) {
             window.setWindowAnimations(0);
-            window.setBackgroundDrawable(null);
-            window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            // Makes window edge-to-edge so dimView can cover system bar areas.
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            window.setStatusBarColor(Color.TRANSPARENT);
-            window.setNavigationBarColor(Color.TRANSPARENT);
-            WindowManager.LayoutParams params = window.getAttributes();
-            params.width = WindowManager.LayoutParams.MATCH_PARENT;
-            params.height = WindowManager.LayoutParams.MATCH_PARENT;
-            window.setAttributes(params);
-            // LAYOUT_* extends layout behind bars; host flags preserve immersive state.
-            int visibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-            Activity host = Utils.getActivity();
-            if (host != null) {
-                visibility |= host.getWindow().getDecorView().getSystemUiVisibility();
-            }
-            window.getDecorView().setSystemUiVisibility(visibility);
+            Utils.setDialogWindowParameters(window, Gravity.BOTTOM, 0, 100, false);
         }
 
         dialog.setAnimView(dragContainer);
-        dialog.setDimView(dimView);
         dialog.setAnimationDuration(animationDuration);
 
         return dialog;
@@ -413,10 +358,7 @@ public class SheetBottomDialog {
      * dismiss calls. The dialog animates a specified view during show and dismiss operations.
      */
     public static class SlideDialog extends Dialog {
-        private static final float DIM_ALPHA = 0.6f;
-
         private View animView;
-        private View dimView;
         private boolean isDismissing = false;
         private int duration;
         private final int screenHeight;
@@ -437,13 +379,6 @@ public class SheetBottomDialog {
         }
 
         /**
-         * Sets the dim overlay view whose alpha is animated during show and dismiss.
-         */
-        public void setDimView(@NonNull View view) {
-            this.dimView = view;
-        }
-
-        /**
          * Sets the duration of the slide-in and slide-out animations.
          */
         public void setAnimationDuration(int duration) {
@@ -451,15 +386,11 @@ public class SheetBottomDialog {
         }
 
         /**
-         * Displays the dialog with a slide-up animation for the animated view and a fade-in for the dim overlay.
+         * Displays the dialog with a slide-up animation for the animated view.
          */
         @Override
         public void show() {
             super.show();
-            if (dimView != null) {
-                dimView.setAlpha(0f);
-                dimView.animate().alpha(DIM_ALPHA).setDuration(duration).setListener(null).start();
-            }
             if (animView == null) return;
             animView.setTranslationY(screenHeight);
             animView.animate()
@@ -478,7 +409,7 @@ public class SheetBottomDialog {
         }
 
         /**
-         * Dismisses the dialog by sliding the content downward and fading out the dim overlay.
+         * Dismisses the dialog by sliding the content downward.
          * Ensures that dismissal is not triggered multiple times concurrently.
          */
         @Override
@@ -486,32 +417,12 @@ public class SheetBottomDialog {
             if (isDismissing) return;
             isDismissing = true;
 
-            // animView == null: animate dim only, then dismiss.
             if (animView == null) {
-                if (dimView != null) {
-                    dimView.animate()
-                            .alpha(0f)
-                            .setDuration(duration)
-                            .setListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    dimView.animate().setListener(null);
-                                    SlideDialog.super.dismiss();
-                                    isDismissing = false;
-                                }
-                            })
-                            .start();
-                } else {
-                    super.dismiss();
-                    isDismissing = false;
-                }
+                super.dismiss();
+                isDismissing = false;
                 return;
             }
 
-            // Animate dim and content simultaneously; dismiss when content finishes.
-            if (dimView != null) {
-                dimView.animate().alpha(0f).setDuration(duration).setListener(null).start();
-            }
             animView.animate()
                     .translationY(screenHeight)
                     .setDuration(duration)
