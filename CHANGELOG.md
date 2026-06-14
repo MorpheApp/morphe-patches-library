@@ -1,3 +1,10 @@
+## [1.4.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.3...v1.4.1-dev.4) (2026-06-14)
+
+
+### Bug Fixes
+
+* Forward `cancel()` to super to enable `OnCancelListener` ([8d10b99](https://github.com/MorpheApp/morphe-patches-library/commit/8d10b991311dcdc88f8bcc239d0be9c3954e76de))
+
 ## [1.4.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.2...v1.4.1-dev.3) (2026-06-14)
 
 
