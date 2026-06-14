@@ -405,7 +405,7 @@ public class SheetBottomDialog {
          */
         @Override
         public void cancel() {
-            dismiss();
+            super.cancel();
         }
 
         /**
