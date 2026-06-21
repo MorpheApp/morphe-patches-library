@@ -1,3 +1,10 @@
+## [1.4.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.4...v1.4.1-dev.5) (2026-06-21)
+
+
+### Bug Fixes
+
+* Include compatibility app versions ([ea02ae5](https://github.com/MorpheApp/morphe-patches-library/commit/ea02ae5b346925f2999f946381484f85ca2e9b0e))
+
 ## [1.4.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.3...v1.4.1-dev.4) (2026-06-14)
 
 
