@@ -1030,11 +1030,6 @@ public class Utils {
             return;
         }
 
-        String morpheLocale = Utils.getContext().getResources().getConfiguration().locale.getLanguage();
-        if (morpheLocale.equals(Locale.ENGLISH.getLanguage())) {
-            return;
-        }
-
         for (int i = 0, prefCount = group.getPreferenceCount(); i < prefCount; i++) {
             Preference pref = group.getPreference(i);
             pref.setSingleLineTitle(false);
@@ -1109,7 +1104,7 @@ public class Utils {
      *        when the size exceeds {@code maxSize}.
      */
     public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize) {
-        return new LinkedHashMap<>(2 * maxSize) {
+        return new LinkedHashMap<>(2 * maxSize, 0.5f) {
             @Override
             protected boolean removeEldestEntry(Entry eldest) {
                 return size() > maxSize;

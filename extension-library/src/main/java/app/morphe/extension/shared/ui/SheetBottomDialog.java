@@ -1,8 +1,24 @@
+/*
+ * Copyright 2026 Morphe.
+ * https://github.com/MorpheApp/morphe-patches
+ *
+ * Original first edition code:
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/584b00fd87f83504b8886e4f3f674f8c3943cd91
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/2e9d6959c94df7588b9e34b18770e9f437e91926
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/ece8076f7cefd752b97515014bc50fe4fd80171e
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/2b62fc2224c42da024fd64602346ff30613517c0
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/a426e2af5086367a2a1fee83abbbd2ea230bda06
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/584b00fd87f83504b8886e4f3f674f8c3943cd91
+ * https://gitlab.com/ReVanced/revanced-patches/-/commit/14a8f4fb96f5e2a4bc264a54115e0870b1a1ffa8
+ * https://github.com/MorpheApp/morphe-patches/commit/f5371ca998c019609c2b5558b3408ab1fec065c8
+ *
+ * See the included NOTICE file for §7(c) terms that apply to Morphe contributions.
+ */
+
 package app.morphe.extension.shared.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
@@ -15,7 +31,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -31,6 +46,7 @@ import app.morphe.extension.shared.Utils;
  * A utility class for creating a bottom sheet dialog that slides up from the bottom of the screen.
  * The dialog supports drag-to-dismiss functionality, animations, and nested scrolling for scrollable content.
  */
+@SuppressWarnings("unused")
 public class SheetBottomDialog {
 
     /**
@@ -44,48 +60,42 @@ public class SheetBottomDialog {
      *                          containing a {@link ListView}, buttons, or other UI elements.
      * @param animationDuration The duration of the slide-in and slide-out animations in milliseconds.
      * @return A configured {@link SlideDialog} instance ready to be shown.
-     * @throws IllegalArgumentException If contentView is null.
      */
     public static SlideDialog createSlideDialog(@NonNull Context context, @NonNull View contentView, int animationDuration) {
         SlideDialog dialog = new SlideDialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCanceledOnTouchOutside(true);
         dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
 
-        // Create wrapper layout for side margins.
         LinearLayout wrapperLayout = new LinearLayout(context);
         wrapperLayout.setOrientation(LinearLayout.VERTICAL);
 
-        // Create drag container.
+        // Drag container.
         DraggableLinearLayout dragContainer = new DraggableLinearLayout(context, animationDuration);
         dragContainer.setOrientation(LinearLayout.VERTICAL);
         dragContainer.setDialog(dialog);
 
-        // Add top spacer.
+        // Top spacer - drag handle and tap-to-dismiss area above the sheet content.
         View spacer = new View(context);
-        LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, Dim.dp40);
-        spacer.setLayoutParams(spacerParams);
-        spacer.setClickable(true);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, Dim.dp40));
+        spacer.setOnClickListener(v -> dialog.cancel());
         dragContainer.addView(spacer);
 
-        // Add content view.
+        // Content view.
         ViewGroup parent = (ViewGroup) contentView.getParent();
         if (parent != null) parent.removeView(contentView);
         dragContainer.addView(contentView);
 
-        // Add drag container to wrapper layout.
         wrapperLayout.addView(dragContainer);
-
         dialog.setContentView(wrapperLayout);
 
-        // Configure dialog window.
         Window window = dialog.getWindow();
         if (window != null) {
+            window.setWindowAnimations(0);
             Utils.setDialogWindowParameters(window, Gravity.BOTTOM, 0, 100, false);
         }
 
-        // Set up animation on drag container.
         dialog.setAnimView(dragContainer);
         dialog.setAnimationDuration(animationDuration);
 
@@ -376,13 +386,12 @@ public class SheetBottomDialog {
         }
 
         /**
-         * Displays the dialog with a slide-up animation for the animated view, if set.
+         * Displays the dialog with a slide-up animation for the animated view.
          */
         @Override
         public void show() {
             super.show();
             if (animView == null) return;
-
             animView.setTranslationY(screenHeight);
             animView.animate()
                     .translationY(0)
@@ -396,11 +405,11 @@ public class SheetBottomDialog {
          */
         @Override
         public void cancel() {
-            dismiss();
+            super.cancel();
         }
 
         /**
-         * Dismisses the dialog with a slide-down animation for the animated view, if set.
+         * Dismisses the dialog by sliding the content downward.
          * Ensures that dismissal is not triggered multiple times concurrently.
          */
         @Override
@@ -408,39 +417,12 @@ public class SheetBottomDialog {
             if (isDismissing) return;
             isDismissing = true;
 
-            Window window = getWindow();
-            if (window == null) {
+            if (animView == null) {
                 super.dismiss();
                 isDismissing = false;
                 return;
             }
 
-            WindowManager.LayoutParams params = window.getAttributes();
-            float startDim = params != null ? params.dimAmount : 0f;
-
-            // Animate dimming effect.
-            ValueAnimator dimAnimator = ValueAnimator.ofFloat(startDim, 0f);
-            dimAnimator.setDuration(duration);
-            dimAnimator.addUpdateListener(animation -> {
-                if (params != null) {
-                    params.dimAmount = (float) animation.getAnimatedValue();
-                    window.setAttributes(params);
-                }
-            });
-
-            if (animView == null) {
-                dimAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        SlideDialog.super.dismiss();
-                        isDismissing = false;
-                    }
-                });
-                dimAnimator.start();
-                return;
-            }
-
-            dimAnimator.start();
             animView.animate()
                     .translationY(screenHeight)
                     .setDuration(duration)

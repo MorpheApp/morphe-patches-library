@@ -7,31 +7,23 @@
  *
  * File-Specific License Notice (GPLv3 Section 7 Terms)
  *
- * This file is part of the Morphe patches project and is licensed under
+ * This file is part of the Morphe project and is licensed under
  * the GNU General Public License version 3 (GPLv3), with the Additional
- * Terms under Section 7 described in the Morphe patches
- * LICENSE file: https://github.com/MorpheApp/morphe-patches/blob/main/NOTICE
+ * Terms under Section 7 described in the LICENSE file.
  *
  * https://www.gnu.org/licenses/gpl-3.0.html
  *
- * File-Specific Exception to Section 7b:
- * -------------------------------------
- * Section 7b (Attribution Requirement) of the Morphe patches LICENSE
- * does not apply to THIS FILE. Use of this file does NOT require any
- * user-facing, in-application, or UI-visible attribution.
+ * Section 7b: Notice Preservation
+ * -------------------------------
+ * This entire comment block must be preserved in all copies,
+ * distributions, and derivative works of this file, in both
+ * original and modified source forms.
  *
- * For this file only, attribution under Section 7b is satisfied by
- * retaining this comment block in the source code of this file.
- *
- * Distribution and Derivative Works:
- * ----------------------------------
- * This comment block MUST be preserved in all copies, distributions,
- * and derivative works of this file, whether in source or modified
- * form.
- *
- * All other terms of the Morphe Patches LICENSE, including Section 7c
- * (Project Name Restriction) and the GPLv3 itself, remain fully
- * applicable to this file.
+ * 7c. Project Name Restriction
+ * ----------------------------
+ * The project name "Morphe" is a protected identifier. Derivative works
+ * must adopt a completely different identity that is not related to,
+ * confusingly similar to, or an imitation of the name "Morphe".
  */
 
 @file:Suppress("unused")
@@ -173,7 +165,7 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
 context(patchContext: BytecodePatchContext)
 fun Method.findMethodFromToString(fieldName: String) : MutableMethod {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName, false)
-    return patchContext.navigate(this).to(methodUsageIndex).stop()
+    return getInstruction(methodUsageIndex).getReference<MethodReference>()!!.getMutableMethod()
 }
 
 /**
@@ -184,6 +176,72 @@ fun Method.findMethodFromToString(fieldName: String) : MutableMethod {
 fun Method.findFieldFromToString(fieldName: String) : FieldReference {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName, true)
     return getInstruction<ReferenceInstruction>(methodUsageIndex).getReference<FieldReference>()!!
+}
+
+// TODO If this function remains unchanged for a while then move this to morphe-patcher.
+/**
+ * Iterate across all method indexes that match an [InstructionFilter].
+ *
+ * This is only a simple helper method to call [Fingerprint.matchAllMethodIndicesForEach].
+ *
+ * @param requireMatches If true and no matches exist, an exception is thrown.
+ * @param block Method iteration block. Indexes are iterated from last to first.
+ */
+context(patchContext: BytecodePatchContext)
+fun InstructionFilter.matchAllMethodIndicesForEach(
+    requireMatches: Boolean = true,
+    block: MutableMethod.(Int) -> Unit
+) = Fingerprint(filters = listOf(this)).matchAllMethodIndicesForEach(
+    requireMatches,
+    block
+)
+
+/**
+ * Verify exactly one match exists. This is the equivalent of calling [Fingerprint.matchAll]
+ * with a range of `1 .. 1`. This can be useful for fragile fingerprints that may match
+ * unrelated methods. This is an exhaustive search and will always be slower than the first match
+ * that [Fingerprint.match] provides.
+ *
+ * An exception is thrown if no matches exist or more than 1 match exists.
+ */
+context(patchContext: BytecodePatchContext)
+fun Fingerprint.matchSingle() = matchAll(1 .. 1).first()
+
+// TODO If this function remains unchanged for a while then move this to morphe-patcher.
+/**
+ * Iterate across all method indexes that match an [Fingerprint].
+ * At this time, only a single [InstructionFilter] is supported.
+ *
+ * This differs from using [Fingerprint.matchAll] as this matches multiple instruction
+ * indexes in the same method and [Fingerprint.matchAll] matches only the first index
+ * of each method.
+ *
+ * @param requireMatches If true and no matches exist, an exception is thrown.
+ * @param block Method iteration block. Indexes are iterated from last to first.
+ */
+context(patchContext: BytecodePatchContext)
+fun Fingerprint.matchAllMethodIndicesForEach(
+    requireMatches: Boolean = true,
+    block: MutableMethod.(Int) -> Unit
+) {
+    requireNotNull(filters)
+    require(filters!!.size == 1) {
+        "Fingerprint must contain exactly 1 filter"
+    }
+
+    val matches = matchAllOrNull()
+    if (matches == null) {
+        if (requireMatches) throw PatchException("Could not find any matches of $this")
+        return
+    }
+
+    val filter = filters!!.first()
+    matches.forEach { match ->
+        val method = match.method
+        method.findInstructionIndicesReversedOrThrow(filter).forEach { index ->
+            block(method, index)
+        }
+    }
 }
 
 /**
@@ -301,7 +359,7 @@ fun Method.indexOfFirstResourceId(resourceName: String): Int {
 /**
  * Get the index of the first instruction with the id of the given resource name or throw a [PatchException].
  *
- * Requires [resourceMappingPatch] as a dependency.
+ * Requires [app.morphe.patches.all.misc.resources.resourceMappingPatch] as a dependency.
  *
  * @throws [PatchException] if the resource is not found, or the method does not contain the resource id literal value.
  * @see [indexOfFirstResourceId], [indexOfFirstLiteralInstructionReversedOrThrow]
@@ -814,8 +872,23 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
             }
         }
     }
-
 }
+
+
+@Deprecated(
+    "Method was renamed to Method.cloneParameters()",
+    replaceWith = ReplaceWith("cloneParameters()")
+)
+context(patchContext: BytecodePatchContext)
+fun Method.cloneMutableAndPreserveParameters() = cloneParameters()
+
+@Deprecated(
+    "Method was renamed to Method.cloneParameters()",
+    replaceWith = ReplaceWith("cloneParameters(mutableClass)")
+)
+context(patchContext: BytecodePatchContext)
+fun Method.cloneMutableAndPreserveParameters(mutableClass : MutableClass) = cloneParameters(mutableClass)
+
 
 /**
  * Additional registers effectively take the place of the pX parameters (p0, p1, p2, etc.)
@@ -826,7 +899,7 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
  * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
  */
 context(patchContext: BytecodePatchContext)
-fun Method.cloneMutableAndPreserveParameters() = cloneMutableAndPreserveParameters(
+fun Method.cloneParameters() = cloneParameters(
     patchContext.mutableClassDefBy(definingClass)
 )
 
@@ -838,7 +911,7 @@ fun Method.cloneMutableAndPreserveParameters() = cloneMutableAndPreserveParamete
  *
  * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
  */
-fun Method.cloneMutableAndPreserveParameters(mutableClass : MutableClass) : MutableMethod {
+fun Method.cloneParameters(mutableClass : MutableClass) : MutableMethod {
     check (!AccessFlags.STATIC.isSet(accessFlags) || parameters.isNotEmpty()) {
         "Static methods have no parameter registers to preserve"
     }
@@ -849,7 +922,7 @@ fun Method.cloneMutableAndPreserveParameters(mutableClass : MutableClass) : Muta
 
     // Replace existing method with cloned with more registers.
     mutableClass.methods.apply {
-        remove(this@cloneMutableAndPreserveParameters)
+        remove(this@cloneParameters)
         add(clonedMethod)
     }
 
@@ -1097,7 +1170,7 @@ fun MutableMethod.returnEarly(value: Int) {
  */
 fun MutableMethod.returnEarly(value: Long) {
     check(returnType.first() == 'J') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), false)
+    overrideReturnValue("${value}L", false)
 }
 
 /**
@@ -1108,7 +1181,7 @@ fun MutableMethod.returnEarly(value: Long) {
  */
 fun MutableMethod.returnEarly(value: Float) {
     check(returnType.first() == 'F') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), false)
+    overrideReturnValue("${value}F", false)
 }
 
 /**
@@ -1222,7 +1295,7 @@ fun MutableMethod.returnLate(value: Int) {
  */
 fun MutableMethod.returnLate(value: Long) {
     check(returnType.first() == 'J') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), true)
+    overrideReturnValue("${value}L", true)
 }
 
 /**
@@ -1233,7 +1306,7 @@ fun MutableMethod.returnLate(value: Long) {
  */
 fun MutableMethod.returnLate(value: Float) {
     check(returnType.first() == 'F') { RETURN_TYPE_MISMATCH }
-    overrideReturnValue(value.toString(), true)
+    overrideReturnValue("${value}F", true)
 }
 
 /**
