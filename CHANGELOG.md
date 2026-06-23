@@ -1,3 +1,10 @@
+## [1.4.1-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.5...v1.4.1-dev.6) (2026-06-23)
+
+
+### Bug Fixes
+
+* Missing semicolon causing failing type mismatch check ([#33](https://github.com/MorpheApp/morphe-patches-library/issues/33)) ([489978d](https://github.com/MorpheApp/morphe-patches-library/commit/489978d29cbf3922e296285f06b6befa2b0e3475))
+
 ## [1.4.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.4...v1.4.1-dev.5) (2026-06-21)
 
 
