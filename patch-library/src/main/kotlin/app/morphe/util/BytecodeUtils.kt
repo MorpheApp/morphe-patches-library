@@ -1518,7 +1518,7 @@ fun MutableMethod.addInstructionsToEnd(smaliInstructions: String) =
  * None of the method code will ever execute.
  */
 fun MutableMethod.returnBoxedBooleanEarly(value: Boolean) {
-    check(returnType == "Ljava/lang/Boolean;" || returnType == "Ljava/lang/Object") {
+    check(returnType == "Ljava/lang/Boolean;" || returnType == "Ljava/lang/Object;") {
         RETURN_TYPE_MISMATCH
     }
 

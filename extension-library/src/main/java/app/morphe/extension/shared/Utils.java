@@ -1104,7 +1104,7 @@ public class Utils {
      *        when the size exceeds {@code maxSize}.
      */
     public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize) {
-        return new LinkedHashMap<>(2 * maxSize) {
+        return new LinkedHashMap<>(2 * maxSize, 0.5f) {
             @Override
             protected boolean removeEldestEntry(Entry eldest) {
                 return size() > maxSize;

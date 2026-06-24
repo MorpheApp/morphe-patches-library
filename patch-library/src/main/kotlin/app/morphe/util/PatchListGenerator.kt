@@ -1,26 +1,6 @@
 /*
  * Copyright 2025 Morphe.
- * https://github.com/MorpheApp/morphe-patches-library
- *
- * File-Specific License Notice (GPLv3 Section 7 Terms)
- *
- * This file is part of the Morphe project and is licensed under
- * the GNU General Public License version 3 (GPLv3), with the Additional
- * Terms under Section 7 described in the LICENSE file.
- *
- * https://www.gnu.org/licenses/gpl-3.0.html
- *
- * Section 7b: Notice Preservation
- * -------------------------------
- * This entire comment block must be preserved in all copies,
- * distributions, and derivative works of this file, in both
- * original and modified source forms.
- *
- * 7c. Project Name Restriction
- * ----------------------------
- * The project name "Morphe" is a protected identifier. Derivative works
- * must adopt a completely different identity that is not related to,
- * confusingly similar to, or an imitation of the name "Morphe".
+ * https://github.com/MorpheApp/morphe-patches-template
  */
 
 package app.morphe.util
@@ -80,6 +60,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
                     targets = compat.targets.map { target ->
                         JsonCompatibility.Target(
                             version = target.version,
+                            versionCodes = target.versionCodes?.mapKeys { it.key.name },
                             isExperimental = target.isExperimental,
                             minSdk = target.minSdk,
                             description = target.description,
@@ -108,7 +89,13 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
         .create()
 
     val jsonObject = JsonObject()
-    jsonObject.addProperty("version", "v$version")
+    jsonObject.addProperty(
+        "NOTE",
+        "Do NOT manually edit this file. This file is automatically updated when " +
+                "semantic release (release.yml) runs. Manually editing this file can break " +
+                "your releases and break third party tools that use this file."
+    )
+    jsonObject.addProperty("version", version)
     jsonObject.add("patches", gson.toJsonTree(patchesMap))
 
     listJson.writeText(gson.toJson(jsonObject))
@@ -155,6 +142,7 @@ private class JsonCompatibility(
 ) {
     class Target(
         val version: String?,
+        val versionCodes: Map<String, Int>?,
         val isExperimental: Boolean,
         /** Minimum device SDK version. Null means any SDK version. */
         val minSdk: Int?,
