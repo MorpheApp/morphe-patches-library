@@ -1,3 +1,15 @@
+## [1.4.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0...v1.4.1) (2026-06-24)
+
+
+### Bug Fixes
+
+* Fix dim flash when closing nested `SheetBottomDialog` ([68637ef](https://github.com/MorpheApp/morphe-patches-library/commit/68637efc3ab797482f7c7569eef80d2b36eaf59b))
+* Fix landscape width and dim in `SheetBottomDialog` ([10d40bb](https://github.com/MorpheApp/morphe-patches-library/commit/10d40bbc1595a7a7fe5f7b5c73c56d3bcfd28790))
+* Forward `cancel()` to super to enable `OnCancelListener` ([8d10b99](https://github.com/MorpheApp/morphe-patches-library/commit/8d10b991311dcdc88f8bcc239d0be9c3954e76de))
+* Include compatibility app versions ([ea02ae5](https://github.com/MorpheApp/morphe-patches-library/commit/ea02ae5b346925f2999f946381484f85ca2e9b0e))
+* Missing semicolon causing failing type mismatch check ([#33](https://github.com/MorpheApp/morphe-patches-library/issues/33)) ([489978d](https://github.com/MorpheApp/morphe-patches-library/commit/489978d29cbf3922e296285f06b6befa2b0e3475))
+* Revert to system dim to fix landscape strips ([520dbe6](https://github.com/MorpheApp/morphe-patches-library/commit/520dbe6460c73d5a909c6e04fba804721e21e322))
+
 ## [1.4.1-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1-dev.5...v1.4.1-dev.6) (2026-06-23)
 
 
