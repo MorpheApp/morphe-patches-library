@@ -128,6 +128,18 @@ public abstract class Setting<T> {
     }
 
     /**
+     * Availability based on all provided availabilities being satisfied.
+     */
+    public static Availability parentsAll(Availability... availabilities) {
+        return () -> {
+            for (Availability availability : availabilities) {
+                if (!availability.isAvailable()) return false;
+            }
+            return true;
+        };
+    }
+
+    /**
      * Callback for importing/exporting settings.
      */
     public interface ImportExportCallback {
