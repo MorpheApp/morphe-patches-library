@@ -1,3 +1,10 @@
+## [1.4.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1...v1.4.2-dev.1) (2026-06-28)
+
+
+### Bug Fixes
+
+* Ignore setting duplicate keys if the setting is not exported ([b95cabc](https://github.com/MorpheApp/morphe-patches-library/commit/b95cabc486a7fc25b2460b821b960c3cf6e2d3dd))
+
 ## [1.4.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0...v1.4.1) (2026-06-24)
 
 
