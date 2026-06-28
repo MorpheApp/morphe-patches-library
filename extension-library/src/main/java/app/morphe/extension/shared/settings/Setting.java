@@ -482,7 +482,7 @@ public abstract class Setting<T> {
             JSONObject json = new JSONObject();
             for (Setting<?> setting : allLoadedSettingsSorted()) {
                 String importExportKey = setting.getImportExportKey();
-                if (json.has(importExportKey)) {
+                if (setting.includeWithImportExport && json.has(importExportKey)) {
                     throw new IllegalArgumentException("duplicate key found: " + importExportKey);
                 }
 
