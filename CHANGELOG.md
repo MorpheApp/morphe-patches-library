@@ -1,3 +1,10 @@
+## [1.4.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.1...v1.4.2-dev.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* Add `parentsAll(Availability...)` overload to Setting ([#35](https://github.com/MorpheApp/morphe-patches-library/issues/35)) ([6e31b1c](https://github.com/MorpheApp/morphe-patches-library/commit/6e31b1c91c43eea9631e16c7046f75a0fbc3b136))
+
 ## [1.4.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1...v1.4.2-dev.1) (2026-06-28)
 
 
