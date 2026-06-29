@@ -1,3 +1,10 @@
+## [1.4.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.2...v1.4.2-dev.3) (2026-06-29)
+
+
+### Bug Fixes
+
+* Set app activity on app resume ([f17706a](https://github.com/MorpheApp/morphe-patches-library/commit/f17706a5717ee59e04820c5b0ece80e70fd88a85))
+
 ## [1.4.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.1...v1.4.2-dev.2) (2026-06-28)
 
 
