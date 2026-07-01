@@ -1,3 +1,24 @@
+## [1.4.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.2...v1.4.2-dev.3) (2026-06-29)
+
+
+### Bug Fixes
+
+* Set app activity on app resume ([f17706a](https://github.com/MorpheApp/morphe-patches-library/commit/f17706a5717ee59e04820c5b0ece80e70fd88a85))
+
+## [1.4.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.1...v1.4.2-dev.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* Add `parentsAll(Availability...)` overload to Setting ([#35](https://github.com/MorpheApp/morphe-patches-library/issues/35)) ([6e31b1c](https://github.com/MorpheApp/morphe-patches-library/commit/6e31b1c91c43eea9631e16c7046f75a0fbc3b136))
+
+## [1.4.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1...v1.4.2-dev.1) (2026-06-28)
+
+
+### Bug Fixes
+
+* Ignore setting duplicate keys if the setting is not exported ([b95cabc](https://github.com/MorpheApp/morphe-patches-library/commit/b95cabc486a7fc25b2460b821b960c3cf6e2d3dd))
+
 ## [1.4.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0...v1.4.1) (2026-06-24)
 
 
