@@ -1,3 +1,10 @@
+# [1.5.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.3...v1.5.0-dev.1) (2026-07-06)
+
+
+### Features
+
+* Add `FreeRegisterProvider.getFreeRegister4Bit()` ([a286ee9](https://github.com/MorpheApp/morphe-patches-library/commit/a286ee9c76cf2cbff84f3a64b334adf38c7f8c42))
+
 ## [1.4.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.2...v1.4.2-dev.3) (2026-06-29)
 
 
