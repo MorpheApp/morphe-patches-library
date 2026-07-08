@@ -281,7 +281,7 @@ public class CustomDialog {
         }
         if (onOkClick != null) {
             CharSequence localizedOkString = okButtonText != null ? okButtonText
-                    : ResourceUtils.getSystemStringByLocale("cancel",
+                    : ResourceUtils.getSystemStringByLocale("ok",
                     BaseSettings.MORPHE_LANGUAGE.get().getLocale());
             Button okButton = createButton(context, dialog, localizedOkString,
                     onOkClick, accentOkButton, true);
