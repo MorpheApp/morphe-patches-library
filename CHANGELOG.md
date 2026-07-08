@@ -1,3 +1,10 @@
+# [1.5.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-07-08)
+
+
+### Bug Fixes
+
+* Use localized language for dialog cancel/ok text ([f147b51](https://github.com/MorpheApp/morphe-patches-library/commit/f147b51964864655ca246ed5a2d01a51137476a6))
+
 # [1.5.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.3...v1.5.0-dev.1) (2026-07-06)
 
 
