@@ -1,3 +1,10 @@
+# [1.5.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-07-08)
+
+
+### Bug Fixes
+
+* Use correct dialog localized 'ok' string ([2c6ca20](https://github.com/MorpheApp/morphe-patches-library/commit/2c6ca20d68b0401ff709715dc91b7c296039fed3))
+
 # [1.5.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-07-08)
 
 
