@@ -215,19 +215,19 @@ public class ResourceUtils {
             return name;
         }
 
-        Context context = getActivityOrContext();
-        Configuration config = new Configuration(context.getResources().getConfiguration());
+        return getActivityOrContext().getString(identifier);
+    }
 
-        String country = locale.getCountry();
-        String language = locale.getLanguage();
-        if (Utils.isNotEmpty(language)) {
-            config.setLocale(Utils.isNotEmpty(country)
-                    ? new Locale(language, country)
-                    : new Locale(language)
-            );
+    @Nullable
+    public static String getSystemStringByLocale(String name, Locale locale) {
+        // TODO? Add getSystemStringIdentifier()?
+        final int identifier = Resources.getSystem().getIdentifier(name, "string", "android");
+        if (identifier == 0) {
+            handleException(ResourceType.STRING, name);
+            return name;
         }
 
-        return context.createConfigurationContext(config).getResources().getString(identifier);
+        return getActivityOrContext().getString(identifier);
     }
 
     public static String[] getStringArray(String name) {
