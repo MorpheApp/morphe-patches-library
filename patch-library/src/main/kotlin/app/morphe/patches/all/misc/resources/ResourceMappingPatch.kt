@@ -19,11 +19,9 @@
  * distributions, and derivative works of this file, in both
  * original and modified source forms.
  *
- * 7c. Project Name Restriction
- * ----------------------------
- * The project name "Morphe" is a protected identifier. Derivative works
- * must adopt a completely different identity that is not related to,
- * confusingly similar to, or an imitation of the name "Morphe".
+ * Portions of this software are provided "AS IS" by the Morphe software project.
+ * Any express or implied warranties, including the implied warranties of
+ * merchantability and fitness for a particular purpose, are disclaimed.
  */
 
 package app.morphe.patches.all.misc.resources

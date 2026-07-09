@@ -1,24 +1,24 @@
 Morphe NOTICE
 
-https://morphe.software
+https://github.com/MorpheApp/morphe-patches-library
 
 =============
 
-7c. Project Name Restriction
-----------------------------
+Portions of this software are provided "AS IS" by the Morphe software project.
+Any express or implied warranties, including the implied warranties of
+merchantability and fitness for a particular purpose, are disclaimed.
 
-This license does not grant permission to use the name "Morphe", or any
-name, logo, or branding that is confusingly similar, as the name or
-primary identifying mark of any modified version, fork, or derivative work.
 
-Any redistribution or derivative work must adopt a distinct name and
-branding that clearly differentiates it from the Morphe project and does
-not cause confusion as to source or origin.
+GPLv3 Section 7c: Prohibiting Misrepresentation of Origin
 
-References to Morphe are permitted solely for descriptive compatibility
-purposes (e.g., "compatible with Morphe" or "XYZ patches for use with Morphe"),
-provided that such references:
+You are prohibited from misrepresenting the origin of the Program,
+and modified versions of the Program must be identified and marked in
+reasonable ways as different from the original version so as not to cause
+confusion regarding their origin.
 
-- Are accurate, factual, and non-misleading;
-- Do not suggest authorship by the Morphe project; and
-- Appear only in a secondary or descriptive context, not as part of the product or project name.
+
+GPLv3 Section 7e: Declining Grant of Trademark Rights
+
+This License does not grant any rights or permission under trademark law
+to use the name "Morphe" or any of the Program's trade names, trademarks,
+service marks, or logos.
