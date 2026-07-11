@@ -1,3 +1,45 @@
+# [1.5.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0-dev.2...v1.5.0-dev.3) (2026-07-08)
+
+
+### Bug Fixes
+
+* Use correct dialog localized 'ok' string ([2c6ca20](https://github.com/MorpheApp/morphe-patches-library/commit/2c6ca20d68b0401ff709715dc91b7c296039fed3))
+
+# [1.5.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0-dev.1...v1.5.0-dev.2) (2026-07-08)
+
+
+### Bug Fixes
+
+* Use localized language for dialog cancel/ok text ([f147b51](https://github.com/MorpheApp/morphe-patches-library/commit/f147b51964864655ca246ed5a2d01a51137476a6))
+
+# [1.5.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.3...v1.5.0-dev.1) (2026-07-06)
+
+
+### Features
+
+* Add `FreeRegisterProvider.getFreeRegister4Bit()` ([a286ee9](https://github.com/MorpheApp/morphe-patches-library/commit/a286ee9c76cf2cbff84f3a64b334adf38c7f8c42))
+
+## [1.4.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.2...v1.4.2-dev.3) (2026-06-29)
+
+
+### Bug Fixes
+
+* Set app activity on app resume ([f17706a](https://github.com/MorpheApp/morphe-patches-library/commit/f17706a5717ee59e04820c5b0ece80e70fd88a85))
+
+## [1.4.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.2-dev.1...v1.4.2-dev.2) (2026-06-28)
+
+
+### Bug Fixes
+
+* Add `parentsAll(Availability...)` overload to Setting ([#35](https://github.com/MorpheApp/morphe-patches-library/issues/35)) ([6e31b1c](https://github.com/MorpheApp/morphe-patches-library/commit/6e31b1c91c43eea9631e16c7046f75a0fbc3b136))
+
+## [1.4.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1...v1.4.2-dev.1) (2026-06-28)
+
+
+### Bug Fixes
+
+* Ignore setting duplicate keys if the setting is not exported ([b95cabc](https://github.com/MorpheApp/morphe-patches-library/commit/b95cabc486a7fc25b2460b821b960c3cf6e2d3dd))
+
 ## [1.4.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.0...v1.4.1) (2026-06-24)
 
 

@@ -40,7 +40,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.ResourceUtils;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.BaseSettings;
 
 /**
  * A utility class for creating a customizable dialog with a title, message or EditText, and up to three buttons (OK, Cancel, Neutral).
@@ -270,13 +272,18 @@ public class CustomDialog {
             buttonWidths.add(measureButtonWidth(neutralButton));
         }
         if (onCancelClick != null) {
-            Button cancelButton = createButton(context, dialog, context.getString(android.R.string.cancel), onCancelClick, false, true);
+            String localizedCancelString = ResourceUtils.getSystemStringByLocale("cancel",
+                    BaseSettings.MORPHE_LANGUAGE.get().getLocale());
+            Button cancelButton = createButton(context, dialog, localizedCancelString,
+                    onCancelClick, false, true);
             buttons.add(cancelButton);
             buttonWidths.add(measureButtonWidth(cancelButton));
         }
         if (onOkClick != null) {
-            Button okButton = createButton(context, dialog,
-                    okButtonText != null ? okButtonText : context.getString(android.R.string.ok),
+            CharSequence localizedOkString = okButtonText != null ? okButtonText
+                    : ResourceUtils.getSystemStringByLocale("ok",
+                    BaseSettings.MORPHE_LANGUAGE.get().getLocale());
+            Button okButton = createButton(context, dialog, localizedOkString,
                     onOkClick, accentOkButton, true);
             buttons.add(okButton);
             buttonWidths.add(measureButtonWidth(okButton));

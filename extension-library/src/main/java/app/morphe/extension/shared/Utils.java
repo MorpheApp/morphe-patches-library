@@ -427,9 +427,9 @@ public class Utils {
         return activityRef.get();
     }
 
-    public static void setActivity(Activity mainActivity) {
-        Logger.printInfo(() -> "Set activity: " + mainActivity);
-        activityRef = new WeakReference<>(mainActivity);
+    public static void setActivity(Activity appActivity) {
+        Logger.printInfo(() -> "Set activity: " + appActivity);
+        activityRef = new WeakReference<>(appActivity);
     }
 
     public static Context getContext() {
@@ -446,8 +446,7 @@ public class Utils {
         // Must initially set context to check the app language.
         context = appContext;
 
-        // Set activity if not already set.
-        if (appContext instanceof Activity activity && getActivity() == null) {
+        if (appContext instanceof Activity activity) {
             setActivity(activity);
         }
 

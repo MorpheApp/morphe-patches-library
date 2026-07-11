@@ -128,6 +128,18 @@ public abstract class Setting<T> {
     }
 
     /**
+     * Availability based on all provided availabilities being satisfied.
+     */
+    public static Availability parentsAll(Availability... availabilities) {
+        return () -> {
+            for (Availability availability : availabilities) {
+                if (!availability.isAvailable()) return false;
+            }
+            return true;
+        };
+    }
+
+    /**
      * Callback for importing/exporting settings.
      */
     public interface ImportExportCallback {
@@ -482,7 +494,7 @@ public abstract class Setting<T> {
             JSONObject json = new JSONObject();
             for (Setting<?> setting : allLoadedSettingsSorted()) {
                 String importExportKey = setting.getImportExportKey();
-                if (json.has(importExportKey)) {
+                if (setting.includeWithImportExport && json.has(importExportKey)) {
                     throw new IllegalArgumentException("duplicate key found: " + importExportKey);
                 }
 
