@@ -134,6 +134,7 @@ class ResourceLiteralFilter(
  *   with [app.morphe.patcher.anyInstruction] where one of the resource filters
  *   may not exist in all app versions.
  */
+@Suppress("unused")
 fun resourceLiteral(
     type: ResourceType,
     name: String,

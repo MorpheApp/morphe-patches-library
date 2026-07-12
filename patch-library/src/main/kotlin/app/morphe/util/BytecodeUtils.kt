@@ -24,7 +24,7 @@
  * merchantability and fitness for a particular purpose, are disclaimed.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "SpellCheckingInspection")
 
 package app.morphe.util
 
@@ -46,6 +46,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMuta
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.all.misc.resources.ResourceType
 import app.morphe.patches.all.misc.resources.getResourceId
+import app.morphe.patches.all.misc.resources.resourceMappingPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT
@@ -195,10 +196,10 @@ fun InstructionFilter.matchAllMethodIndicesForEach(
 )
 
 /**
- * Verify exactly one match exists. This is the equivalent of calling [Fingerprint.matchAll]
+ * Verify exactly one match exists. This is the equivalent of calling [matchAll]
  * with a range of `1 .. 1`. This can be useful for fragile fingerprints that may match
  * unrelated methods. This is an exhaustive search and will always be slower than the first match
- * that [Fingerprint.match] provides.
+ * that [match] provides.
  *
  * An exception is thrown if no matches exist or more than 1 match exists.
  */
@@ -210,8 +211,8 @@ fun Fingerprint.matchSingle() = matchAll(1 .. 1).first()
  * Iterate across all method indexes that match an [Fingerprint].
  * At this time, only a single [InstructionFilter] is supported.
  *
- * This differs from using [Fingerprint.matchAll] as this matches multiple instruction
- * indexes in the same method and [Fingerprint.matchAll] matches only the first index
+ * This differs from using [matchAll] as this matches multiple instruction
+ * indexes in the same method and [matchAll] matches only the first index
  * of each method.
  *
  * @param requireMatches If true and no matches exist, an exception is thrown.
@@ -357,7 +358,7 @@ fun Method.indexOfFirstResourceId(resourceName: String): Int {
 /**
  * Get the index of the first instruction with the id of the given resource name or throw a [PatchException].
  *
- * Requires [app.morphe.patches.all.misc.resources.resourceMappingPatch] as a dependency.
+ * Requires [resourceMappingPatch] as a dependency.
  *
  * @throws [PatchException] if the resource is not found, or the method does not contain the resource id literal value.
  * @see [indexOfFirstResourceId], [indexOfFirstLiteralInstructionReversedOrThrow]
@@ -598,6 +599,27 @@ fun Method.indexOfFirstInstruction(startIndex: Int = 0, filter: Instruction.() -
 }
 
 /**
+ * Get the index of the first instruction that matches the [InstructionFilter], starting from [startIndex].
+ */
+fun Method.indexOfFirstInstruction(startIndex: Int = 0, filter: InstructionFilter): Int {
+    val method = this
+    return indexOfFirstInstruction(startIndex) {
+        filter.matches(method, this)
+    }
+}
+
+/**
+ * Get the index of the first instruction that matches the [InstructionFilter], starting from [startIndex].
+ * @throws PatchException if no instruction is found.
+ */
+fun Method.indexOfFirstInstructionOrThrow(startIndex: Int = 0, filter: InstructionFilter): Int {
+    val method = this
+    return indexOfFirstInstructionOrThrow(startIndex) {
+        filter.matches(method, this)
+    }
+}
+
+/**
  * @return The index of the first opcode specified
  * @throws PatchException
  * @see indexOfFirstInstruction
@@ -799,21 +821,36 @@ fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor
 }
 
 fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescriptor: String) {
-    // TODO: make this work with objects and wide primitive values.
-    val index = indexOfFirstInstructionOrThrow(literalIndex, MOVE_RESULT)
-    val register = getInstruction<OneRegisterInstruction>(index).registerA
+    val index = indexOfFirstInstructionOrThrow(literalIndex) {
+        opcode == MOVE_RESULT || opcode == MOVE_RESULT_WIDE || opcode == MOVE_RESULT_OBJECT
+    }
 
-    val operation = if (register < 16) {
-        "invoke-static { v$register }"
+    val instruction = getInstruction<OneRegisterInstruction>(index)
+    val register = instruction.registerA
+
+    val isWide = instruction.opcode == MOVE_RESULT_WIDE
+    val moveResultString = when (instruction.opcode) {
+        MOVE_RESULT_WIDE -> "move-result-wide"
+        MOVE_RESULT_OBJECT -> "move-result-object"
+        else -> "move-result"
+    }
+
+    val endRegister = if (isWide) register + 1 else register
+    val operation = if (endRegister < 16) {
+        if (isWide) {
+            "invoke-static { v$register, v$endRegister }"
+        } else {
+            "invoke-static { v$register }"
+        }
     } else {
-        "invoke-static/range { v$register .. v$register }"
+        "invoke-static/range { v$register .. v$endRegister }"
     }
 
     addInstructions(
         index + 1,
         """
             $operation, $extensionMethodDescriptor
-            move-result v$register
+            $moveResultString v$register
         """
     )
 }
@@ -1494,7 +1531,7 @@ fun MutableClass.fieldByName(name: String): MutableField {
 /**
  * Get the public toString() method.
  */
-fun ClassDef.toStringMethod() =
+fun ClassDef.toStringMethod(): Method? =
     this.methods.first {
         it.name == "toString" && AccessFlags.PUBLIC.isSet(it.accessFlags) && it.parameters.isEmpty()
     }

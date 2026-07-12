@@ -57,7 +57,7 @@ import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.StringSetting;
 import app.morphe.extension.shared.ui.Dim;
 
-@SuppressWarnings("NewApi")
+@SuppressWarnings({"NewApi", "unused"})
 public class Utils {
     private static WeakReference<Activity> activityRef = new WeakReference<>(null);
 

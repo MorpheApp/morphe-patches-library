@@ -24,6 +24,8 @@
  * merchantability and fitness for a particular purpose, are disclaimed.
  */
 
+@file:Suppress("unused")
+
 package app.morphe.patches.all.misc.extension
 
 import app.morphe.patcher.Fingerprint

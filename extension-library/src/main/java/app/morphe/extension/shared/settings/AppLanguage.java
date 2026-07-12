@@ -2,6 +2,7 @@ package app.morphe.extension.shared.settings;
 
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public enum AppLanguage {
     /**
      * The current app language.

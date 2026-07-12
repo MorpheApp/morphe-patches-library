@@ -3,6 +3,7 @@ package app.morphe.extension.shared;
 /**
  * Text pattern searching using a prefix tree (trie).
  */
+@SuppressWarnings("unused")
 public final class StringTrieSearch extends TrieSearch<String> {
 
     private static final class StringTrieNode extends TrieNode<String> {

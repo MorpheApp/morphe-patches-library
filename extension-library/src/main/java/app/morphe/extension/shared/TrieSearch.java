@@ -11,6 +11,7 @@ import java.util.Objects;
  * Searches for a group of different patterns using a trie (prefix tree).
  * Can significantly speed up searching for multiple patterns.
  */
+@SuppressWarnings("unused")
 public abstract class TrieSearch<T> {
 
     public interface TriePatternMatchedCallback<T> {
@@ -28,45 +29,35 @@ public abstract class TrieSearch<T> {
     }
 
     /**
-     * Represents a compressed tree path for a single pattern that shares no sibling nodes.
-     *
-     * For example, if a tree contains the patterns: "foobar", "football", "feet",
-     * it would contain 3 compressed paths of: "bar", "tball", "eet".
-     *
-     * And the tree would contain children arrays only for the first level containing 'f',
-     * the second level containing 'o',
-     * and the third level containing 'o'.
-     *
-     * This is done to reduce memory usage, which can be substantial if many long patterns are used.
-     */
-    private static final class TrieCompressedPath<T> {
-        final T pattern;
-        final int patternStartIndex;
-        final int patternLength;
-        final TriePatternMatchedCallback<T> callback;
-
-        TrieCompressedPath(T pattern, int patternStartIndex, int patternLength, TriePatternMatchedCallback<T> callback) {
-            this.pattern = pattern;
-            this.patternStartIndex = patternStartIndex;
-            this.patternLength = patternLength;
-            this.callback = callback;
-        }
+         * Represents a compressed tree path for a single pattern that shares no sibling nodes.
+         * <p>
+         * For example, if a tree contains the patterns: "foobar", "football", "feet",
+         * it would contain 3 compressed paths of: "bar", "tball", "eet".
+         * <p>
+         * And the tree would contain children arrays only for the first level containing 'f',
+         * the second level containing 'o',
+         * and the third level containing 'o'.
+         * <p>
+         * This is done to reduce memory usage, which can be substantial if many long patterns are used.
+         */
+        private record TrieCompressedPath<T>(T pattern, int patternStartIndex, int patternLength,
+                                             TriePatternMatchedCallback<T> callback) {
         boolean matches(TrieNode<T> enclosingNode, // Used only for the get character method.
-                        T searchText, int searchTextLength, int searchTextIndex, Object callbackParameter) {
-            if (searchTextLength - searchTextIndex < patternLength - patternStartIndex) {
-                return false; // Remaining search text is shorter than the remaining leaf pattern and they cannot match.
-            }
-
-            for (int i = searchTextIndex, j = patternStartIndex; j < patternLength; i++, j++) {
-                if (enclosingNode.getCharValue(searchText, i) != enclosingNode.getCharValue(pattern, j)) {
-                    return false;
+                            T searchText, int searchTextLength, int searchTextIndex, Object callbackParameter) {
+                if (searchTextLength - searchTextIndex < patternLength - patternStartIndex) {
+                    return false; // Remaining search text is shorter than the remaining leaf pattern and they cannot match.
                 }
-            }
 
-            return callback == null || callback.patternMatched(searchText,
-                    searchTextIndex - patternStartIndex, patternLength, callbackParameter);
+                for (int i = searchTextIndex, j = patternStartIndex; j < patternLength; i++, j++) {
+                    if (enclosingNode.getCharValue(searchText, i) != enclosingNode.getCharValue(pattern, j)) {
+                        return false;
+                    }
+                }
+
+                return callback == null || callback.patternMatched(searchText,
+                        searchTextIndex - patternStartIndex, patternLength, callbackParameter);
+            }
         }
-    }
 
     static abstract class TrieNode<T> {
         /**
@@ -87,7 +78,7 @@ public abstract class TrieSearch<T> {
 
         /**
          * A compressed graph path that represents the remaining pattern characters of a single child node.
-         *
+         * <p>
          * If present then child array is always null, although callbacks for other
          * end of patterns can also exist on this same node.
          */
@@ -96,16 +87,16 @@ public abstract class TrieSearch<T> {
 
         /**
          * All child nodes. Only present if no compressed leaf exist.
-         *
+         * <p>
          * Array is dynamically increased in size as needed,
          * and uses perfect hashing for the elements it contains.
-         *
+         * <p>
          * So if the array contains a given character,
          * the character will always map to the node with index: (character % arraySize).
-         *
+         * <p>
          * Elements not contained can collide with elements the array does contain,
          * so must compare the nodes character value.
-         *
+         * <p>
          /*
          * Alternatively, this could be implemented as a sorted, densely packed array
          * with lookups performed via binary search.
