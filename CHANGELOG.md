@@ -1,3 +1,10 @@
+## [1.5.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0...v1.5.1-dev.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* Handle null value for `returnEarly / returnLate` for String return types ([f79d315](https://github.com/MorpheApp/morphe-patches-library/commit/f79d315bb2b96f50ab4a54a9a3e35253d43d8d0c))
+
 # [1.5.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.4.1...v1.5.0) (2026-07-11)
 
 
