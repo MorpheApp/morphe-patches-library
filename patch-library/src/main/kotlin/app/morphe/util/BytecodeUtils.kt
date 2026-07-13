@@ -598,6 +598,26 @@ fun Method.indexOfFirstInstruction(startIndex: Int = 0, filter: Instruction.() -
 }
 
 /**
+ * Get the index of matching instruction.
+ *
+ * @return -1 if the instruction is not found.
+ * @see indexOfFirstInstructionOrThrow
+ */
+fun Method.indexOfFirstInstruction(filter: InstructionFilter): Int = indexOfFirstInstruction(0, filter)
+
+/**
+ * Get the index of matching instruction, starting from [startIndex].
+ *
+ * @param startIndex Optional starting index to search from.
+ * @return -1 if the instruction is not found.
+ * @see indexOfFirstInstructionOrThrow
+ */
+fun Method.indexOfFirstInstruction(startIndex: Int = 0, filter: InstructionFilter): Int {
+    val method = this
+    return indexOfFirstInstruction(startIndex) { filter.matches(method, this) }
+}
+
+/**
  * @return The index of the first opcode specified
  * @throws PatchException
  * @see indexOfFirstInstruction
@@ -628,6 +648,27 @@ fun Method.indexOfFirstInstructionOrThrow(startIndex: Int = 0, filter: Instructi
     }
 
     return index
+}
+
+/**
+ * Get the index of matching instruction.
+ *
+ * @return The index of the instruction.
+ * @throws PatchException
+ * @see indexOfFirstInstruction
+ */
+fun Method.indexOfFirstInstructionOrThrow(filter: InstructionFilter): Int = indexOfFirstInstructionOrThrow(0, filter)
+
+/**
+ * Get the index of matching instruction, starting from [startIndex].
+ *
+ * @return The index of the instruction.
+ * @throws PatchException
+ * @see indexOfFirstInstruction
+ */
+fun Method.indexOfFirstInstructionOrThrow(startIndex: Int = 0, filter: InstructionFilter): Int {
+    val method = this
+    return indexOfFirstInstructionOrThrow(startIndex) { filter.matches(method, this) }
 }
 
 fun Method.indexOfFirstStringInstruction(str: String) =
@@ -679,6 +720,28 @@ fun Method.indexOfFirstInstructionReversed(startIndex: Int? = null, filter: Inst
  * starting from the end of the method and searching down.
  *
  * @return -1 if the instruction is not found.
+ * @see indexOfFirstInstructionReversedOrThrow
+ */
+fun Method.indexOfFirstInstructionReversed(filter: InstructionFilter): Int = indexOfFirstInstructionReversed(null, filter)
+
+/**
+ * Get the index of matching instruction,
+ * starting from and [startIndex] and searching down.
+ *
+ * @param startIndex Optional starting index to search down from. Searching includes the start index.
+ * @return -1 if the instruction is not found.
+ * @see indexOfFirstInstructionReversedOrThrow
+ */
+fun Method.indexOfFirstInstructionReversed(startIndex: Int? = null, filter: InstructionFilter): Int {
+    val method = this
+    return indexOfFirstInstructionReversed(startIndex) { filter.matches(method, this) }
+}
+
+/**
+ * Get the index of matching instruction,
+ * starting from the end of the method and searching down.
+ *
+ * @return -1 if the instruction is not found.
  */
 fun Method.indexOfFirstInstructionReversed(targetOpcode: Opcode): Int = indexOfFirstInstructionReversed {
     opcode == targetOpcode
@@ -723,6 +786,31 @@ fun Method.indexOfFirstInstructionReversedOrThrow(startIndex: Int? = null, filte
     }
 
     return index
+}
+
+/**
+ * Get the index of matching instruction,
+ * starting from the end of the method and searching down.
+ *
+ * @return The index of the instruction.
+ * @throws PatchException
+ * @see indexOfFirstInstructionReversed
+ */
+fun Method.indexOfFirstInstructionReversedOrThrow(filter: InstructionFilter): Int = indexOfFirstInstructionReversedOrThrow(null, filter)
+
+/**
+ * Get the index of matching instruction,
+ * starting from [startIndex] and searching down.
+ *
+ * @param startIndex Optional starting index to search down from. Searching includes the start index.
+ * @return The index of the instruction.
+ * @see indexOfFirstInstructionReversed
+ */
+fun Method.indexOfFirstInstructionReversedOrThrow(startIndex: Int? = null, filter: InstructionFilter): Int {
+    val method = this
+    return indexOfFirstInstructionReversedOrThrow(startIndex) {
+        filter.matches(method, this)
+    }
 }
 
 /**
