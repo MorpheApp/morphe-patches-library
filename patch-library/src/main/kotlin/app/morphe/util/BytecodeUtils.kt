@@ -1189,7 +1189,7 @@ fun MutableMethod.returnEarly(value: Float) {
  * @see returnLate
  */
 fun MutableMethod.returnEarly(value: Double) {
-    check(returnType.first() == 'J') { RETURN_TYPE_MISMATCH }
+    check(returnType.first() == 'D') { RETURN_TYPE_MISMATCH }
     overrideReturnValue(value.toString(), false)
 }
 
@@ -1218,10 +1218,10 @@ fun MutableMethod.returnEarly(value: String) {
  */
 fun MutableMethod.returnEarly(value: Void?) {
     val returnType = returnType.first()
-    check(returnType == 'L' || returnType != '[') {
+    check(returnType == 'L' || returnType == '[') {
         RETURN_TYPE_MISMATCH
     }
-    overrideReturnValue(false.toHexString(), false)
+    overrideReturnValue(null, false)
 }
 
 /**
@@ -1347,11 +1347,11 @@ fun MutableMethod.returnLate(value: Void?) {
         RETURN_TYPE_MISMATCH
     }
 
-    overrideReturnValue(false.toHexString(), true)
+    overrideReturnValue(null, true)
 }
 
-private fun MutableMethod.overrideReturnValue(value: String, returnLate: Boolean) {
-    val instructions = if (returnType == "Ljava/lang/String;" || returnType == "Ljava/lang/CharSequence;" ) {
+private fun MutableMethod.overrideReturnValue(value: String?, returnLate: Boolean) {
+    val instructions = if (value != null && (returnType == "Ljava/lang/String;" || returnType == "Ljava/lang/CharSequence;")) {
         """
             const-string v0, "$value"
             return-object v0
