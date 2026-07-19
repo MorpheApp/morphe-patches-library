@@ -27,6 +27,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
  *
  * @param installerPackageName Installer package name to use. Defaults to the Google Play Store.
  */
+@Suppress("unused")
 fun changePackageInstallerPatch(installerPackageName : String = "com.android.vending") = bytecodePatch {
     execute {
         arrayOf(

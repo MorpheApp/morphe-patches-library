@@ -2,6 +2,7 @@ package app.morphe.extension.shared;
 
 import java.nio.charset.StandardCharsets;
 
+@SuppressWarnings("unused")
 public final class ByteTrieSearch extends TrieSearch<byte[]> {
 
     private static final class ByteTrieNode extends TrieNode<byte[]> {

@@ -11,10 +11,8 @@ import androidx.annotation.Nullable;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Objects;
-import java.util.SequencedCollection;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,10 +21,11 @@ import app.morphe.extension.shared.settings.BaseSettings;
 /**
  * Morphe specific logger. Logging is done to standard device log (accessible through ADB),
  * and additionally accessible through {@link #getLogBuffer()}.
- *
+ * <p>
  * All methods are thread safe, and are safe to call even
  * if {@link Utils#getContext()} is not available.
  */
+@SuppressWarnings("unused")
 public class Logger {
 
     /** Maximum byte size of all buffer entries. Must be less than Android's 1 MB Binder transaction limit. */

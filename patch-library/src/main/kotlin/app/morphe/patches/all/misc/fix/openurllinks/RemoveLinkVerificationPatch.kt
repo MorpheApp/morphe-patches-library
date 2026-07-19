@@ -8,6 +8,7 @@ import org.w3c.dom.Element
  * Removes `autoVerify` from all intents. This fixes 'open link with' that are impossible
  * to manually enable on some devices.
  */
+@Suppress("unused")
 val removeLinkVerification = resourcePatch {
     execute {
         document("AndroidManifest.xml").use { document ->

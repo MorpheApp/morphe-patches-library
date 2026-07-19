@@ -1,3 +1,5 @@
+@file: Suppress("DEPRECATION")
+
 package app.morphe.patches.all.misc.transformation
 
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
@@ -34,6 +36,7 @@ interface IMethodCall {
      *
      * replacement method: Extension#setFlags(Window, int, int)
      */
+    @Suppress("unused")
     fun replaceInvokeVirtualWithExtension(
         definingClassDescriptor: String,
         method: MutableMethod,
@@ -66,6 +69,7 @@ inline fun <reified E> fromMethodReference(
             search.methodReturnType == methodReference.returnType
 }
 
+@Suppress("unused", "TYPEALIAS_EXPANSION_DEPRECATION")
 @Deprecated(
     "This code may be deleted in the future. Instead use Fingerprint.matchAll() " +
             "or classDefForEach {} with findInstructionIndicesReversedOrThrow()"

@@ -175,6 +175,7 @@ fun String.copyXmlNode(
     }
 }
 
+@Suppress("HasPlatformType")
 fun Document.getNode(tagName: String) = getElementsByTagName(tagName).item(0)
 
 fun Node.adoptChild(tagName: String, block: Element.() -> Unit) {
