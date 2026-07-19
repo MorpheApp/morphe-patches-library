@@ -1,3 +1,10 @@
+## [1.5.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.1...v1.5.2-dev.1) (2026-07-19)
+
+
+### Performance Improvements
+
+* Prevent OOM crashes by streaming file I/O  and cleanup ([#38](https://github.com/MorpheApp/morphe-patches-library/issues/38)) ([de1a0a7](https://github.com/MorpheApp/morphe-patches-library/commit/de1a0a741e1c64cebb30f0e017f4b77d24321421))
+
 ## [1.5.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0...v1.5.1) (2026-07-14)
 
 
