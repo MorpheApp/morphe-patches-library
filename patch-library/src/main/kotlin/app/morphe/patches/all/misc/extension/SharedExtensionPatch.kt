@@ -40,6 +40,16 @@ import java.util.jar.JarFile
 const val SHARED_UTILS_EXTENSION_CLASS = "Lapp/morphe/extension/shared/Utils;"
 
 /**
+ * A patch to extend with the "shared" extension.
+ *
+ * @param hooks The hooks to get the application context for use in the extension,
+ * commonly for the onCreate method of exported activities.
+ */
+fun sharedExtensionPatch(
+    vararg hooks: ExtensionHook,
+) = sharedExtensionPatch(emptyList(), *hooks)
+
+/**
  * A patch to extend with an extension shared with multiple patches.
  *
  * @param extensionName The name of the extension to extend with.
@@ -58,32 +68,23 @@ fun sharedExtensionPatch(
 fun sharedExtensionPatch(
     extensionNames: List<String>,
     vararg hooks: ExtensionHook,
-) = bytecodePatch(
-    default = false
-) {
-    dependsOn(
-        sharedExtensionPatch(*hooks),
-        *extensionNames.filter { it != "shared" }.map { sharedExtensionPatch(it, emptyList()) }.toTypedArray(),
-    )
-}
+) = createSharedExtensionPatch(
+    listOf(
+        "shared",
+        *extensionNames.toTypedArray()
+    ),
+    hooks.toList()
+)
 
-/**
- * A patch to extend with the "shared" extension.
- *
- * @param hooks The hooks to get the application context for use in the extension,
- * commonly for the onCreate method of exported activities.
- */
-fun sharedExtensionPatch(
-    vararg hooks: ExtensionHook,
-) = sharedExtensionPatch("shared", hooks.toList())
-
-private fun sharedExtensionPatch(
-    extensionName: String,
+private fun createSharedExtensionPatch(
+    extensionName: List<String>,
     hooks: List<ExtensionHook>,
 ) = bytecodePatch(
     default = false
 ) {
-    extendWith("extensions/$extensionName.mpe")
+    for (name in extensionName) {
+        extendWith("extensions/$name.mpe")
+    }
 
     execute {
         // Verify the extension class exists.
