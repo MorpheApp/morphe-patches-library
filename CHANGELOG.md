@@ -1,3 +1,10 @@
+## [1.5.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.1...v1.5.2-dev.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* Load all extension bundles in one bytecode patch ([10c8351](https://github.com/MorpheApp/morphe-patches-library/commit/10c8351410771b0e3bffcefe1662dde87d7961a9))
+
 ## [1.5.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.1...v1.5.2-dev.1) (2026-07-19)
 
 
