@@ -1,3 +1,10 @@
+## [1.5.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.2...v1.5.2-dev.3) (2026-07-24)
+
+
+### Bug Fixes
+
+* Check for older patcher version in shared extension patch ([7f11841](https://github.com/MorpheApp/morphe-patches-library/commit/7f1184104f4fabc6a04c1a51326ffdf41e40b543))
+
 ## [1.5.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.1...v1.5.2-dev.2) (2026-07-23)
 
 
