@@ -35,7 +35,9 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.iface.Method
 import java.net.URLDecoder
+import java.util.function.Supplier
 import java.util.jar.JarFile
+import java.util.logging.Logger
 
 const val SHARED_UTILS_EXTENSION_CLASS = "Lapp/morphe/extension/shared/Utils;"
 
@@ -76,14 +78,26 @@ fun sharedExtensionPatch(
     hooks.toList()
 )
 
+@Suppress("CheckResult")
 private fun createSharedExtensionPatch(
     extensionName: List<String>,
     hooks: List<ExtensionHook>,
 ) = bytecodePatch(
     default = false
 ) {
-    for (name in extensionName) {
-        extendWith("extensions/$name.mpe")
+    // Check if patcher supports loading multiple extension input streams and warn if not.
+    val supportsMultiDex = runCatching {
+        javaClass.getDeclaredMethod("extendWith", Supplier::class.java)
+    }.isSuccess
+
+    if (supportsMultiDex) {
+        for (name in extensionName) {
+            extendWith("extensions/$name.mpe")
+        }
+    } else {
+        for (name in extensionName.toMutableSet().also { it.add("shared") }) {
+            dependsOn(bytecodePatch { extendWith("extensions/$name.mpe") })
+        }
     }
 
     execute {
