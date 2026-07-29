@@ -1,3 +1,10 @@
+## [1.5.2-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.4...v1.5.2-dev.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* **Change package installer:** Use a lambda for installer package name ([4c25c6e](https://github.com/MorpheApp/morphe-patches-library/commit/4c25c6e6ac1e3c2942cf255286a8c9b390237d02))
+
 ## [1.5.2-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.3...v1.5.2-dev.4) (2026-07-29)
 
 
