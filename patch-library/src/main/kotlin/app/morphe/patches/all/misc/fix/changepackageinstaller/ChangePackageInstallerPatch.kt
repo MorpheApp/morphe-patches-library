@@ -16,13 +16,18 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 /**
+ * App store source.
+ */
+private const val PACKAGE_INSTALLER_PACKAGE_SOURCE_STORE = 2
+
+/**
  * Spoofs the installer source for all methods/field usage of:
  *
  * ```
  *  Landroid/content/pm/PackageManager;->getInstallerPackageName(Ljava/lang/String;)Ljava/lang/String;
  *  Landroid/content/pm/InstallSourceInfo;->getInstallingPackageName()Ljava/lang/String;
- *  Landroid/content/pm/InstallSourceInfo;->getOriginatingPackageName()Ljava/lang/String;
  *  Landroid/content/pm/InstallSourceInfo;->getInitiatingPackageName()Ljava/lang/String;
+ *  Landroid/content/pm/InstallSourceInfo;->getPackageSource()I
  * ```
  *
  * @param installerPackageName Installer package name to use. Defaults to the Google Play Store.
@@ -33,20 +38,34 @@ fun changePackageInstallerPatch(installerPackageName : String = "com.android.ven
         arrayOf(
             "Landroid/content/pm/PackageManager;->getInstallerPackageName(Ljava/lang/String;)Ljava/lang/String;",
             "Landroid/content/pm/InstallSourceInfo;->getInstallingPackageName()Ljava/lang/String;",
-            "Landroid/content/pm/InstallSourceInfo;->getOriginatingPackageName()Ljava/lang/String;",
-            "Landroid/content/pm/InstallSourceInfo;->getInitiatingPackageName()Ljava/lang/String;"
+            "Landroid/content/pm/InstallSourceInfo;->getInitiatingPackageName()Ljava/lang/String;",
+            "Landroid/content/pm/InstallSourceInfo;->getPackageSource()I"
         ).forEach { smali ->
-            methodCall(smali).matchAllMethodIndicesForEach(requireMatches = false) { index ->
+            val methodCall = methodCall(smali)
+            val isIntReturnType = methodCall.returnType == "I"
+            val expectedReturnOpcode = if (isIntReturnType) {
+                Opcode.MOVE_RESULT
+            } else {
+                Opcode.MOVE_RESULT_OBJECT
+            }
+
+            methodCall.matchAllMethodIndicesForEach(requireMatches = false) { index ->
                 val returnIndex = index + 1
                 val instruction = getInstruction(returnIndex)
-                if (instruction.opcode != Opcode.MOVE_RESULT_OBJECT) {
+
+                if (instruction.opcode != expectedReturnOpcode) {
                     return@matchAllMethodIndicesForEach
                 }
 
                 val register = (instruction as OneRegisterInstruction).registerA
+                val smaliInstruction = if (isIntReturnType) {
+                    "const/4 v$register, $PACKAGE_INSTALLER_PACKAGE_SOURCE_STORE"
+                } else {
+                    "const-string v$register, \"$installerPackageName\""
+                }
                 replaceInstruction(
                     returnIndex,
-                    "const-string v$register, \"$installerPackageName\""
+                    smaliInstruction
                 )
             }
         }
