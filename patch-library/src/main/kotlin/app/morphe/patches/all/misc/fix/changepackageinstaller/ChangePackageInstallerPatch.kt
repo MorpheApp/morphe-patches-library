@@ -14,6 +14,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.matchAllMethodIndicesForEach
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import java.util.logging.Logger
 
 /**
  * App store source.
@@ -30,11 +31,16 @@ private const val PACKAGE_INSTALLER_PACKAGE_SOURCE_STORE = 2
  *  Landroid/content/pm/InstallSourceInfo;->getPackageSource()I
  * ```
  *
- * @param installerPackageName Installer package name to use. Defaults to the Google Play Store.
+ * @param installerPackageNameProvider Installer package name to use. Defaults to the Google Play Store.
  */
 @Suppress("unused")
-fun changePackageInstallerPatch(installerPackageName : String = "com.android.vending") = bytecodePatch {
+fun changePackageInstallerPatch(
+    installerPackageNameProvider: () -> String = { "com.android.vending" }
+) = bytecodePatch {
     execute {
+        var changesMade = false
+        val installerPackageName = installerPackageNameProvider()
+
         arrayOf(
             "Landroid/content/pm/PackageManager;->getInstallerPackageName(Ljava/lang/String;)Ljava/lang/String;",
             "Landroid/content/pm/InstallSourceInfo;->getInstallingPackageName()Ljava/lang/String;",
@@ -63,11 +69,16 @@ fun changePackageInstallerPatch(installerPackageName : String = "com.android.ven
                 } else {
                     "const-string v$register, \"$installerPackageName\""
                 }
-                replaceInstruction(
-                    returnIndex,
-                    smaliInstruction
-                )
+                replaceInstruction(returnIndex, smaliInstruction)
+
+                changesMade = true
             }
+        }
+
+        if (!changesMade) {
+            return@execute Logger.getLogger(this::class.java.name).info(
+                "No installer source checks found, no changes applied"
+            )
         }
     }
 }
