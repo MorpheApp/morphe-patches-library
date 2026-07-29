@@ -1,3 +1,10 @@
+## [1.5.2-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.3...v1.5.2-dev.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* Spoof getPackageSource() int value ([96246cf](https://github.com/MorpheApp/morphe-patches-library/commit/96246cfdd8dd463f1a3015c1dcd31d36c9a72d2a))
+
 ## [1.5.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.2...v1.5.2-dev.3) (2026-07-24)
 
 
