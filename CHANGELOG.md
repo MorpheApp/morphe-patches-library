@@ -1,3 +1,10 @@
+## [1.5.2-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.5...v1.5.2-dev.6) (2026-07-29)
+
+
+### Bug Fixes
+
+* Use stable patcher release ([3f09215](https://github.com/MorpheApp/morphe-patches-library/commit/3f09215c1d2c46148837f478c796ebb3e9ca2b6e))
+
 ## [1.5.2-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.4...v1.5.2-dev.5) (2026-07-29)
 
 
