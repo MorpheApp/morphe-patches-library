@@ -1,3 +1,10 @@
+## [1.5.2-dev.10](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.9...v1.5.2-dev.10) (2026-07-30)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Replace multiple literals in the same method ([da601a6](https://github.com/MorpheApp/morphe-patches-library/commit/da601a67f050d40a4afa9ffc47c9f136b1907e39))
+
 ## [1.5.2-dev.9](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.8...v1.5.2-dev.9) (2026-07-30)
 
 
