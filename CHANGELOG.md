@@ -1,3 +1,10 @@
+## [1.5.2-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.6...v1.5.2-dev.7) (2026-07-30)
+
+
+### Bug Fixes
+
+* Improve insertLiteralOverride to handle intermediate objects such as Optional ([b6f3191](https://github.com/MorpheApp/morphe-patches-library/commit/b6f3191c23d736445ab68dda1f03ddf73112e33c))
+
 ## [1.5.2-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.5...v1.5.2-dev.6) (2026-07-29)
 
 
