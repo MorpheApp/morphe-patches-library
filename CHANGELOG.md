@@ -1,3 +1,10 @@
+## [1.5.2-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.7...v1.5.2-dev.8) (2026-07-30)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle literals that are declared but never used ([52eaa48](https://github.com/MorpheApp/morphe-patches-library/commit/52eaa48e010ab4a5b0b30c13b0c1d36ea613a5db))
+
 ## [1.5.2-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.6...v1.5.2-dev.7) (2026-07-30)
 
 
