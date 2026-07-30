@@ -899,9 +899,7 @@ fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescri
     val useLiteralIndex = indexOfFirstInstruction(literalIndex + 1) {
         getReference<MethodReference>() ?: return@indexOfFirstInstruction false
         val fiveRegisterInstruction = this as? FiveRegisterInstruction ?: return@indexOfFirstInstruction false
-
-        fiveRegisterInstruction.registerC != literalRegister &&
-                fiveRegisterInstruction.registersUsed.contains(literalRegister)
+        fiveRegisterInstruction.registersUsed.contains(literalRegister)
     }
     val overwriteLiteralIndex = indexOfFirstInstruction(literalIndex + 1) {
         val writeRegister = this.writeRegister
