@@ -1,3 +1,10 @@
+## [1.5.2-dev.9](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.8...v1.5.2-dev.9) (2026-07-30)
+
+
+### Bug Fixes
+
+* **Utils:** Resolve layout direction from the locale script ([8b38158](https://github.com/MorpheApp/morphe-patches-library/commit/8b381584b2b3afd7e6f770d221152f97306e47d4))
+
 ## [1.5.2-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.7...v1.5.2-dev.8) (2026-07-30)
 
 
