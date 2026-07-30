@@ -880,7 +880,6 @@ fun Method.findInstructionIndicesReversedOrThrow(filter: InstructionFilter): Lis
 
 /**
  * Overrides the first move result with an extension call.
- * Suitable for calls to extension code to override boolean and integer values.
  */
 fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor: String) {
     val literalIndex = indexOfFirstLiteralInstructionOrThrow(literal)
@@ -888,31 +887,60 @@ fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor
 }
 
 fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescriptor: String) {
-    val literalRegister = getInstruction<OneRegisterInstruction>(literalIndex).registerA
-    val useLiteralIndex = indexOfFirstInstructionOrThrow(literalIndex + 1) {
-        getReference<MethodReference>() ?: return@indexOfFirstInstructionOrThrow false
-        val fiveRegisterInstruction = this as? FiveRegisterInstruction ?: return@indexOfFirstInstructionOrThrow false
+    val useLogging = false
 
-        fiveRegisterInstruction.registerC == literalRegister ||
-                fiveRegisterInstruction.registerD == literalRegister ||
-                fiveRegisterInstruction.registerE == literalRegister ||
-                fiveRegisterInstruction.registerF == literalRegister ||
-                fiveRegisterInstruction.registerG == literalRegister
-    }
-    val index = indexOfFirstInstructionOrThrow(useLiteralIndex) {
-        opcode == MOVE_RESULT || opcode == MOVE_RESULT_WIDE || opcode == MOVE_RESULT_OBJECT
+    val literalInstruction = getInstruction<OneRegisterInstruction>(literalIndex)
+    val literalRegister = literalInstruction.registerA
+    require(literalInstruction is WideLiteralInstruction) {
+        "literal index: $literalIndex in method: $this is not a literal instruction: " +
+                "${literalInstruction.opcode} $literalInstruction"
     }
 
-    val instruction = getInstruction<OneRegisterInstruction>(index)
-    val register = instruction.registerA
+    val useLiteralIndex = indexOfFirstInstruction(literalIndex + 1) {
+        getReference<MethodReference>() ?: return@indexOfFirstInstruction false
+        val fiveRegisterInstruction = this as? FiveRegisterInstruction ?: return@indexOfFirstInstruction false
 
-    val isWide = instruction.opcode == MOVE_RESULT_WIDE
-    val moveResultString = when (instruction.opcode) {
-        MOVE_RESULT_WIDE -> "move-result-wide"
-        MOVE_RESULT_OBJECT -> "move-result-object"
-        else -> "move-result"
+        fiveRegisterInstruction.registerC != literalRegister &&
+                fiveRegisterInstruction.registersUsed.contains(literalRegister)
+    }
+    val overwriteLiteralIndex = indexOfFirstInstruction(literalIndex + 1) {
+        val writeRegister = this.writeRegister
+        writeRegister != null && writeRegister == literalRegister
+    }
+    if (overwriteLiteralIndex > 0 && (useLiteralIndex !in 0..overwriteLiteralIndex)) {
+        // Literal is overwritten before it's used.
+        if (useLogging) println("Ignoring clobbered literal index: $literalIndex " +
+                "useLiteralIndex: $useLiteralIndex overwriteLiteralIndex: $overwriteLiteralIndex method: $this")
+        return
+    }
+    require(useLiteralIndex > 0) {
+        "Could not find method call using literal index: $literalIndex " +
+                "useLiteralIndex: $useLiteralIndex method: $this"
     }
 
+    val moveResultOpcode = if (extensionMethodDescriptor.endsWith(";")) {
+        MOVE_RESULT_OBJECT
+    } else if (extensionMethodDescriptor.endsWith("J") || extensionMethodDescriptor.endsWith("D")) {
+        MOVE_RESULT_WIDE
+    } else {
+        MOVE_RESULT
+    }
+    val moveResultIndex = useLiteralIndex + 1
+    val moveResultInstruction = getInstruction<OneRegisterInstruction>(moveResultIndex)
+    if (moveResultInstruction.opcode != moveResultOpcode) {
+        // Method return value is not used.
+        if (useLogging) println(
+            "skipping literal with ignored return value: $literalIndex " +
+                    "useLiteralIndex: $useLiteralIndex " +
+                    "overwriteLiteralIndex: $overwriteLiteralIndex " +
+                    "method: $this useLiteralInstruction: " +
+                    getInstruction<ReferenceInstruction>(useLiteralIndex).reference
+        )
+        return
+    }
+
+    val isWide = moveResultOpcode == MOVE_RESULT_WIDE
+    val register = moveResultInstruction.registerA
     val endRegister = if (isWide) register + 1 else register
     val operation = if (endRegister < 16) {
         if (isWide) {
@@ -923,12 +951,17 @@ fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescri
     } else {
         "invoke-static/range { v$register .. v$endRegister }"
     }
+    val moveResultSmali = when (moveResultOpcode) {
+        MOVE_RESULT_OBJECT -> "move-result-object"
+        MOVE_RESULT_WIDE -> "move-result-wide"
+        else -> "move-result"
+    }
 
     addInstructions(
-        index + 1,
+        moveResultIndex + 1,
         """
             $operation, $extensionMethodDescriptor
-            $moveResultString v$register
+            $moveResultSmali v$register
         """
     )
 }
