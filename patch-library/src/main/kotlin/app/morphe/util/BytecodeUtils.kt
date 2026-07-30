@@ -888,7 +888,18 @@ fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor
 }
 
 fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescriptor: String) {
-    val index = indexOfFirstInstructionOrThrow(literalIndex) {
+    val literalRegister = getInstruction<OneRegisterInstruction>(literalIndex).registerA
+    val useLiteralIndex = indexOfFirstInstructionOrThrow(literalIndex + 1) {
+        getReference<MethodReference>() ?: return@indexOfFirstInstructionOrThrow false
+        val fiveRegisterInstruction = this as? FiveRegisterInstruction ?: return@indexOfFirstInstructionOrThrow false
+
+        fiveRegisterInstruction.registerC == literalRegister ||
+                fiveRegisterInstruction.registerD == literalRegister ||
+                fiveRegisterInstruction.registerE == literalRegister ||
+                fiveRegisterInstruction.registerF == literalRegister ||
+                fiveRegisterInstruction.registerG == literalRegister
+    }
+    val index = indexOfFirstInstructionOrThrow(useLiteralIndex) {
         opcode == MOVE_RESULT || opcode == MOVE_RESULT_WIDE || opcode == MOVE_RESULT_OBJECT
     }
 
