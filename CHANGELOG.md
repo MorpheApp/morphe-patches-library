@@ -1,3 +1,10 @@
+# [1.6.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.11...v1.6.0-dev.1) (2026-07-31)
+
+
+### Features
+
+* Add a shared button press effect ([72d501a](https://github.com/MorpheApp/morphe-patches-library/commit/72d501ada81969720e7068fa76b549704eb0389c))
+
 ## [1.5.2-dev.11](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.10...v1.5.2-dev.11) (2026-07-31)
 
 
