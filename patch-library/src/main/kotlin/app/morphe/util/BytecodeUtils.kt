@@ -61,6 +61,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodParameter
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
@@ -887,6 +888,108 @@ fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor
     insertLiteralOverride(literalIndex, extensionMethodDescriptor)
 }
 
+/**
+ * Result of scanning forward through the control flow graph from a literal's load instruction,
+ * looking for whichever comes first: the register being clobbered (overwritten),
+ * or the register being used as a method call argument.
+ */
+private data class LiteralRegisterEvent(val index: Int, val isClobbered: Boolean)
+
+/**
+ * Maps each instruction index to its starting code unit offset, so that branch targets
+ * (given as code unit offsets) can be resolved back to instruction indices.
+ */
+private fun Method.instructionCodeOffsets(): IntArray {
+    val instructionList = this.implementation?.instructions?.toList() ?: return IntArray(0)
+    val offsets = IntArray(instructionList.size)
+    var offset = 0
+    instructionList.forEachIndexed { index, instruction ->
+        offsets[index] = offset
+        offset += instruction.codeUnits
+    }
+    return offsets
+}
+
+/**
+ * Resolves the instruction index a branch instruction at [branchIndex] jumps to.
+ */
+private fun Method.branchTargetIndex(branchIndex: Int, codeOffsets: IntArray): Int {
+    val branchInstruction = getInstruction<Instruction>(branchIndex) as? OffsetInstruction
+        ?: throw IllegalArgumentException(
+            "Instruction at index: $branchIndex in method: $this is not a branch instruction."
+        )
+    val targetOffset = codeOffsets[branchIndex] + branchInstruction.codeOffset
+    val targetIndex = codeOffsets.indexOfFirst { it == targetOffset }
+    require(targetIndex > 0) {
+        "Could not resolve branch target offset: $targetOffset from index: $branchIndex in method: $this"
+    }
+    return targetIndex
+}
+
+/**
+ * Walks the control flow graph forward from [startIndex], following both conditional
+ * and unconditional branches to their real targets, searching for whichever comes first:
+ *  - an instruction that writes to [register] (the value is clobbered)
+ *  - an instruction that uses [register] as a method call argument.
+ *
+ * A breadth first search is used so paths are explored in order of how many instructions
+ * actually execute before reaching them, approximating "whichever happens first" across branches.
+ * Returns/throws terminate a path with no match.
+ *
+ * @return The first reachable event, or null if neither event is reachable on any path.
+ */
+private fun Method.indexOfFirstReachableLiteralEvent(
+    startIndex: Int,
+    register: Int,
+): LiteralRegisterEvent? {
+    val instructionList = this.implementation?.instructions?.toList() ?: return null
+    val codeOffsets = instructionCodeOffsets()
+    val visited = HashSet<Int>()
+    val queue = ArrayDeque<Int>()
+    queue.add(startIndex)
+
+    while (queue.isNotEmpty()) {
+        val index = queue.removeFirst()
+        if (index < 0 || index >= instructionList.size || !visited.add(index)) {
+            continue
+        }
+        val instruction = instructionList[index]
+
+        if (instruction.writeRegister == register) {
+            return LiteralRegisterEvent(index, isClobbered = true)
+        }
+
+        val methodReference = instruction.getReference<MethodReference>()
+        if (methodReference != null &&
+            (instruction as? FiveRegisterInstruction)?.registersUsed?.contains(register) == true
+        ) {
+            return LiteralRegisterEvent(index, isClobbered = false)
+        }
+
+        when {
+            instruction.isUnconditionalBranchInstruction -> {
+                queue.add(branchTargetIndex(index, codeOffsets))
+            }
+            instruction.isConditionalBranchInstruction -> {
+                // Both the fall-through and the branch target are reachable.
+                queue.add(index + 1)
+                queue.add(branchTargetIndex(index, codeOffsets))
+            }
+            instruction.isReturnInstruction -> {
+                // Dead end: nothing further executes along this path.
+            } else -> {
+                queue.add(index + 1)
+            }
+        }
+    }
+
+    return null
+}
+
+/**
+ * Overrides *all* usage of the literal declared at the provided index. This override
+ * includes if the literal was used multiple times in the same method.
+ */
 fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodDescriptor: String) {
     val useLogging = false
 
@@ -895,58 +998,35 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
         "literal index: $literalIndexStart in method: $this is not a literal instruction: " +
                 "${startInstruction.opcode} $startInstruction"
     }
-    var lastLiteralIndex: Int? = null
     val literalValue = startInstruction.wideLiteral
     val literalFilter = literal(startInstruction.wideLiteral)
 
-    // Some literals are used multiple times in the same method.
-    val filteredReversed = instructions
-        .withIndex()
-        .filter { (_, instruction) -> literalFilter.matches(this, instruction) }
-        .asReversed()
-    filteredReversed.forEach { (literalIndex, literalInstruction) ->
-        val literalRegister = (literalInstruction as OneRegisterInstruction).registerA
-        val literalMethodCallIndex = indexOfFirstInstruction(literalIndex) {
-            getReference<MethodReference>() ?: return@indexOfFirstInstruction false
-            val fiveRegisterInstruction =
-                this as? FiveRegisterInstruction ?: return@indexOfFirstInstruction false
-            fiveRegisterInstruction.registersUsed.contains(literalRegister)
-        }
-        if (literalMethodCallIndex < 0) {
-            if (useLogging) println(
-                "Could not find method call using literal index: $literalIndex method: $this"
-            )
-            return@forEach
-        }
-        if (lastLiteralIndex != null && literalMethodCallIndex > lastLiteralIndex) {
-            return@forEach
-        }
-        val literalMethodCall = getInstruction<ReferenceInstruction>(literalMethodCallIndex).reference
+    // Some literals are used multiple times in the same method. Insertions can shift
+    // indices in either direction (forward usage vs. a backward loop-carried usage),
+    // so occurrences are re-scanned each iteration.
+    var processedCount = 0
+    while (true) {
+        val currentMatches = instructions
+            .withIndex()
+            .filter { (_, instruction) -> literalFilter.matches(this, instruction) }
+        if (processedCount >= currentMatches.size) return
 
-        val overwriteLiteralIndex = indexOfFirstInstruction(literalIndex + 1) {
-            writeRegister == literalRegister
-        }
-        if (overwriteLiteralIndex > 0 && (literalMethodCallIndex !in 0..overwriteLiteralIndex)) {
-            // Literal is overwritten before it's used.
-            if (useLogging) println(
-                "Ignoring clobbered value, literal: $literalValue index: $literalIndex " +
-                        "overwriteLiteralIndex: $overwriteLiteralIndex literalMethodCall: " +
-                        "$literalMethodCall method: $this"
-            )
-            return@forEach
-        }
+        val literalIndex = currentMatches[processedCount++].index
+        val literalInstruction = getInstruction<OneRegisterInstruction>(literalIndex)
+        val literalRegister = literalInstruction.registerA
 
-        val branchIndex = indexOfFirstInstruction(literalIndex + 1) {
-            isUnconditionalBranchInstruction || isUnconditionalBranchInstruction
-        }
-        if (branchIndex in 0..<literalMethodCallIndex) {
+        val event = indexOfFirstReachableLiteralEvent(literalIndex + 1, literalRegister)
+        if (event == null || event.isClobbered) {
             if (useLogging) println(
-                "Ignoring literal that is not used before a branch condition, literal: $literalValue " +
-                        "literalIndex: $literalIndex branchIndex: $branchIndex " +
-                        "branchInstruction: ${getInstruction(branchIndex).opcode} " +
-                        "literalMethodCallIndex: $literalMethodCallIndex method: $this"
+                """
+                    Ignoring literal with no reachable usage (clobbered or dead)
+                    literalValue: $literalValue
+                    literalIndex: $literalIndex
+                    event: $event
+                    method: $this
+                """
             )
-            return@forEach
+            continue
         }
 
         val moveResultOpcode = if (extensionMethodDescriptor.endsWith(";")) {
@@ -958,16 +1038,21 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
         } else {
             MOVE_RESULT
         }
+        val literalMethodCallIndex = event.index
         val moveResultIndex = literalMethodCallIndex + 1
         val moveResultInstruction = getInstruction<OneRegisterInstruction>(moveResultIndex)
         if (moveResultInstruction.opcode != moveResultOpcode) {
             // Method return value is not used.
             if (useLogging) println(
-                "Ignoring literal with ignored return value, literal: $literalValue " +
-                        "literalIndex: $literalIndex overwriteLiteralIndex: $overwriteLiteralIndex " +
-                        "literalMethodCall: $literalMethodCall method: $this"
+                """
+                    Ignoring literal with ignored return value
+                    literalValue: $literalValue
+                    literalIndex: $literalIndex
+                    literalMethodCall: ${getInstruction<ReferenceInstruction>(literalMethodCallIndex).reference}
+                    method: $this"
+                """
             )
-            return@forEach
+            continue
         }
 
         val isWide = moveResultOpcode == MOVE_RESULT_WIDE
@@ -995,15 +1080,6 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
                 $moveResultSmali v$register
             """
         )
-
-//        if (this.definingClass == "Lnna;") {
-//            println("""change:
-//                $operation, $extensionMethodDescriptor
-//                $moveResultSmali v$register
-//            """)
-//        }
-
-        lastLiteralIndex = literalMethodCallIndex
     }
 }
 
