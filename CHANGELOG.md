@@ -1,3 +1,10 @@
+## [1.5.2-dev.11](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.10...v1.5.2-dev.11) (2026-07-31)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle literals that are declared with a branch condition before the literal is used ([21e7118](https://github.com/MorpheApp/morphe-patches-library/commit/21e7118b175e582e24ea1e70657e08574db69e85))
+
 ## [1.5.2-dev.10](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.9...v1.5.2-dev.10) (2026-07-30)
 
 
