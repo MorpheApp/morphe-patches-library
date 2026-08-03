@@ -1,3 +1,10 @@
+# [1.6.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-08-03)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Improve literal control flow exploration ([bc4c349](https://github.com/MorpheApp/morphe-patches-library/commit/bc4c3492da1c058ba8f3ca11c7035ceda4c010a5))
+
 # [1.6.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.11...v1.6.0-dev.1) (2026-07-31)
 
 
