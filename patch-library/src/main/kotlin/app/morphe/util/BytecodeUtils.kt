@@ -888,12 +888,6 @@ fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor
     insertLiteralOverride(literalIndex, extensionMethodDescriptor)
 }
 
-/**
- * Result of scanning forward through the control flow graph from a literal's load instruction,
- * looking for whichever comes first: the register being clobbered (overwritten),
- * or the register being used as a method call argument.
- */
-private data class LiteralRegisterEvent(val index: Int, val isClobbered: Boolean)
 
 /**
  * Maps each instruction index to its starting code unit offset, so that branch targets
@@ -920,7 +914,7 @@ private fun Method.branchTargetIndex(branchIndex: Int, codeOffsets: IntArray): I
         )
     val targetOffset = codeOffsets[branchIndex] + branchInstruction.codeOffset
     val targetIndex = codeOffsets.indexOfFirst { it == targetOffset }
-    require(targetIndex > 0) {
+    require(targetIndex >= 0) {
         "Could not resolve branch target offset: $targetOffset from index: $branchIndex in method: $this"
     }
     return targetIndex
@@ -928,23 +922,22 @@ private fun Method.branchTargetIndex(branchIndex: Int, codeOffsets: IntArray): I
 
 /**
  * Walks the control flow graph forward from [startIndex], following both conditional
- * and unconditional branches to their real targets, searching for whichever comes first:
- *  - an instruction that writes to [register] (the value is clobbered)
- *  - an instruction that uses [register] as a method call argument.
+ * and unconditional branches to their real targets, searching for all instructions
+ * that use [register] as a method call argument, until the register is clobbered.
  *
  * A breadth first search is used so paths are explored in order of how many instructions
- * actually execute before reaching them, approximating "whichever happens first" across branches.
- * Returns/throws terminate a path with no match.
+ * actually execute before reaching them.
  *
- * @return The first reachable event, or null if neither event is reachable on any path.
+ * @return A list of instruction indices that use the register as a method call argument.
  */
-private fun Method.indexOfFirstReachableLiteralEvent(
+private fun Method.findAllReachableLiteralEvents(
     startIndex: Int,
     register: Int,
-): LiteralRegisterEvent? {
-    val instructionList = this.implementation?.instructions?.toList() ?: return null
+): List<Int> {
+    val instructionList = this.implementation?.instructions?.toList() ?: return emptyList()
     val codeOffsets = instructionCodeOffsets()
     val visited = HashSet<Int>()
+    val usageIndices = mutableListOf<Int>()
     val queue = ArrayDeque<Int>()
     queue.add(startIndex)
 
@@ -956,14 +949,14 @@ private fun Method.indexOfFirstReachableLiteralEvent(
         val instruction = instructionList[index]
 
         if (instruction.writeRegister == register) {
-            return LiteralRegisterEvent(index, isClobbered = true)
+            continue
         }
 
         val methodReference = instruction.getReference<MethodReference>()
         if (methodReference != null &&
             (instruction as? FiveRegisterInstruction)?.registersUsed?.contains(register) == true
         ) {
-            return LiteralRegisterEvent(index, isClobbered = false)
+            usageIndices.add(index)
         }
 
         when {
@@ -971,7 +964,6 @@ private fun Method.indexOfFirstReachableLiteralEvent(
                 queue.add(branchTargetIndex(index, codeOffsets))
             }
             instruction.isConditionalBranchInstruction -> {
-                // Both the fall-through and the branch target are reachable.
                 queue.add(index + 1)
                 queue.add(branchTargetIndex(index, codeOffsets))
             }
@@ -983,7 +975,7 @@ private fun Method.indexOfFirstReachableLiteralEvent(
         }
     }
 
-    return null
+    return usageIndices
 }
 
 /**
@@ -1015,17 +1007,17 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
         val literalInstruction = getInstruction<OneRegisterInstruction>(literalIndex)
         val literalRegister = literalInstruction.registerA
 
-        val event = indexOfFirstReachableLiteralEvent(literalIndex + 1, literalRegister)
-        if (event == null || event.isClobbered) {
-            if (useLogging) println(
-                """
-                    Ignoring literal with no reachable usage (clobbered or dead)
-                    literalValue: $literalValue
-                    literalIndex: $literalIndex
-                    event: $event
-                    method: $this
-                """
-            )
+        val usageIndices = findAllReachableLiteralEvents(literalIndex + 1, literalRegister)
+        if (usageIndices.isEmpty()) {
+            if (useLogging) {
+                println("""
+                        Ignoring literal with no reachable usage (clobbered or dead)
+                        literalValue: $literalValue
+                        literalIndex: $literalIndex
+                        method: $this
+                    """
+                )
+            }
             continue
         }
 
@@ -1038,48 +1030,50 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
         } else {
             MOVE_RESULT
         }
-        val literalMethodCallIndex = event.index
-        val moveResultIndex = literalMethodCallIndex + 1
-        val moveResultInstruction = getInstruction<OneRegisterInstruction>(moveResultIndex)
-        if (moveResultInstruction.opcode != moveResultOpcode) {
-            // Method return value is not used.
-            if (useLogging) println(
+
+        usageIndices.sortedDescending().forEach { usageIndex ->
+            val moveResultIndex = usageIndex + 1
+            val moveResultInstruction = getInstruction(moveResultIndex)
+            if (moveResultInstruction.opcode != moveResultOpcode) {
+                // Method return value is not used.
+                if (useLogging) println(
+                    """
+                        Ignoring literal with ignored return value
+                        literalValue: $literalValue
+                        literalIndex: $literalIndex
+                        literalMethodCall: ${getInstruction<ReferenceInstruction>(usageIndex).reference}
+                        method: $this"
+                    """
+                )
+                return@forEach
+            }
+
+            val isWide = moveResultOpcode == MOVE_RESULT_WIDE
+            val register = (moveResultInstruction as OneRegisterInstruction).registerA
+            val endRegister = if (isWide) register + 1 else register
+            val operation = if (endRegister < 16) {
+                if (isWide) {
+                    "invoke-static { v$register, v$endRegister }"
+                } else {
+                    "invoke-static { v$register }"
+                }
+            } else {
+                "invoke-static/range { v$register .. v$endRegister }"
+            }
+            val moveResultSmali = when (moveResultOpcode) {
+                MOVE_RESULT_OBJECT -> "move-result-object"
+                MOVE_RESULT_WIDE -> "move-result-wide"
+                else -> "move-result"
+            }
+
+            addInstructions(
+                moveResultIndex + 1,
                 """
-                    Ignoring literal with ignored return value
-                    literalValue: $literalValue
-                    literalIndex: $literalIndex
-                    literalMethodCall: ${getInstruction<ReferenceInstruction>(literalMethodCallIndex).reference}
-                    method: $this"
+                    $operation, $extensionMethodDescriptor
+                    $moveResultSmali v$register
                 """
             )
-            continue
         }
-
-        val isWide = moveResultOpcode == MOVE_RESULT_WIDE
-        val register = moveResultInstruction.registerA
-        val endRegister = if (isWide) register + 1 else register
-        val operation = if (endRegister < 16) {
-            if (isWide) {
-                "invoke-static { v$register, v$endRegister }"
-            } else {
-                "invoke-static { v$register }"
-            }
-        } else {
-            "invoke-static/range { v$register .. v$endRegister }"
-        }
-        val moveResultSmali = when (moveResultOpcode) {
-            MOVE_RESULT_OBJECT -> "move-result-object"
-            MOVE_RESULT_WIDE -> "move-result-wide"
-            else -> "move-result"
-        }
-
-        addInstructions(
-            moveResultIndex + 1,
-            """
-                $operation, $extensionMethodDescriptor
-                $moveResultSmali v$register
-            """
-        )
     }
 }
 
@@ -1092,17 +1086,29 @@ fun MutableMethod.insertLiteralOverride(literal: Long, override: Boolean) {
 }
 
 /**
- * Constant value override of the first MOVE_RESULT after the index parameter.
+ * Constant value override of all MOVE_RESULT instructions that use the literal declared at the provided index.
  */
-fun MutableMethod.insertLiteralOverride(literalIndex: Int, override: Boolean) {
-    val index = indexOfFirstInstructionOrThrow(literalIndex, MOVE_RESULT)
-    val register = getInstruction<OneRegisterInstruction>(index).registerA
+fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, override: Boolean) {
+    val startInstruction = getInstruction<OneRegisterInstruction>(literalIndexStart)
+    val literalRegister = startInstruction.registerA
     val overrideValue = if (override) "0x1" else "0x0"
 
-    addInstruction(
-        index + 1,
-        "const v$register, $overrideValue"
-    )
+    val usageIndices = findAllReachableLiteralEvents(literalIndexStart + 1, literalRegister)
+    if (usageIndices.isEmpty()) return
+
+    usageIndices.sortedDescending().forEach { usageIndex ->
+        val index = usageIndex + 1
+        if (index >= instructions.count()) return@forEach
+
+        val instruction = getInstruction(index)
+        if (instruction is OneRegisterInstruction && instruction.opcode == MOVE_RESULT) {
+            val register = instruction.registerA
+            addInstruction(
+                index + 1,
+                "const v$register, $overrideValue"
+            )
+        }
+    }
 }
 
 /**
