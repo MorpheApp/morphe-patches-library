@@ -24,7 +24,7 @@
  * merchantability and fitness for a particular purpose, are disclaimed.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "SpellCheckingInspection")
 
 package app.morphe.util
 
@@ -36,6 +36,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
+import app.morphe.patcher.literal
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
@@ -46,6 +47,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMuta
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.all.misc.resources.ResourceType
 import app.morphe.patches.all.misc.resources.getResourceId
+import app.morphe.patches.all.misc.resources.resourceMappingPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT
@@ -59,6 +61,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodParameter
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
@@ -195,10 +198,10 @@ fun InstructionFilter.matchAllMethodIndicesForEach(
 )
 
 /**
- * Verify exactly one match exists. This is the equivalent of calling [Fingerprint.matchAll]
+ * Verify exactly one match exists. This is the equivalent of calling [matchAll]
  * with a range of `1 .. 1`. This can be useful for fragile fingerprints that may match
  * unrelated methods. This is an exhaustive search and will always be slower than the first match
- * that [Fingerprint.match] provides.
+ * that [match] provides.
  *
  * An exception is thrown if no matches exist or more than 1 match exists.
  */
@@ -210,8 +213,8 @@ fun Fingerprint.matchSingle() = matchAll(1 .. 1).first()
  * Iterate across all method indexes that match an [Fingerprint].
  * At this time, only a single [InstructionFilter] is supported.
  *
- * This differs from using [Fingerprint.matchAll] as this matches multiple instruction
- * indexes in the same method and [Fingerprint.matchAll] matches only the first index
+ * This differs from using [matchAll] as this matches multiple instruction
+ * indexes in the same method and [matchAll] matches only the first index
  * of each method.
  *
  * @param requireMatches If true and no matches exist, an exception is thrown.
@@ -357,7 +360,7 @@ fun Method.indexOfFirstResourceId(resourceName: String): Int {
 /**
  * Get the index of the first instruction with the id of the given resource name or throw a [PatchException].
  *
- * Requires [app.morphe.patches.all.misc.resources.resourceMappingPatch] as a dependency.
+ * Requires [resourceMappingPatch] as a dependency.
  *
  * @throws [PatchException] if the resource is not found, or the method does not contain the resource id literal value.
  * @see [indexOfFirstResourceId], [indexOfFirstLiteralInstructionReversedOrThrow]
@@ -879,31 +882,199 @@ fun Method.findInstructionIndicesReversedOrThrow(filter: InstructionFilter): Lis
 
 /**
  * Overrides the first move result with an extension call.
- * Suitable for calls to extension code to override boolean and integer values.
  */
 fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor: String) {
     val literalIndex = indexOfFirstLiteralInstructionOrThrow(literal)
     insertLiteralOverride(literalIndex, extensionMethodDescriptor)
 }
 
-fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescriptor: String) {
-    // TODO: make this work with objects and wide primitive values.
-    val index = indexOfFirstInstructionOrThrow(literalIndex, MOVE_RESULT)
-    val register = getInstruction<OneRegisterInstruction>(index).registerA
 
-    val operation = if (register < 16) {
-        "invoke-static { v$register }"
-    } else {
-        "invoke-static/range { v$register .. v$register }"
+/**
+ * Maps each instruction index to its starting code unit offset, so that branch targets
+ * (given as code unit offsets) can be resolved back to instruction indices.
+ */
+private fun Method.instructionCodeOffsets(): IntArray {
+    val instructionList = this.implementation?.instructions?.toList() ?: return IntArray(0)
+    val offsets = IntArray(instructionList.size)
+    var offset = 0
+    instructionList.forEachIndexed { index, instruction ->
+        offsets[index] = offset
+        offset += instruction.codeUnits
+    }
+    return offsets
+}
+
+/**
+ * Resolves the instruction index a branch instruction at [branchIndex] jumps to.
+ */
+private fun Method.branchTargetIndex(branchIndex: Int, codeOffsets: IntArray): Int {
+    val branchInstruction = getInstruction<Instruction>(branchIndex) as? OffsetInstruction
+        ?: throw IllegalArgumentException(
+            "Instruction at index: $branchIndex in method: $this is not a branch instruction."
+        )
+    val targetOffset = codeOffsets[branchIndex] + branchInstruction.codeOffset
+    val targetIndex = codeOffsets.indexOfFirst { it == targetOffset }
+    require(targetIndex >= 0) {
+        "Could not resolve branch target offset: $targetOffset from index: $branchIndex in method: $this"
+    }
+    return targetIndex
+}
+
+/**
+ * Walks the control flow graph forward from [startIndex], following both conditional
+ * and unconditional branches to their real targets, searching for all instructions
+ * that use [register] as a method call argument, until the register is clobbered.
+ *
+ * A breadth first search is used so paths are explored in order of how many instructions
+ * actually execute before reaching them.
+ *
+ * @return A list of instruction indices that use the register as a method call argument.
+ */
+private fun Method.findAllReachableLiteralEvents(
+    startIndex: Int,
+    register: Int,
+): List<Int> {
+    val instructionList = this.implementation?.instructions?.toList() ?: return emptyList()
+    val codeOffsets = instructionCodeOffsets()
+    val visited = HashSet<Int>()
+    val usageIndices = mutableListOf<Int>()
+    val queue = ArrayDeque<Int>()
+    queue.add(startIndex)
+
+    while (queue.isNotEmpty()) {
+        val index = queue.removeFirst()
+        if (index < 0 || index >= instructionList.size || !visited.add(index)) {
+            continue
+        }
+        val instruction = instructionList[index]
+
+        if (instruction.writeRegister == register) {
+            continue
+        }
+
+        val methodReference = instruction.getReference<MethodReference>()
+        if (methodReference != null &&
+            (instruction as? FiveRegisterInstruction)?.registersUsed?.contains(register) == true
+        ) {
+            usageIndices.add(index)
+        }
+
+        when {
+            instruction.isUnconditionalBranchInstruction -> {
+                queue.add(branchTargetIndex(index, codeOffsets))
+            }
+            instruction.isConditionalBranchInstruction -> {
+                queue.add(index + 1)
+                queue.add(branchTargetIndex(index, codeOffsets))
+            }
+            instruction.isReturnInstruction -> {
+                // Dead end: nothing further executes along this path.
+            } else -> {
+                queue.add(index + 1)
+            }
+        }
     }
 
-    addInstructions(
-        index + 1,
-        """
-            $operation, $extensionMethodDescriptor
-            move-result v$register
-        """
-    )
+    return usageIndices
+}
+
+/**
+ * Overrides *all* usage of the literal declared at the provided index. This override
+ * includes if the literal was used multiple times in the same method.
+ */
+fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodDescriptor: String) {
+    val useLogging = false
+
+    val startInstruction = getInstruction<OneRegisterInstruction>(literalIndexStart)
+    require(startInstruction is WideLiteralInstruction) {
+        "literal index: $literalIndexStart in method: $this is not a literal instruction: " +
+                "${startInstruction.opcode} $startInstruction"
+    }
+    val literalValue = startInstruction.wideLiteral
+    val literalFilter = literal(startInstruction.wideLiteral)
+
+    // Some literals are used multiple times in the same method. Insertions can shift
+    // indices in either direction (forward usage vs. a backward loop-carried usage),
+    // so occurrences are re-scanned each iteration.
+    var processedCount = 0
+    while (true) {
+        val currentMatches = instructions
+            .withIndex()
+            .filter { (_, instruction) -> literalFilter.matches(this, instruction) }
+        if (processedCount >= currentMatches.size) return
+
+        val literalIndex = currentMatches[processedCount++].index
+        val literalInstruction = getInstruction<OneRegisterInstruction>(literalIndex)
+        val literalRegister = literalInstruction.registerA
+
+        val usageIndices = findAllReachableLiteralEvents(literalIndex + 1, literalRegister)
+        if (usageIndices.isEmpty()) {
+            if (useLogging) {
+                println("""
+                        Ignoring literal with no reachable usage (clobbered or dead)
+                        literalValue: $literalValue
+                        literalIndex: $literalIndex
+                        method: $this
+                    """
+                )
+            }
+            continue
+        }
+
+        val moveResultOpcode = if (extensionMethodDescriptor.endsWith(";")) {
+            MOVE_RESULT_OBJECT
+        } else if (extensionMethodDescriptor.endsWith("J") ||
+            extensionMethodDescriptor.endsWith("D")
+        ) {
+            MOVE_RESULT_WIDE
+        } else {
+            MOVE_RESULT
+        }
+
+        usageIndices.sortedDescending().forEach { usageIndex ->
+            val moveResultIndex = usageIndex + 1
+            val moveResultInstruction = getInstruction(moveResultIndex)
+            if (moveResultInstruction.opcode != moveResultOpcode) {
+                // Method return value is not used.
+                if (useLogging) println(
+                    """
+                        Ignoring literal with ignored return value
+                        literalValue: $literalValue
+                        literalIndex: $literalIndex
+                        literalMethodCall: ${getInstruction<ReferenceInstruction>(usageIndex).reference}
+                        method: $this"
+                    """
+                )
+                return@forEach
+            }
+
+            val isWide = moveResultOpcode == MOVE_RESULT_WIDE
+            val register = (moveResultInstruction as OneRegisterInstruction).registerA
+            val endRegister = if (isWide) register + 1 else register
+            val operation = if (endRegister < 16) {
+                if (isWide) {
+                    "invoke-static { v$register, v$endRegister }"
+                } else {
+                    "invoke-static { v$register }"
+                }
+            } else {
+                "invoke-static/range { v$register .. v$endRegister }"
+            }
+            val moveResultSmali = when (moveResultOpcode) {
+                MOVE_RESULT_OBJECT -> "move-result-object"
+                MOVE_RESULT_WIDE -> "move-result-wide"
+                else -> "move-result"
+            }
+
+            addInstructions(
+                moveResultIndex + 1,
+                """
+                    $operation, $extensionMethodDescriptor
+                    $moveResultSmali v$register
+                """
+            )
+        }
+    }
 }
 
 /**
@@ -915,17 +1086,29 @@ fun MutableMethod.insertLiteralOverride(literal: Long, override: Boolean) {
 }
 
 /**
- * Constant value override of the first MOVE_RESULT after the index parameter.
+ * Constant value override of all MOVE_RESULT instructions that use the literal declared at the provided index.
  */
-fun MutableMethod.insertLiteralOverride(literalIndex: Int, override: Boolean) {
-    val index = indexOfFirstInstructionOrThrow(literalIndex, MOVE_RESULT)
-    val register = getInstruction<OneRegisterInstruction>(index).registerA
+fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, override: Boolean) {
+    val startInstruction = getInstruction<OneRegisterInstruction>(literalIndexStart)
+    val literalRegister = startInstruction.registerA
     val overrideValue = if (override) "0x1" else "0x0"
 
-    addInstruction(
-        index + 1,
-        "const v$register, $overrideValue"
-    )
+    val usageIndices = findAllReachableLiteralEvents(literalIndexStart + 1, literalRegister)
+    if (usageIndices.isEmpty()) return
+
+    usageIndices.sortedDescending().forEach { usageIndex ->
+        val index = usageIndex + 1
+        if (index >= instructions.count()) return@forEach
+
+        val instruction = getInstruction(index)
+        if (instruction is OneRegisterInstruction && instruction.opcode == MOVE_RESULT) {
+            val register = instruction.registerA
+            addInstruction(
+                index + 1,
+                "const v$register, $overrideValue"
+            )
+        }
+    }
 }
 
 /**
@@ -1582,7 +1765,7 @@ fun MutableClass.fieldByName(name: String): MutableField {
 /**
  * Get the public toString() method.
  */
-fun ClassDef.toStringMethod() =
+fun ClassDef.toStringMethod(): Method? =
     this.methods.first {
         it.name == "toString" && AccessFlags.PUBLIC.isSet(it.accessFlags) && it.parameters.isEmpty()
     }

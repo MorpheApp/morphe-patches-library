@@ -24,6 +24,8 @@
  * merchantability and fitness for a particular purpose, are disclaimed.
  */
 
+@file:Suppress("unused")
+
 package app.morphe.patches.all.misc.extension
 
 import app.morphe.patcher.Fingerprint
@@ -33,9 +35,21 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.iface.Method
 import java.net.URLDecoder
+import java.util.function.Supplier
 import java.util.jar.JarFile
+import java.util.logging.Logger
 
 const val SHARED_UTILS_EXTENSION_CLASS = "Lapp/morphe/extension/shared/Utils;"
+
+/**
+ * A patch to extend with the "shared" extension.
+ *
+ * @param hooks The hooks to get the application context for use in the extension,
+ * commonly for the onCreate method of exported activities.
+ */
+fun sharedExtensionPatch(
+    vararg hooks: ExtensionHook,
+) = sharedExtensionPatch(emptyList(), *hooks)
 
 /**
  * A patch to extend with an extension shared with multiple patches.
@@ -56,32 +70,35 @@ fun sharedExtensionPatch(
 fun sharedExtensionPatch(
     extensionNames: List<String>,
     vararg hooks: ExtensionHook,
-) = bytecodePatch(
-    default = false
-) {
-    dependsOn(
-        sharedExtensionPatch(*hooks),
-        *extensionNames.filter { it != "shared" }.map { sharedExtensionPatch(it, emptyList()) }.toTypedArray(),
-    )
-}
+) = createSharedExtensionPatch(
+    listOf(
+        "shared",
+        *extensionNames.toTypedArray()
+    ),
+    hooks.toList()
+)
 
-/**
- * A patch to extend with the "shared" extension.
- *
- * @param hooks The hooks to get the application context for use in the extension,
- * commonly for the onCreate method of exported activities.
- */
-fun sharedExtensionPatch(
-    vararg hooks: ExtensionHook,
-) = sharedExtensionPatch("shared", hooks.toList())
-
-private fun sharedExtensionPatch(
-    extensionName: String,
+@Suppress("CheckResult")
+private fun createSharedExtensionPatch(
+    extensionName: List<String>,
     hooks: List<ExtensionHook>,
 ) = bytecodePatch(
     default = false
 ) {
-    extendWith("extensions/$extensionName.mpe")
+    // Check if patcher supports loading multiple extension input streams and warn if not.
+    val supportsMultiDex = runCatching {
+        javaClass.getDeclaredMethod("extendWith", Supplier::class.java)
+    }.isSuccess
+
+    if (supportsMultiDex) {
+        for (name in extensionName) {
+            extendWith("extensions/$name.mpe")
+        }
+    } else {
+        for (name in extensionName.toMutableSet().also { it.add("shared") }) {
+            dependsOn(bytecodePatch { extendWith("extensions/$name.mpe") })
+        }
+    }
 
     execute {
         // Verify the extension class exists.

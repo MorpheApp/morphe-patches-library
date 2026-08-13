@@ -43,6 +43,7 @@ public enum ResourceType {
 
     public final String type;
 
+    @SuppressWarnings("unused")
     public static ResourceType fromValue(String value) {
         ResourceType type = VALUE_MAP.get(value);
         if (type == null) {

@@ -1,10 +1,14 @@
+@file:Suppress("unused")
+
 package app.morphe.patches.all.misc.hex
 
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.util.byteArrayOf
+import java.io.RandomAccessFile
 import kotlin.math.max
 
+@Suppress("DEPRECATION")
 fun hexPatch(ignoreMissingTargetFiles: Boolean = false, block: HexPatchBuilder.() -> Unit) =
     hexPatch(ignoreMissingTargetFiles, fun(): Set<Replacement> = HexPatchBuilder().apply(block))
 
@@ -15,21 +19,27 @@ class HexPatchBuilder internal constructor(
     infix fun String.asPatternTo(replacementPattern: String) = byteArrayOf(this) to byteArrayOf(replacementPattern)
 
     infix fun <T> Pair<T, T>.inFile(filePath: String) {
-        if (first is String && second is String) {
-            val first = first as String
-            val second = second as String
+        when (first) {
+            is String if second is String -> {
+                val first = first as String
+                val second = second as String
 
-            replacements += Replacement(
-                first.toByteArray(), second.toByteArray(),
-                filePath
-            )
-        } else if (first is ByteArray && second is ByteArray) {
-            val first = first as ByteArray
-            val second = second as ByteArray
+                replacements += Replacement(
+                    first.toByteArray(), second.toByteArray(),
+                    filePath
+                )
+            }
 
-            replacements += Replacement(first, second, filePath)
-        } else {
-            throw PatchException("Unsupported types for pattern and replacement: $first, $second")
+            is ByteArray if second is ByteArray -> {
+                val first = first as ByteArray
+                val second = second as ByteArray
+
+                replacements += Replacement(first, second, filePath)
+            }
+
+            else -> {
+                throw PatchException("Unsupported types for pattern and replacement: $first, $second")
+            }
         }
     }
 }
@@ -47,11 +57,9 @@ fun hexPatch(ignoreMissingTargetFiles: Boolean = false, replacementsSupplier: ()
                 val targetFile = get(targetFilePath, true)
                 if (ignoreMissingTargetFiles && !targetFile.exists()) return@forEach
 
-                // TODO: Use a file channel to read and write the file instead of reading the whole file into memory,
-                //  in order to reduce memory usage.
-                val targetFileBytes = targetFile.readBytes()
-                replacements.forEach { it.replacePattern(targetFileBytes) }
-                targetFile.writeBytes(targetFileBytes)
+                RandomAccessFile(targetFile, "rw").use { raf ->
+                    replacements.forEach { it.replacePattern(raf) }
+                }
             }
         }
     }
@@ -65,7 +73,7 @@ fun hexPatch(ignoreMissingTargetFiles: Boolean = false, replacementsSupplier: ()
  */
 class Replacement(
     private val bytes: ByteArray,
-    replacementBytes: ByteArray,
+    private val replacementBytes: ByteArray,
     internal val targetFilePath: String,
 ) {
     val replacementBytesPadded = replacementBytes + ByteArray(bytes.size - replacementBytes.size)
@@ -82,53 +90,69 @@ class Replacement(
     )
 
     /**
-     * Replaces the [bytes] with the [replacementBytes] in the [targetFileBytes].
+     * Replaces the [bytes] with the [replacementBytes] in the target file.
      *
-     * @param targetFileBytes The bytes of the file to make the changes in.
+     * @param targetFile The RandomAccessFile to make the changes in.
      */
-    fun replacePattern(targetFileBytes: ByteArray) {
-        val startIndex = indexOfPatternIn(targetFileBytes)
+    fun replacePattern(targetFile: RandomAccessFile) {
+        val startIndex = indexOfPatternIn(targetFile)
 
-        if (startIndex == -1) {
+        if (startIndex == -1L) {
             throw PatchException(
                 "Pattern not found in target file: " +
                         bytes.joinToString(" ") { "%02x".format(it) }
             )
         }
 
-        replacementBytesPadded.copyInto(targetFileBytes, startIndex)
+        targetFile.seek(startIndex)
+        targetFile.write(replacementBytesPadded)
     }
 
-    // TODO: Allow searching in a file channel instead of a byte array to reduce memory usage.
     /**
-     * Returns the index of the first occurrence of [bytes] in the haystack
-     * using the Boyer-Moore algorithm.
+     * Returns the absolute offset of the first occurrence of [bytes] in the file
+     * using a buffered Boyer-Moore algorithm.
      *
-     * @param haystack The array to search in.
+     * @param file The RandomAccessFile to search in.
      *
-     * @return The index of the first occurrence of the [bytes] in the haystack or -1
+     * @return The offset of the first occurrence of the [bytes] in the file or -1L
      * if the [bytes] is not found.
      */
-    private fun indexOfPatternIn(haystack: ByteArray): Int {
+    private fun indexOfPatternIn(file: RandomAccessFile): Long {
         val needle = bytes
         val right = IntArray(256) { -1 }
 
-        for (i in 0 until needle.size) right[needle[i].toInt().and(0xFF)] = i
+        for ((i, element) in needle.withIndex()) right[element.toInt().and(0xFF)] = i
 
-        var skip: Int
-        for (i in 0..haystack.size - needle.size) {
-            skip = 0
+        val bufferSize = 65536
+        val buffer = ByteArray(bufferSize + needle.size)
 
-            for (j in needle.size - 1 downTo 0) {
-                if (needle[j] != haystack[i + j]) {
-                    skip = max(1, j - right[haystack[i + j].toInt().and(0xFF)])
+        var fileOffset = 0L
+        val fileLength = file.length()
 
-                    break
+        while (fileOffset < fileLength) {
+            file.seek(fileOffset)
+            val bytesRead = file.read(buffer)
+
+            if (bytesRead < needle.size) break
+
+            var skip: Int
+            var i = 0
+            while (i <= bytesRead - needle.size) {
+                skip = 0
+
+                for (j in needle.size - 1 downTo 0) {
+                    if (needle[j] != buffer[i + j]) {
+                        skip = max(1, j - right[buffer[i + j].toInt().and(0xFF)])
+                        break
+                    }
                 }
+
+                if (skip == 0) return fileOffset + i
+                i += skip
             }
 
-            if (skip == 0) return i
+            fileOffset += (bytesRead - needle.size + 1)
         }
-        return -1
+        return -1L
     }
 }

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings("ALL")
 public class StringRef {
     /**
      * Simple class to assist with apps that currently cannot use resource patches.

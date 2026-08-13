@@ -40,6 +40,7 @@ dependencyResolutionManagement {
             content {
                 includeGroup("com.github.MorpheApp.smali")
                 includeGroup("com.github.MorpheApp")
+                includeGroup("com.github.REAndroid")
             }
         }
     }

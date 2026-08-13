@@ -83,6 +83,7 @@ fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int,
 fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int, vararg registersToExclude: Int) =
     FreeRegisterProvider(this, index, numberOfFreeRegistersNeeded, *registersToExclude)
 
+@Suppress("unused")
 class FreeRegisterProvider internal constructor(
     val method: Method,
     index: Int,

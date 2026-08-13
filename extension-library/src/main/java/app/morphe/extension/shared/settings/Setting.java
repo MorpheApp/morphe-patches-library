@@ -35,6 +35,7 @@ import app.morphe.extension.shared.StringRef;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.preference.SharedPrefCategory;
 
+@SuppressWarnings("unused")
 public abstract class Setting<T> {
 
     /**

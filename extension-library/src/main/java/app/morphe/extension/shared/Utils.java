@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +37,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
-import java.text.Bidi;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -57,7 +57,7 @@ import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.StringSetting;
 import app.morphe.extension.shared.ui.Dim;
 
-@SuppressWarnings("NewApi")
+@SuppressWarnings({"NewApi", "unused"})
 public class Utils {
     private static WeakReference<Activity> activityRef = new WeakReference<>(null);
 
@@ -499,8 +499,8 @@ public class Utils {
      * @return If the locale uses right to left text layout (Hebrew, Arabic, etc.).
      */
     public static boolean isRightToLeftLocale(Locale locale) {
-        String displayLanguage = locale.getDisplayLanguage();
-        return new Bidi(displayLanguage, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT).isRightToLeft();
+        // Resolved from the locale script, the same way the framework picks a layout direction.
+        return TextUtils.getLayoutDirectionFromLocale(locale) == View.LAYOUT_DIRECTION_RTL;
     }
 
     /**

@@ -334,6 +334,8 @@ public class CustomDialog {
                 ? (isOkButton ? Color.BLACK : Color.WHITE)
                 : (isOkButton ? Color.WHITE : Color.BLACK));
 
+        ViewAnimations.applyPressEffect(button);
+
         button.setOnClickListener(v -> {
             if (onClick != null) onClick.run();
             if (dismissDialog && dialog != null) dialog.dismiss();

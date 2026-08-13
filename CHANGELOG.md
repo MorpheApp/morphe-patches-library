@@ -1,3 +1,94 @@
+# [1.6.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.0-dev.1...v1.6.0-dev.2) (2026-08-03)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Improve literal control flow exploration ([bc4c349](https://github.com/MorpheApp/morphe-patches-library/commit/bc4c3492da1c058ba8f3ca11c7035ceda4c010a5))
+
+# [1.6.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.11...v1.6.0-dev.1) (2026-07-31)
+
+
+### Features
+
+* Add a shared button press effect ([72d501a](https://github.com/MorpheApp/morphe-patches-library/commit/72d501ada81969720e7068fa76b549704eb0389c))
+
+## [1.5.2-dev.11](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.10...v1.5.2-dev.11) (2026-07-31)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle literals that are declared with a branch condition before the literal is used ([21e7118](https://github.com/MorpheApp/morphe-patches-library/commit/21e7118b175e582e24ea1e70657e08574db69e85))
+
+## [1.5.2-dev.10](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.9...v1.5.2-dev.10) (2026-07-30)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Replace multiple literals in the same method ([da601a6](https://github.com/MorpheApp/morphe-patches-library/commit/da601a67f050d40a4afa9ffc47c9f136b1907e39))
+
+## [1.5.2-dev.9](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.8...v1.5.2-dev.9) (2026-07-30)
+
+
+### Bug Fixes
+
+* **Utils:** Resolve layout direction from the locale script ([8b38158](https://github.com/MorpheApp/morphe-patches-library/commit/8b381584b2b3afd7e6f770d221152f97306e47d4))
+
+## [1.5.2-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.7...v1.5.2-dev.8) (2026-07-30)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle literals that are declared but never used ([52eaa48](https://github.com/MorpheApp/morphe-patches-library/commit/52eaa48e010ab4a5b0b30c13b0c1d36ea613a5db))
+
+## [1.5.2-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.6...v1.5.2-dev.7) (2026-07-30)
+
+
+### Bug Fixes
+
+* Improve insertLiteralOverride to handle intermediate objects such as Optional ([b6f3191](https://github.com/MorpheApp/morphe-patches-library/commit/b6f3191c23d736445ab68dda1f03ddf73112e33c))
+
+## [1.5.2-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.5...v1.5.2-dev.6) (2026-07-29)
+
+
+### Bug Fixes
+
+* Use stable patcher release ([3f09215](https://github.com/MorpheApp/morphe-patches-library/commit/3f09215c1d2c46148837f478c796ebb3e9ca2b6e))
+
+## [1.5.2-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.4...v1.5.2-dev.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* **Change package installer:** Use a lambda for installer package name ([4c25c6e](https://github.com/MorpheApp/morphe-patches-library/commit/4c25c6e6ac1e3c2942cf255286a8c9b390237d02))
+
+## [1.5.2-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.3...v1.5.2-dev.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* Spoof getPackageSource() int value ([96246cf](https://github.com/MorpheApp/morphe-patches-library/commit/96246cfdd8dd463f1a3015c1dcd31d36c9a72d2a))
+
+## [1.5.2-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.2...v1.5.2-dev.3) (2026-07-24)
+
+
+### Bug Fixes
+
+* Check for older patcher version in shared extension patch ([7f11841](https://github.com/MorpheApp/morphe-patches-library/commit/7f1184104f4fabc6a04c1a51326ffdf41e40b543))
+
+## [1.5.2-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.2-dev.1...v1.5.2-dev.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* Load all extension bundles in one bytecode patch ([10c8351](https://github.com/MorpheApp/morphe-patches-library/commit/10c8351410771b0e3bffcefe1662dde87d7961a9))
+
+## [1.5.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.1...v1.5.2-dev.1) (2026-07-19)
+
+
+### Performance Improvements
+
+* Prevent OOM crashes by streaming file I/O  and cleanup ([#38](https://github.com/MorpheApp/morphe-patches-library/issues/38)) ([de1a0a7](https://github.com/MorpheApp/morphe-patches-library/commit/de1a0a741e1c64cebb30f0e017f4b77d24321421))
+
 ## [1.5.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.0...v1.5.1) (2026-07-14)
 
 
