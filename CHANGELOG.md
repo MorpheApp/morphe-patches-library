@@ -1,3 +1,10 @@
+## [1.6.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.0...v1.6.1-dev.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle overriding literals in switch statements ([8f62d35](https://github.com/MorpheApp/morphe-patches-library/commit/8f62d35e2e196995dce650e761d9a16e38ebc96e))
+
 # [1.6.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.1...v1.6.0) (2026-08-13)
 
 
