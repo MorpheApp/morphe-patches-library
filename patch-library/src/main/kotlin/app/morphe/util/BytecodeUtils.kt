@@ -372,17 +372,25 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
  * .catch Exception; {:try_start .. :try_end} :handler
  * (following code)
  */
-fun MutableMethod.addInstructionsAfter(index: Int, instructions: String) {
-    val nextIndex = index + 1
+fun MutableMethod.addInstructionsOutsideTryBlock(insertIndex: Int, instructions: String) {
+    val implementation = this.implementation!!
 
-    if (nextIndex >= implementation!!.instructions.size) {
-        addInstructions(nextIndex, instructions)
+    if (insertIndex >= implementation.instructions.size) {
+        addInstructions(insertIndex, instructions)
         return
     }
 
-    addInstruction(nextIndex + 1, getInstruction(nextIndex))
-    addInstructionsWithLabels(nextIndex + 1, instructions)
-    removeInstruction(nextIndex)
+    // Only use the label-shifting logic if the instruction at insertIndex is the end of a try block.
+    // This avoids inserting code after control flow labels that might be jumped to from elsewhere.
+    val offsets = instructionCodeOffsets()
+    val nextOffset = offsets[insertIndex]
+    val isTryEnd = implementation.tryBlocks.any { it.startCodeAddress + it.codeUnitCount == nextOffset }
+
+    if (isTryEnd) {
+        addInstructionsAtControlFlowLabel(insertIndex, instructions)
+    } else {
+        addInstructions(insertIndex, instructions)
+    }
 }
 
 /**
