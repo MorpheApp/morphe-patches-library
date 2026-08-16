@@ -1,3 +1,10 @@
+## [1.6.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.1...v1.6.1-dev.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Add `addInstructionsAfter` ([406f177](https://github.com/MorpheApp/morphe-patches-library/commit/406f177635810fec4ba27c9fa61c96bcfb180a28))
+
 ## [1.6.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.0...v1.6.1-dev.1) (2026-08-14)
 
 
