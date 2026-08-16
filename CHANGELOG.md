@@ -1,3 +1,10 @@
+## [1.6.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.2...v1.6.1-dev.3) (2026-08-16)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Add addInstructionsOutsideTryBlock() ([0722b28](https://github.com/MorpheApp/morphe-patches-library/commit/0722b280d2cc401c91f78623944681e94632e7d3))
+
 ## [1.6.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.1...v1.6.1-dev.2) (2026-08-16)
 
 
