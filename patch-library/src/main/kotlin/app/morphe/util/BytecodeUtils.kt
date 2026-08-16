@@ -345,6 +345,47 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
 }
 
 /**
+ * Inserts instructions immediately after a given index, without extending any
+ * existing try/catch block that ends at that index.
+ *
+ * A plain addInstructions(index + 1, ...) call inserts before the instruction
+ * the try block's end label is anchored to, which drags that label forward
+ * and silently pulls the inserted code into the try block.
+ *
+ * Effectively this changes the code from:
+ * (original code)
+ * :try_end
+ * .catch Exception; {:try_start .. :try_end} :handler
+ * (following code)
+ *
+ * Into:
+ * (original code)
+ * :try_end
+ * .catch Exception; {:try_start .. :try_end} :handler
+ * (patch code)
+ * (following code)
+ *
+ * Instead of the incorrect result of using [MutableMethod.addInstructions]
+ * (original code)
+ * (patch code)
+ * :try_end
+ * .catch Exception; {:try_start .. :try_end} :handler
+ * (following code)
+ */
+fun MutableMethod.addInstructionsAfter(index: Int, instructions: String) {
+    val nextIndex = index + 1
+
+    if (nextIndex >= implementation!!.instructions.size) {
+        addInstructions(nextIndex, instructions)
+        return
+    }
+
+    addInstruction(nextIndex + 1, getInstruction(nextIndex))
+    addInstructionsWithLabels(nextIndex + 1, instructions)
+    removeInstruction(nextIndex)
+}
+
+/**
  * Get the index of the first instruction with the id of the given resource id name.
  *
  * Requires [resourceMappingPatch] as a dependency.
