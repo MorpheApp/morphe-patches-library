@@ -1,3 +1,10 @@
+## [1.6.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.3...v1.6.1-dev.4) (2026-08-17)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Change `instructionCodeOffsets` to public ([143a5b0](https://github.com/MorpheApp/morphe-patches-library/commit/143a5b0e8c18367f4c1cb50655b109c858e68c4f))
+
 ## [1.6.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.2...v1.6.1-dev.3) (2026-08-16)
 
 
