@@ -439,6 +439,10 @@ public class Utils {
         return context;
     }
 
+    public static boolean isContextSet() {
+        return context != null;
+    }
+
     public static void setContext(Context appContext) {
         // Intentionally use logger before context is set,
         // to expose any bugs in the 'no context available' logger code.
