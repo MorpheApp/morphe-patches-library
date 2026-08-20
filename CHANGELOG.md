@@ -1,3 +1,10 @@
+## [1.6.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.4...v1.6.1-dev.5) (2026-08-20)
+
+
+### Bug Fixes
+
+* Add method to check if context is set ([d115c3f](https://github.com/MorpheApp/morphe-patches-library/commit/d115c3fb6bb69479401b7f14c028f2a8fcd64f34))
+
 ## [1.6.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.3...v1.6.1-dev.4) (2026-08-17)
 
 
