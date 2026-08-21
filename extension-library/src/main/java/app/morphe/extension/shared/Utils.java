@@ -67,11 +67,6 @@ public class Utils {
     private static String versionName;
     private static String applicationLabel;
 
-    @ColorInt
-    private static int darkColor = Color.BLACK;
-    @ColorInt
-    private static int lightColor = Color.WHITE;
-
     @Nullable
     private static Boolean isDarkModeEnabled;
 
@@ -462,9 +457,6 @@ public class Utils {
             config.setLocale(language.getLocale());
             context = appContext.createConfigurationContext(config);
         }
-
-        setThemeLightColor(getThemeColor(getThemeLightColorResourceName(), Color.WHITE));
-        setThemeDarkColor(getThemeColor(getThemeDarkColorResourceName(), Color.BLACK));
     }
 
     public static void setClipboard(CharSequence text) {
@@ -667,6 +659,14 @@ public class Utils {
         Configuration config = Resources.getSystem().getConfiguration();
         final int currentNightMode = config.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    /**
+     * If the theme of the app was resolved, and {@link #isDarkModeEnabled()} no longer falls back
+     * to the night mode of the device. The app can show a theme of its own that differs from it.
+     */
+    public static boolean isDarkModeStatusKnown() {
+        return isDarkModeEnabled != null;
     }
 
     /**
@@ -876,124 +876,6 @@ public class Utils {
      */
     public static void setAppIsUsingBoldIcons(boolean boldIcons) {
         appIsUsingBoldIcons = boldIcons;
-    }
-
-    /**
-     * Sets the theme light color used by the app.
-     */
-    public static void setThemeLightColor(@ColorInt int color) {
-        Logger.printDebug(() -> "Setting theme light color: " + getColorHexString(color));
-        lightColor = color;
-    }
-
-    /**
-     * Sets the theme dark used by the app.
-     */
-    public static void setThemeDarkColor(@ColorInt int color) {
-        Logger.printDebug(() -> "Setting theme dark color: " + getColorHexString(color));
-        darkColor = color;
-    }
-
-    /**
-     * Returns the themed light color, or {@link Color#WHITE} if no theme was set using
-     * {@link #setThemeLightColor(int).
-     */
-    @ColorInt
-    public static int getThemeLightColor() {
-        return lightColor;
-    }
-
-    /**
-     * Returns the themed dark color, or {@link Color#BLACK} if no theme was set using
-     * {@link #setThemeDarkColor(int)}.
-     */
-    @ColorInt
-    public static int getThemeDarkColor() {
-        return darkColor;
-    }
-
-    /**
-     * Injection point.
-     */
-    @SuppressWarnings("SameReturnValue")
-    private static String getThemeLightColorResourceName() {
-        // Value is changed by Settings patch.
-        return "#FFFFFFFF";
-    }
-
-    /**
-     * Injection point.
-     */
-    @SuppressWarnings("SameReturnValue")
-    private static String getThemeDarkColorResourceName() {
-        // Value is changed by Settings patch.
-        return "#FF000000";
-    }
-
-    @ColorInt
-    private static int getThemeColor(String resourceName, int defaultColor) {
-        try {
-            return ResourceUtils.getColor(resourceName, defaultColor);
-        } catch (Exception ex) {
-            // This code can never be reached since a bad custom color will
-            // fail during resource compilation. So no localized strings are needed here.
-            Logger.printException(() -> "Invalid custom theme color: " + resourceName, ex);
-            return defaultColor;
-        }
-    }
-
-
-    @ColorInt
-    public static int getDialogBackgroundColor() {
-        if (isDarkModeEnabled()) {
-            final int darkColor = getThemeDarkColor();
-            return darkColor == Color.BLACK
-                    // Lighten the background a little if using AMOLED dark theme
-                    // as the dialogs are almost invisible.
-                    ? 0xFF080808 // 3%
-                    : darkColor;
-        }
-        return getThemeLightColor();
-    }
-
-    /**
-     * @return The current app background color.
-     */
-    @ColorInt
-    public static int getAppBackgroundColor() {
-        return isDarkModeEnabled() ? getThemeDarkColor() : getThemeLightColor();
-    }
-
-    /**
-     * @return The current app foreground color.
-     */
-    @ColorInt
-    public static int getAppForegroundColor() {
-        return isDarkModeEnabled()
-                ? getThemeLightColor()
-                : getThemeDarkColor();
-    }
-
-    @ColorInt
-    public static int getOkButtonBackgroundColor() {
-        return isDarkModeEnabled()
-                // Must be inverted color.
-                ? Color.WHITE
-                : Color.BLACK;
-    }
-
-    @ColorInt
-    public static int getCancelOrNeutralButtonBackgroundColor() {
-        return isDarkModeEnabled()
-                ? adjustColorBrightness(getDialogBackgroundColor(), 1.10f)
-                : adjustColorBrightness(getThemeLightColor(), 0.95f);
-    }
-
-    @ColorInt
-    public static int getEditTextBackground() {
-        return isDarkModeEnabled()
-                ? adjustColorBrightness(getDialogBackgroundColor(), 1.05f)
-                : adjustColorBrightness(getThemeLightColor(), 0.97f);
     }
 
     public static String getColorHexString(@ColorInt int color) {
