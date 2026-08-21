@@ -1,3 +1,10 @@
+## [1.6.1-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.7...v1.6.1-dev.8) (2026-08-21)
+
+
+### Bug Fixes
+
+* Move the theme colors and the UI that uses them out of the library ([#47](https://github.com/MorpheApp/morphe-patches-library/issues/47)) ([5998541](https://github.com/MorpheApp/morphe-patches-library/commit/5998541bc2567da123b925398f6af728057404cb))
+
 ## [1.6.1-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.6...v1.6.1-dev.7) (2026-08-21)
 
 
