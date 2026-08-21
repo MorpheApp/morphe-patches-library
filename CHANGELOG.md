@@ -1,3 +1,10 @@
+## [1.6.1-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.5...v1.6.1-dev.6) (2026-08-21)
+
+
+### Bug Fixes
+
+* Make Setting shared fields thread safe ([7f7ea32](https://github.com/MorpheApp/morphe-patches-library/commit/7f7ea32fc64b7c411ba2082b78906dfc97fd6876))
+
 ## [1.6.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.4...v1.6.1-dev.5) (2026-08-20)
 
 
