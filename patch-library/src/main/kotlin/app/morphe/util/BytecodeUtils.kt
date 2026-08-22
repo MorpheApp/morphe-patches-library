@@ -64,6 +64,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -893,7 +894,7 @@ fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor
  * Maps each instruction index to its starting code unit offset, so that branch targets
  * (given as code unit offsets) can be resolved back to instruction indices.
  */
-private fun Method.instructionCodeOffsets(): IntArray {
+fun Method.instructionCodeOffsets(): IntArray {
     val instructionList = this.implementation?.instructions?.toList() ?: return IntArray(0)
     val offsets = IntArray(instructionList.size)
     var offset = 0
@@ -966,6 +967,16 @@ private fun Method.findAllReachableLiteralEvents(
             instruction.isConditionalBranchInstruction -> {
                 queue.add(index + 1)
                 queue.add(branchTargetIndex(index, codeOffsets))
+            }
+            instruction.isSwitchInstruction -> {
+                queue.add(index + 1)
+                val payloadIndex = branchTargetIndex(index, codeOffsets)
+                val payload = instructionList[payloadIndex] as? SwitchPayload
+                payload?.switchElements?.forEach { element ->
+                    val targetOffset = codeOffsets[index] + element.offset
+                    val targetIndex = codeOffsets.indexOfFirst { it == targetOffset }
+                    if (targetIndex >= 0) queue.add(targetIndex)
+                }
             }
             instruction.isReturnInstruction -> {
                 // Dead end: nothing further executes along this path.

@@ -168,12 +168,12 @@ public abstract class Setting<T> {
      * All settings that were instantiated.
      * When a new setting is created, it is automatically added to this list.
      */
-    private static final List<Setting<?>> SETTINGS = new ArrayList<>();
+    private static final List<Setting<?>> SETTINGS = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Map of setting path to setting object.
      */
-    private static final Map<String, Setting<?>> PATH_TO_SETTINGS = new HashMap<>();
+    private static final Map<String, Setting<?>> PATH_TO_SETTINGS = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Preference all instances are saved to.

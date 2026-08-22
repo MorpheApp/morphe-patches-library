@@ -1,3 +1,66 @@
+## [1.6.1-dev.9](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.8...v1.6.1-dev.9) (2026-08-22)
+
+
+### Bug Fixes
+
+* Change to Kotlin 2.4.10 ([#48](https://github.com/MorpheApp/morphe-patches-library/issues/48)) ([0e966d9](https://github.com/MorpheApp/morphe-patches-library/commit/0e966d91753a99ff1bd9b58e912ec3a53f362617))
+
+## [1.6.1-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.7...v1.6.1-dev.8) (2026-08-21)
+
+
+### Bug Fixes
+
+* Move the theme colors and the UI that uses them out of the library ([#47](https://github.com/MorpheApp/morphe-patches-library/issues/47)) ([5998541](https://github.com/MorpheApp/morphe-patches-library/commit/5998541bc2567da123b925398f6af728057404cb))
+
+## [1.6.1-dev.7](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.6...v1.6.1-dev.7) (2026-08-21)
+
+
+### Bug Fixes
+
+* Update to latest patcher ([e042a68](https://github.com/MorpheApp/morphe-patches-library/commit/e042a68f4b20547babe0d0366f99141a480d9af9))
+
+## [1.6.1-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.5...v1.6.1-dev.6) (2026-08-21)
+
+
+### Bug Fixes
+
+* Make Setting shared fields thread safe ([7f7ea32](https://github.com/MorpheApp/morphe-patches-library/commit/7f7ea32fc64b7c411ba2082b78906dfc97fd6876))
+
+## [1.6.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.4...v1.6.1-dev.5) (2026-08-20)
+
+
+### Bug Fixes
+
+* Add method to check if context is set ([d115c3f](https://github.com/MorpheApp/morphe-patches-library/commit/d115c3fb6bb69479401b7f14c028f2a8fcd64f34))
+
+## [1.6.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.3...v1.6.1-dev.4) (2026-08-17)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Change `instructionCodeOffsets` to public ([143a5b0](https://github.com/MorpheApp/morphe-patches-library/commit/143a5b0e8c18367f4c1cb50655b109c858e68c4f))
+
+## [1.6.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.2...v1.6.1-dev.3) (2026-08-16)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Add addInstructionsOutsideTryBlock() ([0722b28](https://github.com/MorpheApp/morphe-patches-library/commit/0722b280d2cc401c91f78623944681e94632e7d3))
+
+## [1.6.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.1...v1.6.1-dev.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Add `addInstructionsAfter` ([406f177](https://github.com/MorpheApp/morphe-patches-library/commit/406f177635810fec4ba27c9fa61c96bcfb180a28))
+
+## [1.6.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.0...v1.6.1-dev.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle overriding literals in switch statements ([8f62d35](https://github.com/MorpheApp/morphe-patches-library/commit/8f62d35e2e196995dce650e761d9a16e38ebc96e))
+
 # [1.6.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.5.1...v1.6.0) (2026-08-13)
 
 
