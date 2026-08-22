@@ -1,3 +1,10 @@
+## [1.6.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1...v1.6.2-dev.1) (2026-08-22)
+
+
+### Bug Fixes
+
+* Clear extension fingerprint before adding extension hook ([e60d318](https://github.com/MorpheApp/morphe-patches-library/commit/e60d318da48d8cc89401ae3a25fc3b58c9005b45))
+
 ## [1.6.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.0...v1.6.1) (2026-08-22)
 
 

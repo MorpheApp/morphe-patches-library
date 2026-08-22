@@ -37,7 +37,6 @@ import com.android.tools.smali.dexlib2.iface.Method
 import java.net.URLDecoder
 import java.util.function.Supplier
 import java.util.jar.JarFile
-import java.util.logging.Logger
 
 const val SHARED_UTILS_EXTENSION_CLASS = "Lapp/morphe/extension/shared/Utils;"
 
@@ -107,7 +106,9 @@ private fun createSharedExtensionPatch(
 
     finalize {
         // The hooks are made in finalize to ensure that the context is hooked before any other patches.
-        hooks.forEach { hook -> hook(SHARED_UTILS_EXTENSION_CLASS) }
+        hooks.forEach { hook ->
+            hook(SHARED_UTILS_EXTENSION_CLASS)
+        }
 
         // Modify Utils method to include the patches release version.
         MorpheUtilsPatchesVersionFingerprint.method.apply {
@@ -153,10 +154,11 @@ private fun createSharedExtensionPatch(
 open class ExtensionHook(
     val fingerprint: Fingerprint,
     private val insertIndexResolver: BytecodePatchContext.(Method) -> Int = { 0 },
-    private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "v${it.implementation!!.registerCount - it.parameters.size - 1}" },
+    private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "p0" },
 ) {
     context(patchContext: BytecodePatchContext)
     operator fun invoke(extensionClassDescriptor: String) {
+        fingerprint.clearMatch() // Fingerprint may be shared.
         fingerprint.method.apply {
             val insertIndex = patchContext.insertIndexResolver(this)
             val contextRegister = patchContext.contextRegisterResolver(this)
