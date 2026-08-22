@@ -1,3 +1,10 @@
+## [1.6.1-dev.9](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.8...v1.6.1-dev.9) (2026-08-22)
+
+
+### Bug Fixes
+
+* Change to Kotlin 2.4.10 ([#48](https://github.com/MorpheApp/morphe-patches-library/issues/48)) ([0e966d9](https://github.com/MorpheApp/morphe-patches-library/commit/0e966d91753a99ff1bd9b58e912ec3a53f362617))
+
 ## [1.6.1-dev.8](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1-dev.7...v1.6.1-dev.8) (2026-08-21)
 
 
