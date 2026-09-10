@@ -1218,7 +1218,8 @@ fun Method.cloneParameters(mutableClass : MutableClass) : MutableMethod {
  * Added registers always start at index: `originalMethod.implementation!!.registerCount` of the
  * original uncloned method.
  *
- * **Fingerprint match indexes will be increased positively by [additionalRegisters]**.
+ * **Fingerprint match indexes will be increased positively by
+ * [numberOfParameterRegistersLogical] of the cloned method**.
  */
 fun Method.cloneMutable(
     name: String = this.name,
