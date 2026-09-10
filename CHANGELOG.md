@@ -1,3 +1,10 @@
+# [1.7.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.2...v1.7.0-dev.1) (2026-09-10)
+
+
+### Features
+
+* Include the patch category in the generated patches list ([#54](https://github.com/MorpheApp/morphe-patches-library/issues/54)) ([56adbd5](https://github.com/MorpheApp/morphe-patches-library/commit/56adbd5e3696d97d9aed48e3ffd105eb400e500c))
+
 ## [1.6.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.1...v1.6.2) (2026-08-22)
 
 
