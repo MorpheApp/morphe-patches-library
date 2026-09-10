@@ -1,3 +1,15 @@
+# [1.7.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.2...v1.7.0) (2026-09-10)
+
+
+### Bug Fixes
+
+* Update to latest Patcher ([3131408](https://github.com/MorpheApp/morphe-patches-library/commit/3131408ebaf48941cd363344c6f24108b1d3deb5))
+
+
+### Features
+
+* Include the patch category in the generated patches list ([#54](https://github.com/MorpheApp/morphe-patches-library/issues/54)) ([56adbd5](https://github.com/MorpheApp/morphe-patches-library/commit/56adbd5e3696d97d9aed48e3ffd105eb400e500c))
+
 # [1.7.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.0-dev.1...v1.7.0-dev.2) (2026-09-10)
 
 
