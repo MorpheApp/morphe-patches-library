@@ -1,3 +1,10 @@
+## [1.7.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.0...v1.7.1-dev.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* Change to Patcher implementation of resource mappings ([765c288](https://github.com/MorpheApp/morphe-patches-library/commit/765c288648e848603dafe9a2143a9e198071dda8))
+
 # [1.7.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.2...v1.7.0) (2026-09-10)
 
 
