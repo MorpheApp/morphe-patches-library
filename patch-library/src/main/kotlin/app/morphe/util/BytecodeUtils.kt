@@ -45,9 +45,8 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutab
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.smali.ExternalLabel
-import app.morphe.patches.all.misc.resources.ResourceType
-import app.morphe.patches.all.misc.resources.getResourceId
-import app.morphe.patches.all.misc.resources.resourceMappingPatch
+import app.morphe.patcher.resource.ResourceType
+import app.morphe.patcher.resource.resourceId
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT
@@ -347,21 +346,17 @@ fun MutableMethod.addInstructionsAtControlFlowLabel(
 /**
  * Get the index of the first instruction with the id of the given resource id name.
  *
- * Requires [resourceMappingPatch] as a dependency.
- *
  * @param resourceName the name of the resource to find the id for.
  * @return the index of the first instruction with the id of the given resource name, or -1 if not found.
  * @throws PatchException if the resource cannot be found.
  * @see [indexOfFirstResourceIdOrThrow], [indexOfFirstLiteralInstructionReversed]
  */
 fun Method.indexOfFirstResourceId(resourceName: String): Int {
-    return indexOfFirstLiteralInstruction(getResourceId(ResourceType.ID, resourceName))
+    return indexOfFirstLiteralInstruction(resourceId(ResourceType.ID, resourceName))
 }
 
 /**
  * Get the index of the first instruction with the id of the given resource name or throw a [PatchException].
- *
- * Requires [resourceMappingPatch] as a dependency.
  *
  * @throws [PatchException] if the resource is not found, or the method does not contain the resource id literal value.
  * @see [indexOfFirstResourceId], [indexOfFirstLiteralInstructionReversedOrThrow]
