@@ -39,14 +39,14 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
 import app.morphe.patcher.literal
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.resource.ResourceType
+import app.morphe.patcher.resource.resourceId
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.morphe.patcher.util.smali.ExternalLabel
-import app.morphe.patcher.resource.ResourceType
-import app.morphe.patcher.resource.resourceId
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.MOVE_RESULT
@@ -64,6 +64,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -73,6 +74,13 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import java.util.EnumSet
+
+private val moveOpcodes: EnumSet<Opcode> = EnumSet.of(
+    Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16,
+    Opcode.MOVE_WIDE, Opcode.MOVE_WIDE_FROM16, Opcode.MOVE_WIDE_16,
+    Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16
+)
 
 /**
  * Find the instruction index used for a toString() StringBuilder write of a given String name.
@@ -93,7 +101,7 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
     val stringUsageIndex = indexOfFirstInstruction(stringIndex) {
         val reference = getReference<MethodReference>()
         reference?.definingClass == "Ljava/lang/StringBuilder;" &&
-                (this as? FiveRegisterInstruction)?.registerD == stringRegister
+                registersUsed.getOrNull(1) == stringRegister
     }
     if (stringUsageIndex < 0) {
         throw IllegalArgumentException("Could not find StringBuilder usage in: $this")
@@ -108,7 +116,8 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
         // Should never happen.
         throw IllegalArgumentException("Could not find StringBuilder append usage in: $this")
     }
-    var fieldUsageRegister = getInstruction<FiveRegisterInstruction>(fieldUsageIndex).registerD
+    val fieldUsageInstruction = getInstruction(fieldUsageIndex)
+    var fieldUsageRegister = fieldUsageInstruction.registersUsed.getOrElse(1) { fieldUsageInstruction.registersUsed[0] }
 
     // Look backwards up the method to find the instruction that sets the register.
     var fieldSetIndex = indexOfFirstInstructionReversedOrThrow(fieldUsageIndex - 1) {
@@ -132,7 +141,21 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
             fieldSetIndex--
         }
 
-        val fieldSetReference = getInstruction<ReferenceInstruction>(fieldSetIndex).reference
+        val fieldSetInstruction = getInstruction(fieldSetIndex)
+
+        // If the instruction is a register MOVE (e.g. move-object/16, move/16),
+        // trace backwards to find where the source register was set.
+        if (fieldSetInstruction is TwoRegisterInstruction &&
+            fieldSetInstruction.opcode in moveOpcodes
+        ) {
+            fieldUsageRegister = fieldSetInstruction.registerB
+            fieldSetIndex = indexOfFirstInstructionReversedOrThrow(fieldSetIndex - 1) {
+                fieldUsageRegister == writeRegister
+            }
+            continue
+        }
+
+        val fieldSetReference = fieldSetInstruction.getReference<Reference>()
 
         if (isField && fieldSetReference is FieldReference ||
             !isField && fieldSetReference is MethodReference
@@ -143,7 +166,8 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
             // Object.toString(), String.valueOf(object)
             fieldSetReference.returnType == "Ljava/lang/String;"
         ) {
-            fieldUsageRegister = getInstruction<FiveRegisterInstruction>(fieldSetIndex).registerC
+            // FiveRegister or RegisterRange instruction.
+            fieldUsageRegister = fieldSetInstruction.registersUsed[0]
 
             // Look backwards up the method to find the instruction that sets the register.
             fieldSetIndex = indexOfFirstInstructionReversedOrThrow(fieldSetIndex - 1) {
@@ -151,7 +175,7 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
             }
             checksLeft--
         } else {
-            throw IllegalArgumentException("Unknown reference: $fieldSetReference")
+            throw IllegalArgumentException("Unknown reference or instruction: $fieldSetInstruction")
         }
     }
 
