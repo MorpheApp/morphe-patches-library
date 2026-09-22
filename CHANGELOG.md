@@ -1,3 +1,10 @@
+## [1.7.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.1...v1.7.1-dev.2) (2026-09-22)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle `findInstructionIndexFromToString` register move instructions ([1ba6e81](https://github.com/MorpheApp/morphe-patches-library/commit/1ba6e814e18bd9c42b0d978719aee2ea087025c9))
+
 ## [1.7.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.0...v1.7.1-dev.1) (2026-09-15)
 
 
