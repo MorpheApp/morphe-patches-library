@@ -4,9 +4,9 @@ package app.morphe.extension.shared;
  * Text pattern searching using a prefix tree (trie).
  */
 @SuppressWarnings("unused")
-public final class StringTrieSearch extends TrieSearch<String> {
+public final class StringTrieSearch extends TrieSearch<CharSequence> {
 
-    private static final class StringTrieNode extends TrieNode<String> {
+    private static final class StringTrieNode extends TrieNode<CharSequence> {
         StringTrieNode() {
             super();
         }
@@ -14,15 +14,15 @@ public final class StringTrieSearch extends TrieSearch<String> {
             super(nodeCharacterValue);
         }
         @Override
-        TrieNode<String> createNode(char nodeValue) {
+        TrieNode<CharSequence> createNode(char nodeValue) {
             return new StringTrieNode(nodeValue);
         }
         @Override
-        char getCharValue(String text, int index) {
+        char getCharValue(CharSequence text, int index) {
             return text.charAt(index);
         }
         @Override
-        int getTextLength(String text) {
+        int getTextLength(CharSequence text) {
             return text.length();
         }
     }

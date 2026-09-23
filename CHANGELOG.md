@@ -1,3 +1,38 @@
+## [1.7.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.4...v1.7.1-dev.5) (2026-09-23)
+
+
+### Bug Fixes
+
+* Add Utils.indexOf() overload ([8ae77a4](https://github.com/MorpheApp/morphe-patches-library/commit/8ae77a4dc8755d8ab3a20873993d4a973a99eea3))
+
+## [1.7.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.3...v1.7.1-dev.4) (2026-09-23)
+
+
+### Bug Fixes
+
+* Add CharSequence search methods ([8cff623](https://github.com/MorpheApp/morphe-patches-library/commit/8cff623c8fbedf3a2c75cff707be133307294243))
+
+## [1.7.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.2...v1.7.1-dev.3) (2026-09-23)
+
+
+### Bug Fixes
+
+* Let StringTrieSearch search a CharSequence ([#58](https://github.com/MorpheApp/morphe-patches-library/issues/58)) ([0fdd516](https://github.com/MorpheApp/morphe-patches-library/commit/0fdd516bfbb97498223ccded9dd66f70568e10d6))
+
+## [1.7.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.1...v1.7.1-dev.2) (2026-09-22)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Handle `findInstructionIndexFromToString` register move instructions ([1ba6e81](https://github.com/MorpheApp/morphe-patches-library/commit/1ba6e814e18bd9c42b0d978719aee2ea087025c9))
+
+## [1.7.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.0...v1.7.1-dev.1) (2026-09-15)
+
+
+### Bug Fixes
+
+* Change to Patcher implementation of resource mappings ([765c288](https://github.com/MorpheApp/morphe-patches-library/commit/765c288648e848603dafe9a2143a9e198071dda8))
+
 # [1.7.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.6.2...v1.7.0) (2026-09-10)
 
 
