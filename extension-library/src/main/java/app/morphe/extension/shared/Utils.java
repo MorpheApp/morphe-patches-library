@@ -342,20 +342,28 @@ public class Utils {
     }
 
     /**
-     * Same result as {@link String#indexOf(String)} for {@code fromIndex == 0}.
+     * Same result as {@link String#indexOf(String)}.
      */
     public static int indexOf(CharSequence text, CharSequence pattern) {
+        return indexOf(text, pattern, 0);
+    }
+
+    /**
+     * Same result as {@link String#indexOf(String, int)}.
+     */
+    public static int indexOf(CharSequence text, CharSequence pattern, int fromIndex) {
+        final int start = Math.max(0, fromIndex);
         final int patternLength = pattern.length();
-        if (patternLength == 0) {
-            return 0;
-        }
         final int textLength = text.length();
-        if (patternLength > textLength) {
-            return -1;
+        if (start >= textLength) {
+            return patternLength == 0 ? textLength : -1;
+        }
+        if (patternLength == 0) {
+            return start;
         }
         final char first = pattern.charAt(0);
         final int max = textLength - patternLength;
-        for (int i = 0; i <= max; i++) {
+        for (int i = start; i <= max; i++) {
             if (text.charAt(i) != first) {
                 continue;
             }
