@@ -1,3 +1,10 @@
+## [1.7.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1...v1.7.2-dev.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* Don't use CharSequence.isEmpty() in Utils ([#60](https://github.com/MorpheApp/morphe-patches-library/issues/60)) ([7963dd0](https://github.com/MorpheApp/morphe-patches-library/commit/7963dd0c8d338158cff5df040a9af227663598ff))
+
 ## [1.7.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.0...v1.7.1) (2026-09-23)
 
 
