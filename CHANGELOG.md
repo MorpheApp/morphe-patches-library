@@ -1,3 +1,10 @@
+## [1.7.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.3...v1.7.1-dev.4) (2026-09-23)
+
+
+### Bug Fixes
+
+* Add CharSequence search methods ([8cff623](https://github.com/MorpheApp/morphe-patches-library/commit/8cff623c8fbedf3a2c75cff707be133307294243))
+
 ## [1.7.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.2...v1.7.1-dev.3) (2026-09-23)
 
 
