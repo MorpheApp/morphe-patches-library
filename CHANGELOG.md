@@ -1,3 +1,10 @@
+## [1.7.1-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.4...v1.7.1-dev.5) (2026-09-23)
+
+
+### Bug Fixes
+
+* Add Utils.indexOf() overload ([8ae77a4](https://github.com/MorpheApp/morphe-patches-library/commit/8ae77a4dc8755d8ab3a20873993d4a973a99eea3))
+
 ## [1.7.1-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.3...v1.7.1-dev.4) (2026-09-23)
 
 
