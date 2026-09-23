@@ -256,33 +256,6 @@ public class Utils {
         return meaninglessValue;
     }
 
-    public static boolean containsAny(String value, String... targets) {
-        return indexOfFirstFound(value, targets) >= 0;
-    }
-
-    public static int indexOfFirstFound(String value, String... targets) {
-        if (isNotEmpty(value)) {
-            for (String string : targets) {
-                if (!string.isEmpty()) {
-                    final int indexOf = value.indexOf(string);
-                    if (indexOf >= 0) return indexOf;
-                }
-            }
-        }
-        return -1;
-    }
-
-    public static boolean equalsAny(String value, String...targets) {
-        if (isNotEmpty(value)) {
-            for (String string : targets) {
-                if (value.equals(string)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     /**
      * Checks if a specific app package is installed and enabled on the device.
      *
@@ -307,6 +280,34 @@ public class Utils {
         }
     }
 
+    public static boolean containsAny(CharSequence value, CharSequence... targets) {
+        return indexOfFirstFound(value, targets) >= 0;
+    }
+
+    public static int indexOfFirstFound(CharSequence value, CharSequence... targets) {
+        if (isNotEmpty(value)) {
+            for (CharSequence string : targets) {
+                if (!string.isEmpty()) {
+                    final int indexOf = indexOf(value, string);
+                    if (indexOf >= 0) return indexOf;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public static boolean equalsAny(CharSequence value, CharSequence...targets) {
+        if (isNotEmpty(value)) {
+            for (CharSequence string : targets) {
+                if (value.equals(string)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     public static boolean startsWithAny(CharSequence value, CharSequence...targets) {
         if (isNotEmpty(value)) {
             for (CharSequence string : targets) {
@@ -322,17 +323,18 @@ public class Utils {
      * Same result as {@link String#startsWith(String)}.
      */
     public static boolean startsWith(CharSequence text, CharSequence prefix) {
-        final int prefixLength = prefix.length();
-        if (prefixLength == 0) {
-            return true;
-        }
+        int prefixLength = prefix.length();
+
         if (prefixLength > text.length()) {
             return false;
         }
-        for (int i = 0; i < prefixLength; i++) {
-            if (text.charAt(i) != prefix.charAt(i)) {
+
+        int index = 0;
+        while (--prefixLength >= 0) {
+            if (text.charAt(index) != prefix.charAt(index)) {
                 return false;
             }
+            index++;
         }
         return true;
     }
