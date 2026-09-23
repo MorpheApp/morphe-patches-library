@@ -1,3 +1,10 @@
+## [1.7.1-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.2...v1.7.1-dev.3) (2026-09-23)
+
+
+### Bug Fixes
+
+* Let StringTrieSearch search a CharSequence ([#58](https://github.com/MorpheApp/morphe-patches-library/issues/58)) ([0fdd516](https://github.com/MorpheApp/morphe-patches-library/commit/0fdd516bfbb97498223ccded9dd66f70568e10d6))
+
 ## [1.7.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1-dev.1...v1.7.1-dev.2) (2026-09-22)
 
 
