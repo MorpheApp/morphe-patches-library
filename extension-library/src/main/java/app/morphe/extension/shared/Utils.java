@@ -287,7 +287,7 @@ public class Utils {
     public static int indexOfFirstFound(CharSequence value, CharSequence... targets) {
         if (isNotEmpty(value)) {
             for (CharSequence string : targets) {
-                if (!string.isEmpty()) {
+                if (isNotEmpty(string)) {
                     final int indexOf = indexOf(value, string);
                     if (indexOf >= 0) return indexOf;
                 }
@@ -549,7 +549,8 @@ public class Utils {
     }
 
     public static boolean isNotEmpty(@Nullable CharSequence str) {
-        return str != null && !str.isEmpty();
+        // CharSequence.isEmpty() is only available with Android 15+.
+        return str != null && str.length() > 0;
     }
 
     public static boolean isTablet() {
