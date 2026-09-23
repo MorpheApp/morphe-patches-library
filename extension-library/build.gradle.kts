@@ -29,6 +29,7 @@ android {
 
 dependencies {
     compileOnly(libs.annotation)
+    testImplementation("junit:junit:4.13.2")
 }
 
 afterEvaluate {
