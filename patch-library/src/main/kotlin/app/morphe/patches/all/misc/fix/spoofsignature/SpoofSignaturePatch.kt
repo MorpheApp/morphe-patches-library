@@ -1,6 +1,6 @@
 /*
  * Copyright 2026 Morphe.
- * https://github.com/MorpheApp/morphe-patches-library
+ * https://github.com/MorpheApp/morphe-patches-library/pull/61
  *
  * See the included NOTICE file for §7(c) terms that apply to this code.
  */
@@ -14,11 +14,12 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableStringEncodedValue
 import app.morphe.patches.all.misc.fix.spoofsignature.Constants.SPOOF_CLASS_SMALI_NAME
+import app.morphe.util.fiveRegisters
 import app.morphe.util.getEndEntityCertificate
 import app.morphe.util.getReference
 import app.morphe.util.matchAllMethodIndicesForEach
 import app.morphe.util.writeRegister
-import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import java.util.Base64
 
@@ -44,12 +45,14 @@ val spoofSignaturePatch = bytecodePatch {
 
     execute {
         GetPackageInfoFingerprint.matchAllMethodIndicesForEach(false) { index ->
-            val instr = getInstruction<Instruction35c>(index)
+            val registers = fiveRegisters(index)
+            val instr = getInstruction<FiveRegisterInstruction>(index)
             val params = "Landroid/content/pm/PackageManager;" +
                     instr.getReference<MethodReference>()!!.parameterTypes.joinToString("")
 
-            replaceInstruction(index,
-                "invoke-static {v${instr.registerC}, v${instr.registerD}, v${instr.registerE}}, $SPOOF_CLASS_SMALI_NAME->getPackageInfo($params)Landroid/content/pm/PackageInfo;"
+            replaceInstruction(
+                index,
+                "invoke-static { $registers }, $SPOOF_CLASS_SMALI_NAME->getPackageInfo($params)Landroid/content/pm/PackageInfo;"
             )
         }
     }

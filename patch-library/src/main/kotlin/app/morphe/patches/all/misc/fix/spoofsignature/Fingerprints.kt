@@ -1,6 +1,6 @@
 /*
  * Copyright 2026 Morphe.
- * https://github.com/MorpheApp/morphe-patches-library
+ * https://github.com/MorpheApp/morphe-patches-library/pull/61
  *
  * See the included NOTICE file for §7(c) terms that apply to this code.
  */
@@ -15,10 +15,10 @@ import com.android.tools.smali.dexlib2.Opcode
 object GetPackageInfoFingerprint : Fingerprint (
     filters = listOf(
         methodCall(
-            name = "getPackageInfo",
+            opcode = Opcode.INVOKE_VIRTUAL,
             definingClass = "Landroid/content/pm/PackageManager;",
-            returnType = "Landroid/content/pm/PackageInfo;",
-            opcode = Opcode.INVOKE_VIRTUAL
+            name = "getPackageInfo",
+            returnType = "Landroid/content/pm/PackageInfo;"
         )
     ),
     custom = { _, classDef ->
