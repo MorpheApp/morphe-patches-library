@@ -47,6 +47,7 @@ dependencyResolutionManagement {
 }
 
 include(":extension-library")
+include(":extensions:signature")
 include(":patch-library")
 
 // Include morphe-patcher as composite build if it exists locally
