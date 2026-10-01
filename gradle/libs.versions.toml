@@ -7,7 +7,7 @@ smali = "d92701d947"
 agp = "9.1.0"
 gson = "2.14.0"
 kotlin = "2.4.10"
-annotation = "1.10.0"
+annotation = "1.11.0"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
