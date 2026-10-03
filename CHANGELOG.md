@@ -1,3 +1,10 @@
+# [1.8.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0-dev.1...v1.8.0-dev.2) (2026-10-03)
+
+
+### Bug Fixes
+
+* Use fingerprint literal instead of manual searching ([f43f50a](https://github.com/MorpheApp/morphe-patches-library/commit/f43f50a48bf834065e7c36230b98975dcfb78d18))
+
 # [1.8.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.2-dev.1...v1.8.0-dev.1) (2026-09-26)
 
 
