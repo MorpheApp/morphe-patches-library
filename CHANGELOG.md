@@ -1,3 +1,10 @@
+# [1.8.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-10-03)
+
+
+### Bug Fixes
+
+* Preserve old deprecated behavior ([c48bf58](https://github.com/MorpheApp/morphe-patches-library/commit/c48bf58c7b0616658f573ec4f456bc2e369ecb7d))
+
 # [1.8.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0-dev.1...v1.8.0-dev.2) (2026-10-03)
 
 
