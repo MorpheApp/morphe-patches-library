@@ -1145,48 +1145,19 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, override: Boolea
  * Called for _all_ methods with the given literal value.
  * Method indices are iterated from last to first.
  */
+@Deprecated("Instead use Fingerprint literal() with matchAllMethodIndicesForEach()")
 fun BytecodePatchContext.forEachLiteralValueInstruction(
     literal: Long,
     block: MutableMethod.(matchingIndex: Int) -> Unit,
 ) {
-    val matchingIndexes = ArrayList<Int>()
-
-    classDefForEach { classDef ->
-        classDef.methods.forEach { method ->
-            method.implementation?.instructions?.let { instructions ->
-                matchingIndexes.clear()
-
-                instructions.forEachIndexed { index, instruction ->
-                    if ((instruction as? WideLiteralInstruction)?.wideLiteral == literal) {
-                        matchingIndexes.add(index)
-                    }
-                }
-
-                if (matchingIndexes.isNotEmpty()) {
-                    val mutableMethod = mutableClassDefBy(classDef).findMutableMethodOf(method)
-                    matchingIndexes.asReversed().forEach { index ->
-                        block.invoke(mutableMethod, index)
-                    }
-                }
-            }
-        }
+    Fingerprint(
+        filters = listOf(
+            literal(literal)
+        )
+    ).matchAllMethodIndicesForEach { index ->
+        block.invoke(this, index)
     }
 }
-
-
-@Deprecated(
-    "Method was renamed to Method.cloneParameters()",
-    replaceWith = ReplaceWith("cloneParameters()")
-)
-context(patchContext: BytecodePatchContext)
-fun Method.cloneMutableAndPreserveParameters() = cloneParameters()
-
-@Deprecated(
-    "Method was renamed to Method.cloneParameters()",
-    replaceWith = ReplaceWith("cloneParameters(mutableClass)")
-)
-context(patchContext: BytecodePatchContext)
-fun Method.cloneMutableAndPreserveParameters(mutableClass : MutableClass) = cloneParameters(mutableClass)
 
 
 /**
