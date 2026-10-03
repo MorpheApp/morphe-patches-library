@@ -1118,7 +1118,7 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
         filters = listOf(
             literal(literal)
         )
-    ).matchAllMethodIndicesForEach { index ->
+    ).matchAllMethodIndicesForEach(requireMatches = false) { index ->
         block.invoke(this, index)
     }
 }
