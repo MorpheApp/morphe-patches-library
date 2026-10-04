@@ -1,3 +1,18 @@
+# [1.8.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1...v1.8.0) (2026-10-04)
+
+
+### Bug Fixes
+
+* Access flags can be removed leaving invalid value ([15d9661](https://github.com/MorpheApp/morphe-patches-library/commit/15d9661491e310ba3b5767a6718c6ce95f6ddad4))
+* Don't use CharSequence.isEmpty() in Utils ([#60](https://github.com/MorpheApp/morphe-patches-library/issues/60)) ([7963dd0](https://github.com/MorpheApp/morphe-patches-library/commit/7963dd0c8d338158cff5df040a9af227663598ff))
+* Preserve old deprecated behavior ([c48bf58](https://github.com/MorpheApp/morphe-patches-library/commit/c48bf58c7b0616658f573ec4f456bc2e369ecb7d))
+* Use fingerprint literal instead of manual searching ([f43f50a](https://github.com/MorpheApp/morphe-patches-library/commit/f43f50a48bf834065e7c36230b98975dcfb78d18))
+
+
+### Features
+
+* Add universal signature spoofing patch ([#61](https://github.com/MorpheApp/morphe-patches-library/issues/61)) ([ca1f4e2](https://github.com/MorpheApp/morphe-patches-library/commit/ca1f4e2eb59cb1db02594f4c2e6f2590ee7c41c8))
+
 # [1.8.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0-dev.3...v1.8.0-dev.4) (2026-10-04)
 
 
