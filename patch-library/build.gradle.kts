@@ -20,12 +20,27 @@ kotlin {
     }
 }
 
+val dexInput = configurations.create("dexInput") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     // Used by JsonGenerator.
     implementation(libs.gson)
 
     implementation(libs.morphe.patcher)
     implementation(libs.smali)
+
+    dexInput(project(":extensions:signature", configuration = "dexOutput"))
+}
+
+tasks.named<Jar>("jar") {
+    dependsOn(":extensions:signature:generateDex")
+    from(dexInput) {
+        into("generated/extensions")
+        rename("classes.dex", "signature.dex")
+    }
 }
 
 publishing {
