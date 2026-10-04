@@ -1,3 +1,10 @@
+# [1.8.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0-dev.3...v1.8.0-dev.4) (2026-10-04)
+
+
+### Bug Fixes
+
+* Access flags can be removed leaving invalid value ([15d9661](https://github.com/MorpheApp/morphe-patches-library/commit/15d9661491e310ba3b5767a6718c6ce95f6ddad4))
+
 # [1.8.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0-dev.2...v1.8.0-dev.3) (2026-10-03)
 
 
