@@ -1,3 +1,10 @@
+# [1.9.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0...v1.9.0-dev.1) (2026-10-06)
+
+
+### Features
+
+* Add shared `Save crash log` patch ([#63](https://github.com/MorpheApp/morphe-patches-library/issues/63)) ([03115b6](https://github.com/MorpheApp/morphe-patches-library/commit/03115b6bc13437623ecb9d8a5f8e187b487ef171))
+
 # [1.8.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1...v1.8.0) (2026-10-04)
 
 
