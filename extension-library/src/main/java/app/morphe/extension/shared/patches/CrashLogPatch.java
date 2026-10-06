@@ -107,18 +107,19 @@ public final class CrashLogPatch {
             Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
 
             Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-                if (!handlingCrash) {
-                    handlingCrash = true;
-                    try {
+                try {
+                    if (!handlingCrash) {
+                        handlingCrash = true;
                         String toastMessage = writeCrashLog(appContext, thread, throwable);
                         showToastAndWait(appContext, toastMessage);
-                    } catch (Throwable ex) {
-                        Logger.printException(() -> "uncaughtException failure", ex);
                     }
-                }
-
-                if (originalHandler != null) {
-                    originalHandler.uncaughtException(thread, throwable);
+                } catch (Throwable ex) {
+                    Logger.printException(() -> "uncaughtException failure", ex);
+                } finally {
+                    // Must always be called, otherwise the app can be left frozen instead of closing.
+                    if (originalHandler != null) {
+                        originalHandler.uncaughtException(thread, throwable);
+                    }
                 }
             });
 
@@ -176,7 +177,8 @@ public final class CrashLogPatch {
      * @param englishFormat English string format to use if the resource does not exist.
      */
     private static String getString(String key, String englishFormat, Object... args) {
-        if (ResourceUtils.getIdentifier(ResourceType.STRING, key) == 0) {
+        // Context is not set if the app crashed before the extension hooks ran.
+        if (!Utils.isContextSet() || ResourceUtils.getIdentifier(ResourceType.STRING, key) == 0) {
             return String.format(englishFormat, args);
         }
 
@@ -284,7 +286,7 @@ public final class CrashLogPatch {
 
         String crashLog = "Morphe crash log\n\n"
                 + "Time: " + formatUtc("yyyy-MM-dd HH:mm:ss.SSS", time) + " UTC\n"
-                + "App: " + context.getPackageName() + " " + Utils.getAppVersionName() + "\n"
+                + "App: " + context.getPackageName() + " " + getInstalledVersion(context, context.getPackageName()) + "\n"
                 + "Patches: " + Utils.getPatchesReleaseVersion() + "\n"
                 + "Manager: " + getInstalledVersion(context, MANAGER_PACKAGE_NAME) + "\n"
                 + "MicroG: " + getInstalledVersion(context, MICROG_PACKAGE_NAME) + "\n"
