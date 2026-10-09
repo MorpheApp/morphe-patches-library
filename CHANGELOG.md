@@ -1,3 +1,10 @@
+# [1.9.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* Remove unused legacy dependency declaration from patches-list.json ([85bfeca](https://github.com/MorpheApp/morphe-patches-library/commit/85bfeca2325d2ac83401143d236a0c3c571c9df8))
+
 # [1.9.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0...v1.9.0-dev.1) (2026-10-06)
 
 
