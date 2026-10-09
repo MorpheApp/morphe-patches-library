@@ -538,6 +538,9 @@ public class Utils {
             Configuration config = new Configuration(appContext.getResources().getConfiguration());
             config.setLocale(language.getLocale());
             context = appContext.createConfigurationContext(config);
+
+            // An activity of the app has the app language, and strings resolved from it are cached.
+            ResourceUtils.useActivityContextIfAvailable = false;
         }
     }
 
