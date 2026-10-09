@@ -1,3 +1,10 @@
+# [1.9.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-10-09)
+
+
+### Bug Fixes
+
+* Strings resolved before opening settings ignore the Morphe language override ([42e06eb](https://github.com/MorpheApp/morphe-patches-library/commit/42e06ebda992494ee5a230e4cafb6993bd1fb631))
+
 # [1.9.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-10-09)
 
 
