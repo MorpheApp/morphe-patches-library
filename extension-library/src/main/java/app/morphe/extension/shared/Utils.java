@@ -1075,7 +1075,17 @@ public class Utils {
      *        when the size exceeds {@code maxSize}.
      */
     public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize) {
-        return new LinkedHashMap<>(2 * maxSize, 0.5f) {
+        return createSizeRestrictedMap(maxSize, false);
+    }
+
+    /**
+     * @param maxSize The maximum number of elements to keep in the map.
+     * @param keepAccessOrder If true, the map maintains the order of insertion.
+     * @return A {@link LinkedHashMap} that automatically evicts the oldest entry
+     *        when the size exceeds {@code maxSize}.
+     */
+    public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize, boolean keepAccessOrder) {
+        return new LinkedHashMap<>(2 * maxSize, 0.5f, keepAccessOrder) {
             @Override
             protected boolean removeEldestEntry(Entry eldest) {
                 return size() > maxSize;
