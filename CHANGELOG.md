@@ -1,3 +1,31 @@
+# [1.9.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-10-10)
+
+
+### Bug Fixes
+
+* Add overloaded size restricted utility method ([3c822fe](https://github.com/MorpheApp/morphe-patches-library/commit/3c822fe07eaef9cbb24a7ad7a1fff6efd2481ddf))
+
+# [1.9.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-10-09)
+
+
+### Bug Fixes
+
+* Strings resolved before opening settings ignore the Morphe language override ([42e06eb](https://github.com/MorpheApp/morphe-patches-library/commit/42e06ebda992494ee5a230e4cafb6993bd1fb631))
+
+# [1.9.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.1...v1.9.0-dev.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* Remove unused legacy dependency declaration from patches-list.json ([85bfeca](https://github.com/MorpheApp/morphe-patches-library/commit/85bfeca2325d2ac83401143d236a0c3c571c9df8))
+
+# [1.9.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0...v1.9.0-dev.1) (2026-10-06)
+
+
+### Features
+
+* Add shared `Save crash log` patch ([#63](https://github.com/MorpheApp/morphe-patches-library/issues/63)) ([03115b6](https://github.com/MorpheApp/morphe-patches-library/commit/03115b6bc13437623ecb9d8a5f8e187b487ef171))
+
 # [1.8.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.7.1...v1.8.0) (2026-10-04)
 
 
