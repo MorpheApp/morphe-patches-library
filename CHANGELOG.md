@@ -1,3 +1,10 @@
+# [1.9.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.3...v1.9.0-dev.4) (2026-10-10)
+
+
+### Bug Fixes
+
+* Add overloaded size restricted utility method ([3c822fe](https://github.com/MorpheApp/morphe-patches-library/commit/3c822fe07eaef9cbb24a7ad7a1fff6efd2481ddf))
+
 # [1.9.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v1.9.0-dev.2...v1.9.0-dev.3) (2026-10-09)
 
 
