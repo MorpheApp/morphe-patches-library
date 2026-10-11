@@ -309,7 +309,7 @@ class FreeRegisterProvider internal constructor(
  * @param index Index you need a use a free register at.
  * @param registersToExclude Registers to exclude, and consider as used. For most use cases,
  *                           all registers used in injected code should be specified.
- * @return The lowest register number (usually a 4-bit register) that is free at the given index.
+ * @return A free register at the given index. 4-bit registers are preferred over larger registers.
  * @throws IllegalArgumentException If no free registers can be found at the given index.
  *                                  This includes unusual method indexes that read from every register
  *                                  before any registers are wrote to, or if a switch statement is
@@ -340,7 +340,7 @@ fun Method.findFreeRegister(
  * @param index Index you need a use a free register at.
  * @param registersToExclude Registers to exclude, and consider as used. For most use cases,
  *                           all registers used in injected code should be specified.
- * @return The lowest register number (usually a 4-bit register) that is free at the given index.
+ * @return A free register at the given index. 4-bit registers are preferred over larger registers.
  * @throws IllegalArgumentException If no free registers can be found at the given index.
  *                                  This includes unusual method indexes that read from every register
  *                                  before any registers are wrote to, or if a switch statement is
