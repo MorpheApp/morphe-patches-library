@@ -272,4 +272,66 @@ class FreeRegisterProviderTest {
 
         assertEquals(1, method.findFreeRegister(1))
     }
+
+    @Test
+    fun `follows every path of a packed switch including no match`() {
+        // v0 is read when no case matches, so only v1 is free at the switch.
+        val method = method(
+            registers = 3,
+            parameters = "I",
+            returnType = "I",
+            body = """
+                const/4 v0, 0x5
+                packed-switch p0, :table
+                return v0
+                :case0
+                const/4 v0, 0x1
+                return v0
+                :case1
+                const/4 v0, 0x2
+                return v0
+                :table
+                .packed-switch 0x0
+                    :case0
+                    :case1
+                .end packed-switch
+            """
+        )
+
+        assertEquals(1, method.findFreeRegister(1))
+        assertEquals(1, method.getFreeRegisterProvider(1, 1).availableCount())
+    }
+
+    @Test
+    fun `follows every case of a sparse switch`() {
+        // v0 is read by the second case, so only v1 is free at the switch.
+        val method = method(
+            registers = 3,
+            parameters = "I",
+            returnType = "I",
+            body = """
+                const/4 v0, 0x5
+                sparse-switch p0, :table
+                const/4 v1, 0x0
+                const/4 v0, 0x0
+                add-int v0, v0, v1
+                return v0
+                :case_a
+                const/4 v1, 0x1
+                return v1
+                :case_b
+                const/4 v1, 0x2
+                add-int/2addr v0, v1
+                return v0
+                :table
+                .sparse-switch
+                    0x10 -> :case_a
+                    0x20 -> :case_b
+                .end sparse-switch
+            """
+        )
+
+        assertEquals(1, method.findFreeRegister(1))
+        assertEquals(1, method.getFreeRegisterProvider(1, 1).availableCount())
+    }
 }

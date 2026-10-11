@@ -43,6 +43,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import java.util.EnumSet
@@ -60,9 +61,9 @@ import java.util.EnumSet
  *                           all registers used in injected code should be specified.
  *
  * @throws IllegalArgumentException If no free registers can be found at the given index.
- *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found.
+ *                                  This includes unusual method indexes that read from every
+ *                                  register before any registers are wrote to, or if the paths of
+ *                                  a branch or switch statement have no common free registers.
  */
 fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int, registersToExclude: List<Int>) =
     FreeRegisterProvider(this, index, numberOfFreeRegistersNeeded, registersToExclude)
@@ -79,9 +80,9 @@ fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int,
  *                           all registers used in injected code should be specified.
  *
  * @throws IllegalArgumentException If no free registers can be found at the given index.
- *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found.
+ *                                  This includes unusual method indexes that read from every
+ *                                  register before any registers are wrote to, or if the paths of
+ *                                  a branch or switch statement have no common free registers.
  */
 fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int, vararg registersToExclude: Int) =
     FreeRegisterProvider(this, index, numberOfFreeRegistersNeeded, *registersToExclude)
@@ -300,9 +301,8 @@ class FreeRegisterProvider internal constructor(
  * finds the next register that is written to and not read from. If a return instruction
  * is encountered, then the lowest unused register is returned.
  *
- * This method should work for all situations including inserting at a branch statement,
- * but this may not work if the index is at or just before a switch statement or if the branch
- * paths have no common free registers.
+ * This method should work for all situations including inserting at a branch or switch statement,
+ * but this may not work if the branch paths have no common free registers.
  *
  * If you need multiple free registers, then instead use [Method.getFreeRegisterProvider].
  *
@@ -312,10 +312,9 @@ class FreeRegisterProvider internal constructor(
  * @return A free register at the given index. 4-bit registers are preferred over larger registers.
  * @throws IllegalArgumentException If no free registers can be found at the given index.
  *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found, or if the index is
- *                                  at/before a branch statement and the method has an unusually high
- *                                  amount of branching where no common free registers exist in both branch paths.
+ *                                  before any registers are wrote to, or if the index is at/before a branch
+ *                                  or switch statement and the method has an unusually high amount of branching
+ *                                  where no common free registers exist in all branch paths.
  */
 fun Method.findFreeRegister(
     index: Int,
@@ -331,9 +330,8 @@ fun Method.findFreeRegister(
  * finds the next register that is written to and not read from. If a return instruction
  * is encountered, then the lowest unused register is returned.
  *
- * This method should work for all situations including inserting at a branch statement,
- * but this may not work if the index is at or just before a switch statement or if the branch
- * paths have no common free registers.
+ * This method should work for all situations including inserting at a branch or switch statement,
+ * but this may not work if the branch paths have no common free registers.
  *
  * If you need multiple free registers, then instead use [Method.getFreeRegisterProvider].
  *
@@ -343,10 +341,9 @@ fun Method.findFreeRegister(
  * @return A free register at the given index. 4-bit registers are preferred over larger registers.
  * @throws IllegalArgumentException If no free registers can be found at the given index.
  *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found, or if the index is
- *                                  at/before a branch statement and the method has an unusually high
- *                                  amount of branching where no common free registers exist in both branch paths.
+ *                                  before any registers are wrote to, or if the index is at/before a branch
+ *                                  or switch statement and the method has an unusually high amount of branching
+ *                                  where no common free registers exist in all branch paths.
  */
 fun Method.findFreeRegister(
     index: Int,
@@ -374,7 +371,7 @@ private fun Method.findFreeRegisters(
     )
 
     if (freeRegisters.isEmpty()) {
-        // Should only happen if a switch statement is encountered before enough free registers are found.
+        // Should only happen if the branch paths have no common free registers.
         throw IllegalArgumentException("Could not find a free register from startIndex: " +
                 "$startIndex excluding: $registersToExclude")
     }
@@ -487,8 +484,30 @@ private fun Method.findFreeRegistersInternal(
         }
 
         if (instruction.isSwitchInstruction) {
-            // For now, do not handle the complexity of a switch statement and handle as a leaf node.
             if (logFreeRegisterSearch) println(" encountered switch index: $i opcode: " + instruction.opcode)
+            val payloadIndex = getBranchTargetInstructionIndex(instruction, i, offsetArray)
+            val payload = getInstruction(payloadIndex) as SwitchPayload
+
+            // Case offsets are relative to the switch instruction, not the payload.
+            val targetIndices = payload.switchElements.map {
+                findInstructionIndexByOffset(offsetArray[i] + it.offset, offsetArray)
+            } + (i + 1) // No case matched.
+
+            // A register is free only if it is free on every path.
+            val usedRegistersList = usedRegisters.toList()
+            val commonFreeRegisters = targetIndices.distinct().map { targetIndex ->
+                findFreeRegistersInternal(
+                    startIndex = targetIndex,
+                    numberOfFreeRegistersNeeded = numberOfFreeRegistersNeeded,
+                    currentDepth = currentDepth + 1,
+                    foundFreeRegistersAtIndex = foundFreeRegistersAtIndex,
+                    registersToExclude = usedRegistersList,
+                    offsetArray = offsetArray
+                ).toSet()
+            }.reduce { common, registers -> common intersect registers }
+            if (logFreeRegisterSearch) println(" switch registers: $commonFreeRegisters")
+
+            freeRegisters.addAll(commonFreeRegisters)
             return freeRegisters.toList()
         }
 
@@ -562,15 +581,14 @@ private fun Method.getBranchTargetInstructionIndex(
     return when (instruction.opcode) {
         GOTO, GOTO_16, GOTO_32,
         IF_EQ, IF_NE, IF_LT, IF_GE, IF_GT, IF_LE,
-        IF_EQZ, IF_NEZ, IF_LTZ, IF_GEZ, IF_GTZ, IF_LEZ -> {
+        IF_EQZ, IF_NEZ, IF_LTZ, IF_GEZ, IF_GTZ, IF_LEZ,
+        // Switch opcodes target the payload that holds the case targets.
+        PACKED_SWITCH, SPARSE_SWITCH -> {
             val offset = (instruction as OffsetInstruction).codeOffset
             val targetOffset = currentOffset + offset
             // Find the instruction index at this offset.
             findInstructionIndexByOffset(targetOffset, offsetArray)
         }
-        // These need special handling - they jump to payloads
-        // which then have their own target lists.
-        // PACKED_SWITCH, SPARSE_SWITCH -> // TODO?
         else -> throw IllegalStateException("Unsupported opcode: ${instruction.opcode}")
     }
 }
