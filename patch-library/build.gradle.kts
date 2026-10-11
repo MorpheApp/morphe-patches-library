@@ -32,7 +32,13 @@ dependencies {
     implementation(libs.morphe.patcher)
     implementation(libs.smali)
 
+    testImplementation(kotlin("test"))
+
     dexInput(project(":extensions:signature", configuration = "dexOutput"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.named<Jar>("jar") {
