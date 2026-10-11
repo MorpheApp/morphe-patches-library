@@ -129,4 +129,34 @@ class FreeRegisterProviderTest {
             assertTrue(opcode in FreeRegisterProvider.readModifyWriteOpcodes, "Missing: $opcode")
         }
     }
+
+    @Test
+    fun `finds the register written by a compare`() {
+        val method = method(
+            registers = 5,
+            returnType = "I",
+            body = """
+                const-wide v0, 0x1
+                const-wide v2, 0x2
+                cmp-long v4, v0, v2
+                return v4
+            """
+        )
+
+        assertEquals(4, method.findFreeRegister(2))
+    }
+
+    @Test
+    fun `write opcodes match the opcodes dexlib2 declares as setting a register`() {
+        // check-cast writes back the same object it reads, so it never frees a register.
+        val notWriteOnly = setOf(Opcode.CHECK_CAST)
+
+        Opcode.entries.filter { !it.odexOnly() && it !in notWriteOnly }.forEach { opcode ->
+            assertEquals(
+                opcode.setsRegister(),
+                opcode in FreeRegisterProvider.writeOpcodes,
+                "Mismatch: $opcode"
+            )
+        }
+    }
 }
