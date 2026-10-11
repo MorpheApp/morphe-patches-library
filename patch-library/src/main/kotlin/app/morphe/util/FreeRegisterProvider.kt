@@ -430,6 +430,9 @@ private fun Method.findFreeRegistersInternal(
     }
 
     val usedRegisters = registersToExclude.toMutableSet()
+    // The map holds this set, so registers added to it after exploring branches are also
+    // available to later visits of this index. A loop back to this index while it is still
+    // being explored sees only the registers found so far, which every path from here writes to.
     val freeRegisters = mutableSetOf<Int>()
     foundFreeRegistersAtIndex[startIndex] = freeRegisters
 
@@ -493,14 +496,15 @@ private fun Method.findFreeRegistersInternal(
             if (logFreeRegisterSearch) println(" encountered unconditional branch index: $i opcode: " + instruction.opcode)
 
             // Continue searching from the go-to index.
-            return (freeRegisters + findFreeRegistersInternal(
+            freeRegisters.addAll(findFreeRegistersInternal(
                 startIndex = getBranchTargetInstructionIndex(instruction, i, offsetArray),
                 numberOfFreeRegistersNeeded = numberOfFreeRegistersNeeded,
                 currentDepth = currentDepth, // Same depth since it's a continuation of single path.
                 foundFreeRegistersAtIndex = foundFreeRegistersAtIndex,
                 registersToExclude = usedRegisters.toList(),
                 offsetArray = offsetArray
-            )).toList()
+            ))
+            return freeRegisters.toList()
         }
 
         if (instruction.isConditionalBranchInstruction) {
@@ -527,7 +531,8 @@ private fun Method.findFreeRegistersInternal(
             )
             if (logFreeRegisterSearch) println(" fall thru registers: $fallThruFreeRegisters")
 
-            return (freeRegisters + branchFreeRegisters.intersect(fallThruFreeRegisters.toSet())).toList()
+            freeRegisters.addAll(branchFreeRegisters.intersect(fallThruFreeRegisters.toSet()))
+            return freeRegisters.toList()
         }
     }
 

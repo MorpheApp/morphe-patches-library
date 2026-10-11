@@ -247,4 +247,29 @@ class FreeRegisterProviderTest {
 
         assertEquals(1, method.findFreeRegister(gotoIndex))
     }
+
+    @Test
+    fun `reuses the complete result when two paths join at a branch`() {
+        // Both paths from index 1 reach the second if-eqz. The first visit must
+        // remember the registers found after that branch, not only the ones before it.
+        val method = method(
+            registers = 2,
+            body = """
+                const/4 v0, 0x0
+                if-eqz v0, :a
+                goto :join
+                :a
+                goto :join
+                :join
+                if-eqz v0, :b
+                const/4 v1, 0x1
+                return-void
+                :b
+                const/4 v1, 0x2
+                return-void
+            """
+        )
+
+        assertEquals(1, method.findFreeRegister(1))
+    }
 }
