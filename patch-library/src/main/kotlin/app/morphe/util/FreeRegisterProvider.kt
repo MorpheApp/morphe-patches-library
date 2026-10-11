@@ -504,7 +504,7 @@ private fun Method.getBranchTargetInstructionIndex(
     index: Int,
     offsetArray: IntArray
 ): Int {
-    check (index >0 && index < offsetArray.size) {
+    check (index >= 0 && index < offsetArray.size) {
         "Invalid index: $index"
     }
     val currentOffset = offsetArray[index]

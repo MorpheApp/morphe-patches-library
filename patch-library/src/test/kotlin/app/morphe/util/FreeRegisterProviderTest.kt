@@ -88,4 +88,20 @@ class FreeRegisterProviderTest {
 
         assertEquals(1, method.findFreeRegister(1))
     }
+
+    @Test
+    fun `follows a branch that is the first instruction`() {
+        val method = method(
+            registers = 2,
+            parameters = "I",
+            body = """
+                if-eqz p0, :skip
+                const/4 v0, 0x1
+                :skip
+                return-void
+            """
+        )
+
+        assertEquals(0, method.findFreeRegister(0))
+    }
 }
