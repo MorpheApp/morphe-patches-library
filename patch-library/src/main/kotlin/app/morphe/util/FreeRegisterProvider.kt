@@ -27,6 +27,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.util.FreeRegisterProvider.Companion.conditionalBranchOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.logFreeRegisterSearch
+import app.morphe.util.FreeRegisterProvider.Companion.readModifyWriteOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.returnOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.switchOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.unconditionalBranchOpcodes
@@ -227,6 +228,24 @@ class FreeRegisterProvider internal constructor(
         )
 
         /**
+         * Write opcodes that also read the register they write to,
+         * but list that register only once.
+         */
+        val readModifyWriteOpcodes: EnumSet<Opcode> = EnumSet.of(
+            ADD_DOUBLE_2ADDR, ADD_FLOAT_2ADDR, ADD_INT_2ADDR, ADD_LONG_2ADDR,
+            AND_INT_2ADDR, AND_LONG_2ADDR,
+            DIV_DOUBLE_2ADDR, DIV_FLOAT_2ADDR, DIV_INT_2ADDR, DIV_LONG_2ADDR,
+            MUL_DOUBLE_2ADDR, MUL_FLOAT_2ADDR, MUL_INT_2ADDR, MUL_LONG_2ADDR,
+            OR_INT_2ADDR, OR_LONG_2ADDR,
+            REM_DOUBLE_2ADDR, REM_FLOAT_2ADDR, REM_INT_2ADDR, REM_LONG_2ADDR,
+            SHL_INT_2ADDR, SHL_LONG_2ADDR,
+            SHR_INT_2ADDR, SHR_LONG_2ADDR,
+            SUB_DOUBLE_2ADDR, SUB_FLOAT_2ADDR, SUB_INT_2ADDR, SUB_LONG_2ADDR,
+            USHR_INT_2ADDR, USHR_LONG_2ADDR,
+            XOR_INT_2ADDR, XOR_LONG_2ADDR,
+        )
+
+        /**
          * For debugging and development.
          */
         internal const val logFreeRegisterSearch = false
@@ -383,7 +402,8 @@ private fun Method.findFreeRegistersInternal(
             val occurrences = instructionRegisters.count { it == writeRegister }
             // If it appears only once, it's write-only (to write).
             // If it appears more than once, it's also read.
-            if (occurrences <= 1) {
+            // 2addr opcodes always read the register they write to.
+            if (occurrences <= 1 && instruction.opcode !in readModifyWriteOpcodes) {
                 if (logFreeRegisterSearch) println(" found free register at $i: $writeRegister " +
                         "opcode: " + instruction.opcode + " reference: " + (instruction.getReference()))
                 freeRegisters.add(writeRegister)

@@ -25,6 +25,7 @@ package app.morphe.util
 
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.writer.builder.DexBuilder
 import com.android.tools.smali.smali.smaliFlexLexer
@@ -35,6 +36,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream
 import java.io.StringReader
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class FreeRegisterProviderTest {
 
@@ -103,5 +105,28 @@ class FreeRegisterProviderTest {
         )
 
         assertEquals(0, method.findFreeRegister(0))
+    }
+
+    @Test
+    fun `does not use the destination of a 2addr instruction`() {
+        val method = method(
+            registers = 3,
+            returnType = "I",
+            body = """
+                const/4 v0, 0x1
+                const/4 v1, 0x2
+                add-int/2addr v0, v1
+                return v0
+            """
+        )
+
+        assertEquals(2, method.findFreeRegister(2))
+    }
+
+    @Test
+    fun `every 2addr opcode is a read-modify-write opcode`() {
+        Opcode.entries.filter { it.name.endsWith("/2addr") }.forEach { opcode ->
+            assertTrue(opcode in FreeRegisterProvider.readModifyWriteOpcodes, "Missing: $opcode")
+        }
     }
 }
