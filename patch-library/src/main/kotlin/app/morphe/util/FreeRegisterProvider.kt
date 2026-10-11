@@ -31,6 +31,9 @@ import app.morphe.util.FreeRegisterProvider.Companion.readModifyWriteOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.returnOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.switchOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.unconditionalBranchOpcodes
+import app.morphe.util.FreeRegisterProvider.Companion.wideFirstRegisterReadOpcodes
+import app.morphe.util.FreeRegisterProvider.Companion.wideSecondRegisterOpcodes
+import app.morphe.util.FreeRegisterProvider.Companion.wideThirdRegisterOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.writeOpcodes
 import com.android.tools.smali.dexlib2.Format
 import com.android.tools.smali.dexlib2.Opcode
@@ -247,6 +250,46 @@ class FreeRegisterProvider internal constructor(
         )
 
         /**
+         * Opcodes that read a wide (long or double) value from their first register.
+         * Wide writes to the first register are identified by [Opcode.setsWideRegister].
+         */
+        val wideFirstRegisterReadOpcodes: EnumSet<Opcode> = EnumSet.of(
+            RETURN_WIDE,
+            APUT_WIDE,
+            IPUT_WIDE, IPUT_WIDE_VOLATILE,
+            SPUT_WIDE, SPUT_WIDE_VOLATILE,
+        )
+
+        /**
+         * Opcodes whose second register is a wide (long or double) value.
+         */
+        val wideSecondRegisterOpcodes: EnumSet<Opcode> = EnumSet.of(
+            MOVE_WIDE, MOVE_WIDE_FROM16, MOVE_WIDE_16,
+            NEG_LONG, NOT_LONG, NEG_DOUBLE,
+            LONG_TO_INT, LONG_TO_FLOAT, LONG_TO_DOUBLE,
+            DOUBLE_TO_INT, DOUBLE_TO_LONG, DOUBLE_TO_FLOAT,
+            CMP_LONG, CMPL_DOUBLE, CMPG_DOUBLE,
+            ADD_LONG, SUB_LONG, MUL_LONG, DIV_LONG, REM_LONG,
+            AND_LONG, OR_LONG, XOR_LONG, SHL_LONG, SHR_LONG, USHR_LONG,
+            ADD_DOUBLE, SUB_DOUBLE, MUL_DOUBLE, DIV_DOUBLE, REM_DOUBLE,
+            // Shift 2addr opcodes are not included, since the second register is the int shift amount.
+            ADD_LONG_2ADDR, SUB_LONG_2ADDR, MUL_LONG_2ADDR, DIV_LONG_2ADDR, REM_LONG_2ADDR,
+            AND_LONG_2ADDR, OR_LONG_2ADDR, XOR_LONG_2ADDR,
+            ADD_DOUBLE_2ADDR, SUB_DOUBLE_2ADDR, MUL_DOUBLE_2ADDR, DIV_DOUBLE_2ADDR, REM_DOUBLE_2ADDR,
+        )
+
+        /**
+         * Opcodes whose third register is a wide (long or double) value.
+         */
+        val wideThirdRegisterOpcodes: EnumSet<Opcode> = EnumSet.of(
+            CMP_LONG, CMPL_DOUBLE, CMPG_DOUBLE,
+            // Shift opcodes are not included, since the third register is the int shift amount.
+            ADD_LONG, SUB_LONG, MUL_LONG, DIV_LONG, REM_LONG,
+            AND_LONG, OR_LONG, XOR_LONG,
+            ADD_DOUBLE, SUB_DOUBLE, MUL_DOUBLE, DIV_DOUBLE, REM_DOUBLE,
+        )
+
+        /**
          * For debugging and development.
          */
         internal const val logFreeRegisterSearch = false
@@ -393,21 +436,31 @@ private fun Method.findFreeRegistersInternal(
 
     for (i in startIndex until instructions.count()) {
         val instruction = getInstruction(i)
-        val instructionRegisters = instruction.registersUsed
+        val instructionRegisters = instruction.registersAccessed
 
-        // Check for write-only register.
+        // Check for write-only registers.
+        // 2addr opcodes always read the register they write to.
         val writeRegister = instruction.writeRegister
-        if (writeRegister != null && writeRegister !in usedRegisters) {
-            // Check if this register is ONLY written to (not also read)
-            // Count occurrences of writeRegister in instructionRegisters.
-            val occurrences = instructionRegisters.count { it == writeRegister }
-            // If it appears only once, it's write-only (to write).
-            // If it appears more than once, it's also read.
-            // 2addr opcodes always read the register they write to.
-            if (occurrences <= 1 && instruction.opcode !in readModifyWriteOpcodes) {
-                if (logFreeRegisterSearch) println(" found free register at $i: $writeRegister " +
+        if (writeRegister != null && instruction.opcode !in readModifyWriteOpcodes) {
+            // A wide write replaces both registers of the pair.
+            val writtenRegisters = if (instruction.opcode.setsWideRegister()) {
+                listOf(writeRegister, writeRegister + 1)
+            } else {
+                listOf(writeRegister)
+            }
+
+            for (register in writtenRegisters) {
+                if (register in usedRegisters) continue
+
+                // Check if this register is ONLY written to (not also read)
+                // If it appears only once, it's write-only (to write).
+                // If it appears more than once, it's also read.
+                val occurrences = instructionRegisters.count { it == register }
+                if (occurrences > 1) continue
+
+                if (logFreeRegisterSearch) println(" found free register at $i: $register " +
                         "opcode: " + instruction.opcode + " reference: " + (instruction.getReference()))
-                freeRegisters.add(writeRegister)
+                freeRegisters.add(register)
                 // If the requested number of free registers is found and this is not a branch,
                 // then no additional searching is needed.
                 // But if this is a branch, then this all free registers should be found
@@ -592,6 +645,25 @@ val Instruction.registersUsed: List<Int>
         is OneRegisterInstruction -> listOf(registerA)
         is RegisterRangeInstruction -> (startRegister until (startRegister + registerCount)).toList()
         else -> emptyList()
+    }
+
+/**
+ * A wide (long or double) value occupies the named register and the register after it.
+ *
+ * @return The registers used by this instruction, including the second register of each wide value.
+ */
+private val Instruction.registersAccessed: List<Int>
+    get() {
+        val registers = registersUsed
+        val wideSecondHalves = registers.filterIndexed { position, _ ->
+            when (position) {
+                0 -> opcode.setsWideRegister() || opcode in wideFirstRegisterReadOpcodes
+                1 -> opcode in wideSecondRegisterOpcodes
+                2 -> opcode in wideThirdRegisterOpcodes
+                else -> false
+            }
+        }.map { it + 1 }
+        return registers + wideSecondHalves
     }
 
 /**

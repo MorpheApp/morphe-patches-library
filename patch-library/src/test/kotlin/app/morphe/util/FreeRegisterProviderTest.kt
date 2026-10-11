@@ -159,4 +159,66 @@ class FreeRegisterProviderTest {
             )
         }
     }
+
+    @Test
+    fun `does not use the upper register of a wide value that is read later`() {
+        val method = method(
+            registers = 3,
+            returnType = "I",
+            body = """
+                const-wide v0, 0x1
+                sput-wide v0, LTest;->wide:J
+                const/4 v1, 0x0
+                return v1
+            """
+        )
+
+        assertEquals(2, method.findFreeRegister(1))
+    }
+
+    @Test
+    fun `only the wide operands of an instruction use a register pair`() {
+        // The shift amount v2 is an int, so v3 is not read.
+        val method = method(
+            registers = 4,
+            returnType = "J",
+            body = """
+                const/4 v2, 0x1
+                const-wide v0, 0x5
+                shl-long v0, v0, v2
+                return-wide v0
+            """
+        )
+
+        assertEquals(3, method.findFreeRegister(2))
+    }
+
+    @Test
+    fun `a wide write frees both registers of the pair`() {
+        val method = method(
+            registers = 2,
+            body = """
+                const-wide v0, 0x1
+                sput-wide v0, LTest;->wide:J
+                return-void
+            """
+        )
+
+        val provider = method.getFreeRegisterProvider(0, 2)
+        assertEquals(listOf(0, 1), listOf(provider.getFreeRegister(), provider.getFreeRegister()))
+    }
+
+    @Test
+    fun `every opcode with a wide operand is classified`() {
+        Opcode.entries.filter {
+            !it.odexOnly() && listOf("wide", "long", "double").any { type -> type in it.name }
+        }.forEach { opcode ->
+            assertTrue(
+                opcode.setsWideRegister() ||
+                        opcode in FreeRegisterProvider.wideFirstRegisterReadOpcodes ||
+                        opcode in FreeRegisterProvider.wideSecondRegisterOpcodes,
+                "Not classified: $opcode"
+            )
+        }
+    }
 }
