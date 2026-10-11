@@ -221,4 +221,30 @@ class FreeRegisterProviderTest {
             )
         }
     }
+
+    @Test
+    fun `follows a branch past a payload in the middle of the method`() {
+        val method = method(
+            registers = 2,
+            returnType = "I",
+            body = """
+                const/4 v0, 0x2
+                new-array v0, v0, [I
+                fill-array-data v0, :data
+                goto :after
+                :data
+                .array-data 4
+                    0x1
+                    0x2
+                .end array-data
+                :after
+                sput-object v0, LTest;->array:[I
+                const/4 v1, 0x0
+                return v1
+            """
+        )
+        val gotoIndex = method.implementation!!.instructions.indexOfFirst { it.opcode == Opcode.GOTO }
+
+        assertEquals(1, method.findFreeRegister(gotoIndex))
+    }
 }

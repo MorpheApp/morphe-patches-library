@@ -35,7 +35,6 @@ import app.morphe.util.FreeRegisterProvider.Companion.wideFirstRegisterReadOpcod
 import app.morphe.util.FreeRegisterProvider.Companion.wideSecondRegisterOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.wideThirdRegisterOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.writeOpcodes
-import com.android.tools.smali.dexlib2.Format
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.*
 import com.android.tools.smali.dexlib2.iface.Method
@@ -371,7 +370,7 @@ private fun Method.findFreeRegisters(
         currentDepth = 0,
         foundFreeRegistersAtIndex = mutableMapOf(),
         registersToExclude = registersToExclude,
-        offsetArray = buildInstructionOffsetArray()
+        offsetArray = instructionCodeOffsets()
     )
 
     if (freeRegisters.isEmpty()) {
@@ -538,34 +537,6 @@ private fun Method.findFreeRegistersInternal(
     throw IllegalArgumentException("Start index is outside normal control flow: $startIndex")
 }
 
-private fun Method.buildInstructionOffsetArray(): IntArray {
-    val instructionCount = instructions.count()
-    val offsetArray = IntArray(instructionCount) { -1 }
-    var currentOffset = 0
-
-    for (i in 0 until instructionCount) {
-        val instruction = getInstruction(i)
-        val format = instruction.opcode.format
-
-        if (!format.isPayloadFormat) {
-            offsetArray[i] = currentOffset
-
-            // Get size in bytes from format.
-            val sizeInBytes = format.size
-            val sizeInCodeUnits = when {
-                sizeInBytes > 0 -> sizeInBytes / 2  // Normal instruction
-                format == Format.UnresolvedOdexInstruction -> 1  // Default size
-                else -> 1  // Fallback for any other edge case
-            }
-
-            currentOffset += sizeInCodeUnits
-        }
-        // Skip payloads
-    }
-
-    return offsetArray
-}
-
 /**
  * Returns an instruction index for a given branch instruction.
  *
@@ -603,7 +574,7 @@ private fun Method.getBranchTargetInstructionIndex(
  * Finds the instruction index for a given code offset.
  *
  * @param targetOffset Target code offset in 16-bit units
- * @param offsetArray Array mapping instruction index to code offset (-1 for payloads)
+ * @param offsetArray Array mapping instruction index to code offset.
  * @return Instruction index at the target offset, or null if not found
  */
 private fun Method.findInstructionIndexByOffset(
