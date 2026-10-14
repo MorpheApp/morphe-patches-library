@@ -551,6 +551,7 @@ public class Utils {
         clipboard.setPrimaryClip(clip);
     }
 
+    @SuppressWarnings("SizeReplaceableByIsEmpty")
     public static boolean isNotEmpty(@Nullable CharSequence str) {
         // CharSequence.isEmpty() is only available with Android 15+.
         return str != null && str.length() > 0;
@@ -926,6 +927,7 @@ public class Utils {
      * @param widthPercentage The width of the dialog as a percentage of the screen's portrait width (0-100).
      * @param dimAmount If true, sets the background dim amount to 0 (no dimming); if false, leaves the default dim amount.
      */
+    @SuppressWarnings("deprecation")
     public static void setDialogWindowParameters(Window window, int gravity, int yOffsetDip, int widthPercentage, boolean dimAmount) {
         WindowManager.LayoutParams params = window.getAttributes();
 
@@ -936,6 +938,8 @@ public class Utils {
         if (dimAmount) {
             params.dimAmount = 0f;
         }
+
+        params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 
         window.setAttributes(params); // Apply window attributes.
         window.setBackgroundDrawable(null); // Remove default dialog background
