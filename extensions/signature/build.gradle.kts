@@ -10,7 +10,7 @@ val minApi = 23
 
 android {
     namespace = "app.morphe.extension.signature"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         minSdk = minApi

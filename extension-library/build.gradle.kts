@@ -8,7 +8,7 @@ base.archivesName = "morphe-extensions-library"
 
 android {
     namespace = "app.morphe.extension.library"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 23
