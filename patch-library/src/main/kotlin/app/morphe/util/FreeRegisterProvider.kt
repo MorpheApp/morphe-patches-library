@@ -25,8 +25,8 @@ package app.morphe.util
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.util.FreeRegisterProvider.Companion.LOG_FREE_REGISTER_SEARCH
 import app.morphe.util.FreeRegisterProvider.Companion.conditionalBranchOpcodes
-import app.morphe.util.FreeRegisterProvider.Companion.logFreeRegisterSearch
 import app.morphe.util.FreeRegisterProvider.Companion.readModifyWriteOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.returnOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.switchOpcodes
@@ -292,7 +292,7 @@ class FreeRegisterProvider internal constructor(
         /**
          * For debugging and development.
          */
-        internal const val logFreeRegisterSearch = false
+        internal const val LOG_FREE_REGISTER_SEARCH = false
     }
 }
 
@@ -359,7 +359,7 @@ private fun Method.findFreeRegisters(
     numberOfFreeRegistersNeeded: Int,
     registersToExclude: List<Int>
 ): List<Int> {
-    if (logFreeRegisterSearch) println(" Searching startIndex: $startIndex method: $this")
+    if (LOG_FREE_REGISTER_SEARCH) println(" Searching startIndex: $startIndex method: $this")
 
     val freeRegisters = findFreeRegistersInternal(
         startIndex = startIndex,
@@ -376,7 +376,7 @@ private fun Method.findFreeRegisters(
                 "$startIndex excluding: $registersToExclude")
     }
 
-    if (logFreeRegisterSearch) println(" final free registers found: $freeRegisters")
+    if (LOG_FREE_REGISTER_SEARCH) println(" final free registers found: $freeRegisters")
 
     // Use 4-bit registers first, but keep sorting stable among 4-bit vs not 4-bit.
     return freeRegisters.sortedWith { first, second ->
@@ -391,7 +391,7 @@ private fun Method.findFreeRegisters(
 }
 
 /**
- * Returns all free registers found starting from [startIndex].Follows branches up to [maxDepth].
+ * Returns all free registers found starting from [startIndex].
  *
  * @param startIndex Inclusive starting index.
  * @param numberOfFreeRegistersNeeded The minimum free registers to ensure will be returned.
@@ -457,7 +457,7 @@ private fun Method.findFreeRegistersInternal(
                 val occurrences = instructionRegisters.count { it == register }
                 if (occurrences > 1) continue
 
-                if (logFreeRegisterSearch) println(" found free register at $i: $register " +
+                if (LOG_FREE_REGISTER_SEARCH) println(" found free register at $i: $register " +
                         "opcode: " + instruction.opcode + " reference: " + (instruction.getReference()))
                 freeRegisters.add(register)
                 // If the requested number of free registers is found and this is not a branch,
@@ -479,12 +479,12 @@ private fun Method.findFreeRegistersInternal(
             val allRegisters = (0 until implementation!!.registerCount).toList()
             val unusedRegisters = allRegisters - usedRegisters
             freeRegisters.addAll(unusedRegisters)
-            if (logFreeRegisterSearch) println(" encountered return index: $i and found: $freeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered return index: $i and found: $freeRegisters")
             return freeRegisters.toList()
         }
 
         if (instruction.isSwitchInstruction) {
-            if (logFreeRegisterSearch) println(" encountered switch index: $i opcode: " + instruction.opcode)
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered switch index: $i opcode: " + instruction.opcode)
             val payloadIndex = getBranchTargetInstructionIndex(instruction, i, offsetArray)
             val payload = getInstruction(payloadIndex) as SwitchPayload
 
@@ -505,14 +505,14 @@ private fun Method.findFreeRegistersInternal(
                     offsetArray = offsetArray
                 ).toSet()
             }.reduce { common, registers -> common intersect registers }
-            if (logFreeRegisterSearch) println(" switch registers: $commonFreeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" switch registers: $commonFreeRegisters")
 
             freeRegisters.addAll(commonFreeRegisters)
             return freeRegisters.toList()
         }
 
         if (instruction.isUnconditionalBranchInstruction) {
-            if (logFreeRegisterSearch) println(" encountered unconditional branch index: $i opcode: " + instruction.opcode)
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered unconditional branch index: $i opcode: " + instruction.opcode)
 
             // Continue searching from the go-to index.
             freeRegisters.addAll(findFreeRegistersInternal(
@@ -527,7 +527,7 @@ private fun Method.findFreeRegistersInternal(
         }
 
         if (instruction.isConditionalBranchInstruction) {
-            if (logFreeRegisterSearch) println(" encountered conditional branch index: $i opcode: " + instruction.opcode)
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered conditional branch index: $i opcode: " + instruction.opcode)
             val usedRegistersList = usedRegisters.toList()
 
             val branchFreeRegisters = findFreeRegistersInternal(
@@ -538,7 +538,7 @@ private fun Method.findFreeRegistersInternal(
                 registersToExclude = usedRegistersList,
                 offsetArray = offsetArray
             )
-            if (logFreeRegisterSearch) println(" branch registers: $branchFreeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" branch registers: $branchFreeRegisters")
 
             val fallThruFreeRegisters = findFreeRegistersInternal(
                 startIndex = i + 1,
@@ -548,7 +548,7 @@ private fun Method.findFreeRegistersInternal(
                 registersToExclude = usedRegistersList,
                 offsetArray = offsetArray
             )
-            if (logFreeRegisterSearch) println(" fall thru registers: $fallThruFreeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" fall thru registers: $fallThruFreeRegisters")
 
             freeRegisters.addAll(branchFreeRegisters.intersect(fallThruFreeRegisters.toSet()))
             return freeRegisters.toList()

@@ -10,7 +10,7 @@ val minApi = 23
 
 android {
     namespace = "app.morphe.extension.signature"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = minApi
@@ -32,13 +32,15 @@ val dexOutput = configurations.create("dexOutput") {
 }
 
 artifacts {
-    add(dexOutput.name, layout.buildDirectory.dir("outputs/dex").map { it.file("classes.dex") }) {
+    add(
+        dexOutput.name,
+        layout.buildDirectory.dir("outputs/dex").map { it.file("classes.dex") }) {
         builtBy("generateDex")
     }
 }
 
-
 tasks.register("generateDex") {
+    description = "Generates and compiles Java classes into a dex file using D8."
     group = "build"
 
     val compileTask = tasks.named<JavaCompile>("compileReleaseJavaWithJavac")

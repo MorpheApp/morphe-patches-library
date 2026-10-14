@@ -1,17 +1,19 @@
 # Dependencies must also be added to LicensesDialog.java
 
 [versions]
+agp = "9.1.0"
+annotation = "1.10.0"
+gson = "2.14.0"
+junit = "4.13.2"
+kotlin = "2.4.10"
 morphe-patcher = "1.14.0"
 # Tracking https://github.com/google/smali/issues/100.
 smali = "d92701d947"
-agp = "9.1.0"
-gson = "2.14.0"
-kotlin = "2.4.10"
-annotation = "1.10.0"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+junit = { module = "junit:junit", version.ref = "junit" }
 morphe-patcher = { module = "app.morphe:morphe-patcher", version.ref = "morphe-patcher" }
 smali = { module = "com.github.MorpheApp.smali:smali", version.ref = "smali" }
 

@@ -8,7 +8,7 @@ base.archivesName = "morphe-extensions-library"
 
 android {
     namespace = "app.morphe.extension.library"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 23
@@ -29,7 +29,7 @@ android {
 
 dependencies {
     compileOnly(libs.annotation)
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 }
 
 afterEvaluate {
@@ -75,4 +75,3 @@ afterEvaluate {
         }
     }
 }
-
