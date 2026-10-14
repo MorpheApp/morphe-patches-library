@@ -418,6 +418,7 @@ public abstract class Setting<T> {
      *
      * @return The newly saved default value.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public T resetToDefault() {
         save(defaultValue);
         return defaultValue;

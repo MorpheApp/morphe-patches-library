@@ -79,6 +79,21 @@ public class ResourceUtils {
         return resourceId;
     }
 
+    /**
+     * @return zero if the resource is not found.
+     * @param type Resource type, or <code>null</code> to search all types for the first declaration.
+     */
+    public static int getSystemIdentifier(@Nullable ResourceType type, String name) {
+        try {
+            return Resources.getSystem().getIdentifier(name,
+                    type == null ? null : type.type,
+                    "android");
+        } catch (Exception ex) {
+            handleException(type, name);
+        }
+        return 0;
+    }
+
     public static int getAnimIdentifier(String name) {
         return getIdentifier(ResourceType.ANIM, name);
     }
@@ -153,6 +168,10 @@ public class ResourceUtils {
         return getIdentifier(ResourceType.STRING, name);
     }
 
+    public static int getSystemStringIdentifier(String name) {
+        return getSystemIdentifier(ResourceType.STRING, name);
+    }
+
     public static int getStyleIdentifier(String name) {
         return getIdentifier(ResourceType.STYLE, name);
     }
@@ -219,8 +238,7 @@ public class ResourceUtils {
 
     @Nullable
     public static String getSystemStringByLocale(String name, Locale locale) {
-        // TODO? Add getSystemStringIdentifier()?
-        final int identifier = Resources.getSystem().getIdentifier(name, "string", "android");
+        final int identifier = getSystemStringIdentifier(name);
         if (identifier == 0) {
             handleException(ResourceType.STRING, name);
             return name;

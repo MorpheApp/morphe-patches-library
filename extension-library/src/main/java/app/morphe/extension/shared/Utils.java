@@ -538,6 +538,9 @@ public class Utils {
             Configuration config = new Configuration(appContext.getResources().getConfiguration());
             config.setLocale(language.getLocale());
             context = appContext.createConfigurationContext(config);
+
+            // An activity of the app has the app language, and strings resolved from it are cached.
+            ResourceUtils.useActivityContextIfAvailable = false;
         }
     }
 
@@ -548,6 +551,7 @@ public class Utils {
         clipboard.setPrimaryClip(clip);
     }
 
+    @SuppressWarnings("SizeReplaceableByIsEmpty")
     public static boolean isNotEmpty(@Nullable CharSequence str) {
         // CharSequence.isEmpty() is only available with Android 15+.
         return str != null && str.length() > 0;
@@ -923,6 +927,7 @@ public class Utils {
      * @param widthPercentage The width of the dialog as a percentage of the screen's portrait width (0-100).
      * @param dimAmount If true, sets the background dim amount to 0 (no dimming); if false, leaves the default dim amount.
      */
+    @SuppressWarnings("deprecation")
     public static void setDialogWindowParameters(Window window, int gravity, int yOffsetDip, int widthPercentage, boolean dimAmount) {
         WindowManager.LayoutParams params = window.getAttributes();
 
@@ -933,6 +938,8 @@ public class Utils {
         if (dimAmount) {
             params.dimAmount = 0f;
         }
+
+        params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 
         window.setAttributes(params); // Apply window attributes.
         window.setBackgroundDrawable(null); // Remove default dialog background
@@ -984,16 +991,8 @@ public class Utils {
                 .replaceAll("").toLowerCase(Locale.ROOT);
     }
 
-    /**
-     * Set all preferences to multiline titles if the device is not using an English variant.
-     * The English strings are heavily scrutinized and all titles fit on screen
-     * except 2 or 3 preference strings and those do not affect readability.
-     * <p>
-     * Allowing multiline for those 2 or 3 English preferences looks weird and out of place,
-     * and visually it looks better to clip the text and keep all titles 1 line.
-     */
     @SuppressWarnings("deprecation")
-    public static void setPreferenceTitlesToMultiLineIfNeeded(PreferenceGroup group) {
+    public static void setPreferenceTitlesToMultiLine(PreferenceGroup group) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
         }
@@ -1003,7 +1002,7 @@ public class Utils {
             pref.setSingleLineTitle(false);
 
             if (pref instanceof PreferenceGroup subGroup) {
-                setPreferenceTitlesToMultiLineIfNeeded(subGroup);
+                setPreferenceTitlesToMultiLine(subGroup);
             }
         }
     }
@@ -1072,7 +1071,17 @@ public class Utils {
      *        when the size exceeds {@code maxSize}.
      */
     public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize) {
-        return new LinkedHashMap<>(2 * maxSize, 0.5f) {
+        return createSizeRestrictedMap(maxSize, false);
+    }
+
+    /**
+     * @param maxSize The maximum number of elements to keep in the map.
+     * @param keepAccessOrder If true, the map maintains the order of insertion.
+     * @return A {@link LinkedHashMap} that automatically evicts the oldest entry
+     *        when the size exceeds {@code maxSize}.
+     */
+    public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize, boolean keepAccessOrder) {
+        return new LinkedHashMap<>(2 * maxSize, 0.5f, keepAccessOrder) {
             @Override
             protected boolean removeEldestEntry(Entry eldest) {
                 return size() > maxSize;

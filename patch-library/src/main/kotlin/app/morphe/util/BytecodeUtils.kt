@@ -1145,9 +1145,9 @@ fun Method.cloneParameters() = cloneParameters(
  *
  * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
  */
-fun Method.cloneParameters(mutableClass : MutableClass) : MutableMethod {
+internal fun Method.cloneParameters(mutableClass : MutableClass) : MutableMethod {
     check (!AccessFlags.STATIC.isSet(accessFlags) || parameters.isNotEmpty()) {
-        "Static methods have no parameter registers to preserve"
+        "Static method has no no parameter registers to preserve"
     }
 
     val clonedMethod = cloneMutable(
@@ -1161,6 +1161,61 @@ fun Method.cloneParameters(mutableClass : MutableClass) : MutableMethod {
     }
 
     return clonedMethod
+}
+
+/**
+ * Clones this method with additional free registers and replaces the original method in its class.
+ *
+ * In most cases, if you only need a few extra registers and the method has parameters,
+ * then instead use [cloneParameters] and use the p0-px registers as your free registers.
+ * `addFreeRegisters()` is intended for when there are not enough parameter registers.
+ *
+ * Instructions are added to the start of the cloned method to copy the pX parameter registers
+ * (p0, p1, p2, etc.) to the registers they used in the original method, so all existing code
+ * is unchanged and can still access the parameters. The free registers are numbered from
+ * `registerCount` of the original method up to `registerCount + numberOfAdditionalRegisters - 1`,
+ * and are free to use anywhere after the added instructions.
+ *
+ * Because the free registers come after all existing registers, they may be too large for
+ * instructions that only accept 4-bit registers (v0 - v15).
+ *
+ * This method becomes stale and must not be modified after calling this,
+ * instead the returned cloned method must be used.
+ *
+ * @param numberOfAdditionalRegisters The number of free registers to add.
+ * @return The cloned method that replaced this method, and the number of instructions added
+ *         to the start of the cloned method. Instruction indexes of this method, such as
+ *         Fingerprint match indexes, must be increased by the number of added instructions.
+ */
+context(patchContext: BytecodePatchContext)
+fun MutableMethod.addFreeRegisters(numberOfAdditionalRegisters: Int) = addFreeRegisters(
+    numberOfAdditionalRegisters,
+    patchContext.mutableClassDefBy(definingClass)
+)
+
+internal fun MutableMethod.addFreeRegisters(
+    numberOfAdditionalRegisters: Int,
+    mutableClass: MutableClass
+): Pair<MutableMethod, Int> {
+    check(numberOfAdditionalRegisters > 0) {
+        "Number of additional registers must be greater than zero: $numberOfAdditionalRegisters"
+    }
+    checkNotNull(implementation) {
+        "Method has no implementation: $this"
+    }
+
+    val clonedMethod = cloneMutable(
+        additionalRegisters = numberOfAdditionalRegisters
+    )
+    val addedInstructions = clonedMethod.instructions.size - instructions.size
+
+    // Replace existing method with cloned with more registers.
+    mutableClass.methods.apply {
+        remove(this@addFreeRegisters)
+        add(clonedMethod)
+    }
+
+    return Pair(clonedMethod, addedInstructions)
 }
 
 /**

@@ -22,6 +22,7 @@ import app.morphe.extension.shared.Utils;
  * If saved numbers will not be used with a preference fragment,
  * then store the primitive numbers using the {@link #preferences} itself.
  */
+@SuppressWarnings("deprecation")
 public class SharedPrefCategory {
     @NonNull
     public final String name;
@@ -43,6 +44,7 @@ public class SharedPrefCategory {
         preferences.edit().putString(key, (value == null ? null : value.toString())).commit();
     }
 
+    @SuppressWarnings("unused")
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void clear() {
         preferences.edit().clear().commit();

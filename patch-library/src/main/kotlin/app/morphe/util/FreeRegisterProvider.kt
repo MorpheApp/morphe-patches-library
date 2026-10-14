@@ -25,13 +25,16 @@ package app.morphe.util
 
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.util.FreeRegisterProvider.Companion.LOG_FREE_REGISTER_SEARCH
 import app.morphe.util.FreeRegisterProvider.Companion.conditionalBranchOpcodes
-import app.morphe.util.FreeRegisterProvider.Companion.logFreeRegisterSearch
+import app.morphe.util.FreeRegisterProvider.Companion.readModifyWriteOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.returnOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.switchOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.unconditionalBranchOpcodes
+import app.morphe.util.FreeRegisterProvider.Companion.wideFirstRegisterReadOpcodes
+import app.morphe.util.FreeRegisterProvider.Companion.wideSecondRegisterOpcodes
+import app.morphe.util.FreeRegisterProvider.Companion.wideThirdRegisterOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.writeOpcodes
-import com.android.tools.smali.dexlib2.Format
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.*
 import com.android.tools.smali.dexlib2.iface.Method
@@ -40,6 +43,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.ThreeRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import java.util.EnumSet
@@ -57,9 +61,9 @@ import java.util.EnumSet
  *                           all registers used in injected code should be specified.
  *
  * @throws IllegalArgumentException If no free registers can be found at the given index.
- *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found.
+ *                                  This includes unusual method indexes that read from every
+ *                                  register before any registers are wrote to, or if the paths of
+ *                                  a branch or switch statement have no common free registers.
  */
 fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int, registersToExclude: List<Int>) =
     FreeRegisterProvider(this, index, numberOfFreeRegistersNeeded, registersToExclude)
@@ -76,9 +80,9 @@ fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int,
  *                           all registers used in injected code should be specified.
  *
  * @throws IllegalArgumentException If no free registers can be found at the given index.
- *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found.
+ *                                  This includes unusual method indexes that read from every
+ *                                  register before any registers are wrote to, or if the paths of
+ *                                  a branch or switch statement have no common free registers.
  */
 fun Method.getFreeRegisterProvider(index: Int, numberOfFreeRegistersNeeded: Int, vararg registersToExclude: Int) =
     FreeRegisterProvider(this, index, numberOfFreeRegistersNeeded, *registersToExclude)
@@ -194,7 +198,8 @@ class FreeRegisterProvider internal constructor(
             MOVE_OBJECT_FROM16, MOVE_OBJECT_16, MOVE_RESULT, MOVE_RESULT_WIDE, MOVE_RESULT_OBJECT, MOVE_EXCEPTION,
             CONST, CONST_4, CONST_16, CONST_HIGH16, CONST_WIDE_16, CONST_WIDE_32,
             CONST_WIDE, CONST_WIDE_HIGH16, CONST_STRING, CONST_STRING_JUMBO,
-            CONST_CLASS,
+            CONST_CLASS, CONST_METHOD_HANDLE, CONST_METHOD_TYPE,
+            CMP_LONG, CMPL_FLOAT, CMPG_FLOAT, CMPL_DOUBLE, CMPG_DOUBLE,
             IGET, IGET_WIDE, IGET_OBJECT, IGET_BOOLEAN, IGET_BYTE, IGET_CHAR, IGET_SHORT,
             IGET_VOLATILE, IGET_WIDE_VOLATILE, IGET_OBJECT_VOLATILE,
             SGET, SGET_WIDE, SGET_OBJECT, SGET_BOOLEAN, SGET_BYTE, SGET_CHAR, SGET_SHORT,
@@ -227,9 +232,67 @@ class FreeRegisterProvider internal constructor(
         )
 
         /**
+         * Write opcodes that also read the register they write to,
+         * but list that register only once.
+         */
+        val readModifyWriteOpcodes: EnumSet<Opcode> = EnumSet.of(
+            ADD_DOUBLE_2ADDR, ADD_FLOAT_2ADDR, ADD_INT_2ADDR, ADD_LONG_2ADDR,
+            AND_INT_2ADDR, AND_LONG_2ADDR,
+            DIV_DOUBLE_2ADDR, DIV_FLOAT_2ADDR, DIV_INT_2ADDR, DIV_LONG_2ADDR,
+            MUL_DOUBLE_2ADDR, MUL_FLOAT_2ADDR, MUL_INT_2ADDR, MUL_LONG_2ADDR,
+            OR_INT_2ADDR, OR_LONG_2ADDR,
+            REM_DOUBLE_2ADDR, REM_FLOAT_2ADDR, REM_INT_2ADDR, REM_LONG_2ADDR,
+            SHL_INT_2ADDR, SHL_LONG_2ADDR,
+            SHR_INT_2ADDR, SHR_LONG_2ADDR,
+            SUB_DOUBLE_2ADDR, SUB_FLOAT_2ADDR, SUB_INT_2ADDR, SUB_LONG_2ADDR,
+            USHR_INT_2ADDR, USHR_LONG_2ADDR,
+            XOR_INT_2ADDR, XOR_LONG_2ADDR,
+        )
+
+        /**
+         * Opcodes that read a wide (long or double) value from their first register.
+         * Wide writes to the first register are identified by [Opcode.setsWideRegister].
+         */
+        val wideFirstRegisterReadOpcodes: EnumSet<Opcode> = EnumSet.of(
+            RETURN_WIDE,
+            APUT_WIDE,
+            IPUT_WIDE, IPUT_WIDE_VOLATILE,
+            SPUT_WIDE, SPUT_WIDE_VOLATILE,
+        )
+
+        /**
+         * Opcodes whose second register is a wide (long or double) value.
+         */
+        val wideSecondRegisterOpcodes: EnumSet<Opcode> = EnumSet.of(
+            MOVE_WIDE, MOVE_WIDE_FROM16, MOVE_WIDE_16,
+            NEG_LONG, NOT_LONG, NEG_DOUBLE,
+            LONG_TO_INT, LONG_TO_FLOAT, LONG_TO_DOUBLE,
+            DOUBLE_TO_INT, DOUBLE_TO_LONG, DOUBLE_TO_FLOAT,
+            CMP_LONG, CMPL_DOUBLE, CMPG_DOUBLE,
+            ADD_LONG, SUB_LONG, MUL_LONG, DIV_LONG, REM_LONG,
+            AND_LONG, OR_LONG, XOR_LONG, SHL_LONG, SHR_LONG, USHR_LONG,
+            ADD_DOUBLE, SUB_DOUBLE, MUL_DOUBLE, DIV_DOUBLE, REM_DOUBLE,
+            // Shift 2addr opcodes are not included, since the second register is the int shift amount.
+            ADD_LONG_2ADDR, SUB_LONG_2ADDR, MUL_LONG_2ADDR, DIV_LONG_2ADDR, REM_LONG_2ADDR,
+            AND_LONG_2ADDR, OR_LONG_2ADDR, XOR_LONG_2ADDR,
+            ADD_DOUBLE_2ADDR, SUB_DOUBLE_2ADDR, MUL_DOUBLE_2ADDR, DIV_DOUBLE_2ADDR, REM_DOUBLE_2ADDR,
+        )
+
+        /**
+         * Opcodes whose third register is a wide (long or double) value.
+         */
+        val wideThirdRegisterOpcodes: EnumSet<Opcode> = EnumSet.of(
+            CMP_LONG, CMPL_DOUBLE, CMPG_DOUBLE,
+            // Shift opcodes are not included, since the third register is the int shift amount.
+            ADD_LONG, SUB_LONG, MUL_LONG, DIV_LONG, REM_LONG,
+            AND_LONG, OR_LONG, XOR_LONG,
+            ADD_DOUBLE, SUB_DOUBLE, MUL_DOUBLE, DIV_DOUBLE, REM_DOUBLE,
+        )
+
+        /**
          * For debugging and development.
          */
-        internal const val logFreeRegisterSearch = false
+        internal const val LOG_FREE_REGISTER_SEARCH = false
     }
 }
 
@@ -238,22 +301,20 @@ class FreeRegisterProvider internal constructor(
  * finds the next register that is written to and not read from. If a return instruction
  * is encountered, then the lowest unused register is returned.
  *
- * This method should work for all situations including inserting at a branch statement,
- * but this may not work if the index is at or just before a switch statement or if the branch
- * paths have no common free registers.
+ * This method should work for all situations including inserting at a branch or switch statement,
+ * but this may not work if the branch paths have no common free registers.
  *
  * If you need multiple free registers, then instead use [Method.getFreeRegisterProvider].
  *
  * @param index Index you need a use a free register at.
  * @param registersToExclude Registers to exclude, and consider as used. For most use cases,
  *                           all registers used in injected code should be specified.
- * @return The lowest register number (usually a 4-bit register) that is free at the given index.
+ * @return A free register at the given index. 4-bit registers are preferred over larger registers.
  * @throws IllegalArgumentException If no free registers can be found at the given index.
  *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found, or if the index is
- *                                  at/before a branch statement and the method has an unusually high
- *                                  amount of branching where no common free registers exist in both branch paths.
+ *                                  before any registers are wrote to, or if the index is at/before a branch
+ *                                  or switch statement and the method has an unusually high amount of branching
+ *                                  where no common free registers exist in all branch paths.
  */
 fun Method.findFreeRegister(
     index: Int,
@@ -269,22 +330,20 @@ fun Method.findFreeRegister(
  * finds the next register that is written to and not read from. If a return instruction
  * is encountered, then the lowest unused register is returned.
  *
- * This method should work for all situations including inserting at a branch statement,
- * but this may not work if the index is at or just before a switch statement or if the branch
- * paths have no common free registers.
+ * This method should work for all situations including inserting at a branch or switch statement,
+ * but this may not work if the branch paths have no common free registers.
  *
  * If you need multiple free registers, then instead use [Method.getFreeRegisterProvider].
  *
  * @param index Index you need a use a free register at.
  * @param registersToExclude Registers to exclude, and consider as used. For most use cases,
  *                           all registers used in injected code should be specified.
- * @return The lowest register number (usually a 4-bit register) that is free at the given index.
+ * @return A free register at the given index. 4-bit registers are preferred over larger registers.
  * @throws IllegalArgumentException If no free registers can be found at the given index.
  *                                  This includes unusual method indexes that read from every register
- *                                  before any registers are wrote to, or if a switch statement is
- *                                  encountered before any free registers are found, or if the index is
- *                                  at/before a branch statement and the method has an unusually high
- *                                  amount of branching where no common free registers exist in both branch paths.
+ *                                  before any registers are wrote to, or if the index is at/before a branch
+ *                                  or switch statement and the method has an unusually high amount of branching
+ *                                  where no common free registers exist in all branch paths.
  */
 fun Method.findFreeRegister(
     index: Int,
@@ -300,7 +359,7 @@ private fun Method.findFreeRegisters(
     numberOfFreeRegistersNeeded: Int,
     registersToExclude: List<Int>
 ): List<Int> {
-    if (logFreeRegisterSearch) println(" Searching startIndex: $startIndex method: $this")
+    if (LOG_FREE_REGISTER_SEARCH) println(" Searching startIndex: $startIndex method: $this")
 
     val freeRegisters = findFreeRegistersInternal(
         startIndex = startIndex,
@@ -308,16 +367,16 @@ private fun Method.findFreeRegisters(
         currentDepth = 0,
         foundFreeRegistersAtIndex = mutableMapOf(),
         registersToExclude = registersToExclude,
-        offsetArray = buildInstructionOffsetArray()
+        offsetArray = instructionCodeOffsets()
     )
 
     if (freeRegisters.isEmpty()) {
-        // Should only happen if a switch statement is encountered before enough free registers are found.
+        // Should only happen if the branch paths have no common free registers.
         throw IllegalArgumentException("Could not find a free register from startIndex: " +
                 "$startIndex excluding: $registersToExclude")
     }
 
-    if (logFreeRegisterSearch) println(" final free registers found: $freeRegisters")
+    if (LOG_FREE_REGISTER_SEARCH) println(" final free registers found: $freeRegisters")
 
     // Use 4-bit registers first, but keep sorting stable among 4-bit vs not 4-bit.
     return freeRegisters.sortedWith { first, second ->
@@ -332,7 +391,7 @@ private fun Method.findFreeRegisters(
 }
 
 /**
- * Returns all free registers found starting from [startIndex].Follows branches up to [maxDepth].
+ * Returns all free registers found starting from [startIndex].
  *
  * @param startIndex Inclusive starting index.
  * @param numberOfFreeRegistersNeeded The minimum free registers to ensure will be returned.
@@ -368,25 +427,39 @@ private fun Method.findFreeRegistersInternal(
     }
 
     val usedRegisters = registersToExclude.toMutableSet()
+    // The map holds this set, so registers added to it after exploring branches are also
+    // available to later visits of this index. A loop back to this index while it is still
+    // being explored sees only the registers found so far, which every path from here writes to.
     val freeRegisters = mutableSetOf<Int>()
     foundFreeRegistersAtIndex[startIndex] = freeRegisters
 
     for (i in startIndex until instructions.count()) {
         val instruction = getInstruction(i)
-        val instructionRegisters = instruction.registersUsed
+        val instructionRegisters = instruction.registersAccessed
 
-        // Check for write-only register.
+        // Check for write-only registers.
+        // 2addr opcodes always read the register they write to.
         val writeRegister = instruction.writeRegister
-        if (writeRegister != null && writeRegister !in usedRegisters) {
-            // Check if this register is ONLY written to (not also read)
-            // Count occurrences of writeRegister in instructionRegisters.
-            val occurrences = instructionRegisters.count { it == writeRegister }
-            // If it appears only once, it's write-only (to write).
-            // If it appears more than once, it's also read.
-            if (occurrences <= 1) {
-                if (logFreeRegisterSearch) println(" found free register at $i: $writeRegister " +
+        if (writeRegister != null && instruction.opcode !in readModifyWriteOpcodes) {
+            // A wide write replaces both registers of the pair.
+            val writtenRegisters = if (instruction.opcode.setsWideRegister()) {
+                listOf(writeRegister, writeRegister + 1)
+            } else {
+                listOf(writeRegister)
+            }
+
+            for (register in writtenRegisters) {
+                if (register in usedRegisters) continue
+
+                // Check if this register is ONLY written to (not also read)
+                // If it appears only once, it's write-only (to write).
+                // If it appears more than once, it's also read.
+                val occurrences = instructionRegisters.count { it == register }
+                if (occurrences > 1) continue
+
+                if (LOG_FREE_REGISTER_SEARCH) println(" found free register at $i: $register " +
                         "opcode: " + instruction.opcode + " reference: " + (instruction.getReference()))
-                freeRegisters.add(writeRegister)
+                freeRegisters.add(register)
                 // If the requested number of free registers is found and this is not a branch,
                 // then no additional searching is needed.
                 // But if this is a branch, then this all free registers should be found
@@ -406,32 +479,55 @@ private fun Method.findFreeRegistersInternal(
             val allRegisters = (0 until implementation!!.registerCount).toList()
             val unusedRegisters = allRegisters - usedRegisters
             freeRegisters.addAll(unusedRegisters)
-            if (logFreeRegisterSearch) println(" encountered return index: $i and found: $freeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered return index: $i and found: $freeRegisters")
             return freeRegisters.toList()
         }
 
         if (instruction.isSwitchInstruction) {
-            // For now, do not handle the complexity of a switch statement and handle as a leaf node.
-            if (logFreeRegisterSearch) println(" encountered switch index: $i opcode: " + instruction.opcode)
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered switch index: $i opcode: " + instruction.opcode)
+            val payloadIndex = getBranchTargetInstructionIndex(instruction, i, offsetArray)
+            val payload = getInstruction(payloadIndex) as SwitchPayload
+
+            // Case offsets are relative to the switch instruction, not the payload.
+            val targetIndices = payload.switchElements.map {
+                findInstructionIndexByOffset(offsetArray[i] + it.offset, offsetArray)
+            } + (i + 1) // No case matched.
+
+            // A register is free only if it is free on every path.
+            val usedRegistersList = usedRegisters.toList()
+            val commonFreeRegisters = targetIndices.distinct().map { targetIndex ->
+                findFreeRegistersInternal(
+                    startIndex = targetIndex,
+                    numberOfFreeRegistersNeeded = numberOfFreeRegistersNeeded,
+                    currentDepth = currentDepth + 1,
+                    foundFreeRegistersAtIndex = foundFreeRegistersAtIndex,
+                    registersToExclude = usedRegistersList,
+                    offsetArray = offsetArray
+                ).toSet()
+            }.reduce { common, registers -> common intersect registers }
+            if (LOG_FREE_REGISTER_SEARCH) println(" switch registers: $commonFreeRegisters")
+
+            freeRegisters.addAll(commonFreeRegisters)
             return freeRegisters.toList()
         }
 
         if (instruction.isUnconditionalBranchInstruction) {
-            if (logFreeRegisterSearch) println(" encountered unconditional branch index: $i opcode: " + instruction.opcode)
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered unconditional branch index: $i opcode: " + instruction.opcode)
 
             // Continue searching from the go-to index.
-            return (freeRegisters + findFreeRegistersInternal(
+            freeRegisters.addAll(findFreeRegistersInternal(
                 startIndex = getBranchTargetInstructionIndex(instruction, i, offsetArray),
                 numberOfFreeRegistersNeeded = numberOfFreeRegistersNeeded,
                 currentDepth = currentDepth, // Same depth since it's a continuation of single path.
                 foundFreeRegistersAtIndex = foundFreeRegistersAtIndex,
                 registersToExclude = usedRegisters.toList(),
                 offsetArray = offsetArray
-            )).toList()
+            ))
+            return freeRegisters.toList()
         }
 
         if (instruction.isConditionalBranchInstruction) {
-            if (logFreeRegisterSearch) println(" encountered conditional branch index: $i opcode: " + instruction.opcode)
+            if (LOG_FREE_REGISTER_SEARCH) println(" encountered conditional branch index: $i opcode: " + instruction.opcode)
             val usedRegistersList = usedRegisters.toList()
 
             val branchFreeRegisters = findFreeRegistersInternal(
@@ -442,7 +538,7 @@ private fun Method.findFreeRegistersInternal(
                 registersToExclude = usedRegistersList,
                 offsetArray = offsetArray
             )
-            if (logFreeRegisterSearch) println(" branch registers: $branchFreeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" branch registers: $branchFreeRegisters")
 
             val fallThruFreeRegisters = findFreeRegistersInternal(
                 startIndex = i + 1,
@@ -452,9 +548,10 @@ private fun Method.findFreeRegistersInternal(
                 registersToExclude = usedRegistersList,
                 offsetArray = offsetArray
             )
-            if (logFreeRegisterSearch) println(" fall thru registers: $fallThruFreeRegisters")
+            if (LOG_FREE_REGISTER_SEARCH) println(" fall thru registers: $fallThruFreeRegisters")
 
-            return (freeRegisters + branchFreeRegisters.intersect(fallThruFreeRegisters.toSet())).toList()
+            freeRegisters.addAll(branchFreeRegisters.intersect(fallThruFreeRegisters.toSet()))
+            return freeRegisters.toList()
         }
     }
 
@@ -462,34 +559,6 @@ private fun Method.findFreeRegistersInternal(
     // Some methods have switch payload instructions after the last actual instruction,
     // but these cannot be reached through normal control flow.
     throw IllegalArgumentException("Start index is outside normal control flow: $startIndex")
-}
-
-private fun Method.buildInstructionOffsetArray(): IntArray {
-    val instructionCount = instructions.count()
-    val offsetArray = IntArray(instructionCount) { -1 }
-    var currentOffset = 0
-
-    for (i in 0 until instructionCount) {
-        val instruction = getInstruction(i)
-        val format = instruction.opcode.format
-
-        if (!format.isPayloadFormat) {
-            offsetArray[i] = currentOffset
-
-            // Get size in bytes from format.
-            val sizeInBytes = format.size
-            val sizeInCodeUnits = when {
-                sizeInBytes > 0 -> sizeInBytes / 2  // Normal instruction
-                format == Format.UnresolvedOdexInstruction -> 1  // Default size
-                else -> 1  // Fallback for any other edge case
-            }
-
-            currentOffset += sizeInCodeUnits
-        }
-        // Skip payloads
-    }
-
-    return offsetArray
 }
 
 /**
@@ -504,7 +573,7 @@ private fun Method.getBranchTargetInstructionIndex(
     index: Int,
     offsetArray: IntArray
 ): Int {
-    check (index >0 && index < offsetArray.size) {
+    check (index >= 0 && index < offsetArray.size) {
         "Invalid index: $index"
     }
     val currentOffset = offsetArray[index]
@@ -512,15 +581,14 @@ private fun Method.getBranchTargetInstructionIndex(
     return when (instruction.opcode) {
         GOTO, GOTO_16, GOTO_32,
         IF_EQ, IF_NE, IF_LT, IF_GE, IF_GT, IF_LE,
-        IF_EQZ, IF_NEZ, IF_LTZ, IF_GEZ, IF_GTZ, IF_LEZ -> {
+        IF_EQZ, IF_NEZ, IF_LTZ, IF_GEZ, IF_GTZ, IF_LEZ,
+        // Switch opcodes target the payload that holds the case targets.
+        PACKED_SWITCH, SPARSE_SWITCH -> {
             val offset = (instruction as OffsetInstruction).codeOffset
             val targetOffset = currentOffset + offset
             // Find the instruction index at this offset.
             findInstructionIndexByOffset(targetOffset, offsetArray)
         }
-        // These need special handling - they jump to payloads
-        // which then have their own target lists.
-        // PACKED_SWITCH, SPARSE_SWITCH -> // TODO?
         else -> throw IllegalStateException("Unsupported opcode: ${instruction.opcode}")
     }
 }
@@ -529,7 +597,7 @@ private fun Method.getBranchTargetInstructionIndex(
  * Finds the instruction index for a given code offset.
  *
  * @param targetOffset Target code offset in 16-bit units
- * @param offsetArray Array mapping instruction index to code offset (-1 for payloads)
+ * @param offsetArray Array mapping instruction index to code offset.
  * @return Instruction index at the target offset, or null if not found
  */
 private fun Method.findInstructionIndexByOffset(
@@ -571,6 +639,25 @@ val Instruction.registersUsed: List<Int>
         is OneRegisterInstruction -> listOf(registerA)
         is RegisterRangeInstruction -> (startRegister until (startRegister + registerCount)).toList()
         else -> emptyList()
+    }
+
+/**
+ * A wide (long or double) value occupies the named register and the register after it.
+ *
+ * @return The registers used by this instruction, including the second register of each wide value.
+ */
+private val Instruction.registersAccessed: List<Int>
+    get() {
+        val registers = registersUsed
+        val wideSecondHalves = registers.filterIndexed { position, _ ->
+            when (position) {
+                0 -> opcode.setsWideRegister() || opcode in wideFirstRegisterReadOpcodes
+                1 -> opcode in wideSecondRegisterOpcodes
+                2 -> opcode in wideThirdRegisterOpcodes
+                else -> false
+            }
+        }.map { it + 1 }
+        return registers + wideSecondHalves
     }
 
 /**

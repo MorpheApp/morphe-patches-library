@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `maven-publish`
@@ -16,7 +18,7 @@ java {
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 
@@ -32,7 +34,13 @@ dependencies {
     implementation(libs.morphe.patcher)
     implementation(libs.smali)
 
+    testImplementation(kotlin("test"))
+
     dexInput(project(":extensions:signature", configuration = "dexOutput"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.named<Jar>("jar") {

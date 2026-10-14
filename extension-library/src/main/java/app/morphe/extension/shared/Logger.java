@@ -28,16 +28,27 @@ import app.morphe.extension.shared.settings.BaseSettings;
 @SuppressWarnings("unused")
 public class Logger {
 
-    /** Maximum byte size of all buffer entries. Must be less than Android's 1 MB Binder transaction limit. */
-    private static final int BUFFER_MAX_BYTES = 900_000;
-    /** Limit number of log lines. */
-    private static final int BUFFER_MAX_SIZE = 10_000;
+    /**
+     * Maximum character length safe for Android's 1 MB Binder transaction limit (used for Clipboard).
+     */
+    public static final int CLIPBOARD_MAX_LENGTH = 900_000;
+    /**
+     * Maximum character size of all buffer entries kept in memory (~10 MB).
+     */
+    private static final int BUFFER_MAX_BYTES = 10_000_000;
+    /**
+     * Limit number of log entries in memory.
+     */
+    private static final int BUFFER_MAX_SIZE = 100_000;
 
     private static final Deque<String> logBuffer = new ConcurrentLinkedDeque<>();
     private static final AtomicInteger logBufferByteSize = new AtomicInteger();
 
+    private static String lastLogMessage = null;
+    private static int lastLogRepeatCount = 0;
+
     public static String getFilteredLogs() {
-        StringBuilder filteredOutput = new StringBuilder(logBufferByteSize.get());
+        StringBuilder filteredOutput = new StringBuilder(Math.min(logBufferByteSize.get(), BUFFER_MAX_BYTES));
 
         for (String log : logBuffer) {
             filteredOutput.append(log).append('\n');
@@ -46,12 +57,27 @@ public class Logger {
         return filteredOutput.toString().trim();
     }
 
-    private static void appendToLogBuffer(String message) {
+    private static synchronized void appendToLogBuffer(String message) {
         Objects.requireNonNull(message);
 
-        // It's very important that no Settings are used in this method,
-        // as this code is used when a context is not set and thus referencing
-        // a setting will crash the app.
+        // It's very important that no Settings are used in this method, as this code is used when
+        // a context is not set and thus referencing a setting will crash the app. Deduplicate
+        // consecutive identical log messages to prevent spam from evicting older logs.
+        if (message.equals(lastLogMessage)) {
+            lastLogRepeatCount++;
+            String previous = logBuffer.pollLast();
+            if (previous != null) {
+                logBufferByteSize.addAndGet(-previous.length());
+            }
+            String repeatedMessage = message + " [x" + (lastLogRepeatCount + 1) + "]";
+            logBuffer.addLast(repeatedMessage);
+            logBufferByteSize.addAndGet(repeatedMessage.length());
+            return;
+        }
+
+        lastLogMessage = message;
+        lastLogRepeatCount = 0;
+
         logBuffer.addLast(message);
         int newSize = logBufferByteSize.addAndGet(message.length());
 
@@ -71,16 +97,11 @@ public class Logger {
         return logBuffer;
     }
 
-    public static void clearLogBufferData() {
-        // Cannot simply clear the log buffer because there is no
-        // write lock for both the deque and the atomic int.
-        // Instead, pop off log entries and decrement the size one by one.
-        while (!logBuffer.isEmpty()) {
-            String removed = logBuffer.pollFirst();
-            if (removed != null) {
-                logBufferByteSize.addAndGet(-removed.length());
-            }
-        }
+    public static synchronized void clearLogBufferData() {
+        lastLogMessage = null;
+        lastLogRepeatCount = 0;
+        logBuffer.clear();
+        logBufferByteSize.set(0);
     }
 
     /**
