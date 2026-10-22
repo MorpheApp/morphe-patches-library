@@ -1,3 +1,26 @@
+/*
+ * Copyright 2026 Morphe.
+ * https://github.com/MorpheApp/morphe-patches
+ *
+ * File-Specific License Notice (GPLv3 Section 7 Terms)
+ *
+ * This file is part of the Morphe project and is licensed under
+ * the GNU General Public License version 3 (GPLv3), with the Additional
+ * Terms under Section 7 described in the LICENSE file.
+ *
+ * https://www.gnu.org/licenses/gpl-3.0.html
+ *
+ * Section 7b: Notice Preservation
+ * -------------------------------
+ * This entire comment block must be preserved in all copies,
+ * distributions, and derivative works of this file, in both
+ * original and modified source forms.
+ *
+ * Portions of this software are provided "AS IS" by the Morphe software project.
+ * Any express or implied warranties, including the implied warranties of
+ * merchantability and fitness for a particular purpose, are disclaimed.
+ */
+
 package app.morphe.patches.all.misc.string
 
 import app.morphe.patcher.StringComparisonType
@@ -5,8 +28,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
-import app.morphe.util.getReference
-import app.morphe.util.matchAllMethodIndicesForEach
+import app.morphe.patcher.util.getReference
+import app.morphe.patcher.util.matchAllMethodIndicesForEach
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
