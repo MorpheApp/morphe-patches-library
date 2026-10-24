@@ -852,6 +852,8 @@ private fun Method.branchTargetIndex(branchIndex: Int, codeOffsets: IntArray): I
  * Walks the control flow graph forward from [startIndex], following both conditional
  * and unconditional branches to their real targets, searching for all instructions
  * that use [register] as a method call argument, until the register is clobbered.
+ * A wide literal also uses the register after [register], so a write to either register,
+ * including a wide write to the register before it, clobbers the literal.
  *
  * A breadth first search is used so paths are explored in order of how many instructions
  * actually execute before reaching them.
@@ -861,6 +863,7 @@ private fun Method.branchTargetIndex(branchIndex: Int, codeOffsets: IntArray): I
 private fun Method.findAllReachableLiteralEvents(
     startIndex: Int,
     register: Int,
+    isWideLiteral: Boolean,
 ): List<Int> {
     val instructionList = this.implementation?.instructions?.toList() ?: return emptyList()
     val codeOffsets = instructionCodeOffsets()
@@ -876,8 +879,13 @@ private fun Method.findAllReachableLiteralEvents(
         }
         val instruction = instructionList[index]
 
-        if (instruction.writeRegister == register) {
-            continue
+        val writeRegister = instruction.writeRegister
+        if (writeRegister != null) {
+            val writeRegisterEnd = if (instruction.opcode.setsWideRegister()) writeRegister + 1 else writeRegister
+            val literalRegisterEnd = if (isWideLiteral) register + 1 else register
+            if (writeRegister <= literalRegisterEnd && register <= writeRegisterEnd) {
+                continue
+            }
         }
 
         val methodReference = instruction.getReference<MethodReference>()
@@ -945,7 +953,11 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
         val literalInstruction = getInstruction<OneRegisterInstruction>(literalIndex)
         val literalRegister = literalInstruction.registerA
 
-        val usageIndices = findAllReachableLiteralEvents(literalIndex + 1, literalRegister)
+        val usageIndices = findAllReachableLiteralEvents(
+            literalIndex + 1,
+            literalRegister,
+            literalInstruction.opcode.setsWideRegister()
+        )
         if (usageIndices.isEmpty()) {
             if (useLogging) {
                 println("""
@@ -1031,7 +1043,11 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, override: Boolea
     val literalRegister = startInstruction.registerA
     val overrideValue = if (override) "0x1" else "0x0"
 
-    val usageIndices = findAllReachableLiteralEvents(literalIndexStart + 1, literalRegister)
+    val usageIndices = findAllReachableLiteralEvents(
+        literalIndexStart + 1,
+        literalRegister,
+        startInstruction.opcode.setsWideRegister()
+    )
     if (usageIndices.isEmpty()) return
 
     usageIndices.sortedDescending().forEach { usageIndex ->
