@@ -12,13 +12,13 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.util.getReference
+import app.morphe.patcher.util.matchAllMethodIndicesForEach
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableStringEncodedValue
+import app.morphe.patcher.util.writeRegister
 import app.morphe.patches.all.misc.fix.spoofsignature.Constants.SPOOF_CLASS_SMALI_NAME
 import app.morphe.util.fiveRegisters
 import app.morphe.util.getEndEntityCertificate
-import app.morphe.util.getReference
-import app.morphe.util.matchAllMethodIndicesForEach
-import app.morphe.util.writeRegister
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import java.util.Base64

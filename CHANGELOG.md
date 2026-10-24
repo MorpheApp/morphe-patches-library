@@ -1,3 +1,10 @@
+## [2.0.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.0...v2.0.1-dev.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* Remove code now provided by patcher 2.0 ([a7f516d](https://github.com/MorpheApp/morphe-patches-library/commit/a7f516d5e610f14c0affa770238e841386b62e68))
+
 # [2.0.0](https://github.com/MorpheApp/morphe-patches-library/compare/v1.8.0...v2.0.0) (2026-10-22)
 
 
