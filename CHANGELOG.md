@@ -1,3 +1,10 @@
+# [2.1.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.2-dev.1...v2.1.0-dev.1) (2026-10-28)
+
+
+### Features
+
+* **Utils:** Add snackbar methods that show the app's own snackbar, or a toast where the app cannot show it ([7a1b4c1](https://github.com/MorpheApp/morphe-patches-library/commit/7a1b4c1e558fbbeadb219cd3098906f426034e93))
+
 ## [2.0.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.1...v2.0.2-dev.1) (2026-10-24)
 
 
