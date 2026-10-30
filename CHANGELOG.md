@@ -1,3 +1,10 @@
+# [2.1.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.0-dev.1...v2.1.0-dev.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Literal override is inserted twice when the literals of two branches reach the same read ([31ddc3f](https://github.com/MorpheApp/morphe-patches-library/commit/31ddc3fe35fca474dad3d9a7e0a3a8feb4ccc1ab))
+
 # [2.1.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.2-dev.1...v2.1.0-dev.1) (2026-10-28)
 
 
