@@ -927,6 +927,8 @@ private fun Method.findAllReachableLiteralEvents(
 /**
  * Overrides *all* usage of the literal declared at the provided index. This override
  * includes if the literal was used multiple times in the same method.
+ * Each read is overridden once, also if the literal is declared in more than one branch
+ * that reaches it, or if the read is already overridden with the same method.
  */
 fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodDescriptor: String) {
     val useLogging = false
@@ -939,91 +941,97 @@ fun MutableMethod.insertLiteralOverride(literalIndexStart: Int, extensionMethodD
     val literalValue = startInstruction.wideLiteral
     val literalFilter = literal(startInstruction.wideLiteral)
 
-    // Some literals are used multiple times in the same method. Insertions can shift
-    // indices in either direction (forward usage vs. a backward loop-carried usage),
-    // so occurrences are re-scanned each iteration.
-    var processedCount = 0
-    while (true) {
-        val currentMatches = instructions
-            .withIndex()
-            .filter { (_, instruction) -> literalFilter.matches(this, instruction) }
-        if (processedCount >= currentMatches.size) return
+    val moveResultOpcode = if (extensionMethodDescriptor.endsWith(";")) {
+        MOVE_RESULT_OBJECT
+    } else if (extensionMethodDescriptor.endsWith("J") ||
+        extensionMethodDescriptor.endsWith("D")
+    ) {
+        MOVE_RESULT_WIDE
+    } else {
+        MOVE_RESULT
+    }
 
-        val literalIndex = currentMatches[processedCount++].index
-        val literalInstruction = getInstruction<OneRegisterInstruction>(literalIndex)
-        val literalRegister = literalInstruction.registerA
+    // Some literals are used multiple times in the same method, and the literals declared
+    // in different branches can reach the same read. All the reads are collected before
+    // anything is inserted, so each read is overridden once.
+    val moveResultIndices = HashSet<Int>()
+    instructions.withIndex()
+        .filter { (_, instruction) -> literalFilter.matches(this, instruction) }
+        .forEach { (literalIndex, instruction) ->
+            val literalInstruction = instruction as OneRegisterInstruction
 
-        val usageIndices = findAllReachableLiteralEvents(
-            literalIndex + 1,
-            literalRegister,
-            literalInstruction.opcode.setsWideRegister()
-        )
-        if (usageIndices.isEmpty()) {
-            if (useLogging) {
-                println("""
-                        Ignoring literal with no reachable usage (clobbered or dead)
-                        literalValue: $literalValue
-                        literalIndex: $literalIndex
-                        method: $this
-                    """
-                )
-            }
-            continue
-        }
-
-        val moveResultOpcode = if (extensionMethodDescriptor.endsWith(";")) {
-            MOVE_RESULT_OBJECT
-        } else if (extensionMethodDescriptor.endsWith("J") ||
-            extensionMethodDescriptor.endsWith("D")
-        ) {
-            MOVE_RESULT_WIDE
-        } else {
-            MOVE_RESULT
-        }
-
-        usageIndices.sortedDescending().forEach { usageIndex ->
-            val moveResultIndex = usageIndex + 1
-            val moveResultInstruction = getInstruction(moveResultIndex)
-            if (moveResultInstruction.opcode != moveResultOpcode) {
-                // Method return value is not used.
-                if (useLogging) println(
-                    """
-                        Ignoring literal with ignored return value
-                        literalValue: $literalValue
-                        literalIndex: $literalIndex
-                        literalMethodCall: ${getInstruction<ReferenceInstruction>(usageIndex).reference}
-                        method: $this"
-                    """
-                )
+            val usageIndices = findAllReachableLiteralEvents(
+                literalIndex + 1,
+                literalInstruction.registerA,
+                literalInstruction.opcode.setsWideRegister()
+            )
+            if (usageIndices.isEmpty()) {
+                if (useLogging) {
+                    println("""
+                            Ignoring literal with no reachable usage (clobbered or dead)
+                            literalValue: $literalValue
+                            literalIndex: $literalIndex
+                            method: $this
+                        """
+                    )
+                }
                 return@forEach
             }
 
-            val isWide = moveResultOpcode == MOVE_RESULT_WIDE
-            val register = (moveResultInstruction as OneRegisterInstruction).registerA
-            val endRegister = if (isWide) register + 1 else register
-            val operation = if (endRegister < 16) {
-                if (isWide) {
-                    "invoke-static { v$register, v$endRegister }"
-                } else {
-                    "invoke-static { v$register }"
+            usageIndices.forEach { usageIndex ->
+                if (getInstruction(usageIndex + 1).opcode != moveResultOpcode) {
+                    // Method return value is not used.
+                    if (useLogging) println(
+                        """
+                            Ignoring literal with ignored return value
+                            literalValue: $literalValue
+                            literalIndex: $literalIndex
+                            literalMethodCall: ${getInstruction<ReferenceInstruction>(usageIndex).reference}
+                            method: $this"
+                        """
+                    )
+                    return@forEach
                 }
-            } else {
-                "invoke-static/range { v$register .. v$endRegister }"
-            }
-            val moveResultSmali = when (moveResultOpcode) {
-                MOVE_RESULT_OBJECT -> "move-result-object"
-                MOVE_RESULT_WIDE -> "move-result-wide"
-                else -> "move-result"
-            }
 
-            addInstructions(
-                moveResultIndex + 1,
-                """
-                    $operation, $extensionMethodDescriptor
-                    $moveResultSmali v$register
-                """
-            )
+                moveResultIndices.add(usageIndex + 1)
+            }
         }
+
+    // Inserted from the last read, so the indices of the reads before it stay valid.
+    moveResultIndices.sortedDescending().forEach { moveResultIndex ->
+        // The read is already overridden with the same method, such as by an earlier call.
+        val nextInstruction = instructions.getOrNull(moveResultIndex + 1)
+        if ((nextInstruction?.opcode == Opcode.INVOKE_STATIC || nextInstruction?.opcode == Opcode.INVOKE_STATIC_RANGE) &&
+            nextInstruction.getReference<MethodReference>()?.toString() == extensionMethodDescriptor
+        ) {
+            return@forEach
+        }
+
+        val isWide = moveResultOpcode == MOVE_RESULT_WIDE
+        val register = getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
+        val endRegister = if (isWide) register + 1 else register
+        val operation = if (endRegister < 16) {
+            if (isWide) {
+                "invoke-static { v$register, v$endRegister }"
+            } else {
+                "invoke-static { v$register }"
+            }
+        } else {
+            "invoke-static/range { v$register .. v$endRegister }"
+        }
+        val moveResultSmali = when (moveResultOpcode) {
+            MOVE_RESULT_OBJECT -> "move-result-object"
+            MOVE_RESULT_WIDE -> "move-result-wide"
+            else -> "move-result"
+        }
+
+        addInstructions(
+            moveResultIndex + 1,
+            """
+                $operation, $extensionMethodDescriptor
+                $moveResultSmali v$register
+            """
+        )
     }
 }
 

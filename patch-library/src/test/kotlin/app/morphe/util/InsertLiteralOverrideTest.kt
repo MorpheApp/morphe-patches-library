@@ -99,4 +99,69 @@ class InsertLiteralOverrideTest {
 
         assertEquals(listOf(3), method.overrideIndices())
     }
+
+    @Test
+    fun `overrides a read reached by the literal of two branches once`() {
+        val method = method(
+            6,
+            """
+                const/4 v0, 0x0
+                if-eqz v0, :other
+                const-wide/32 v2, 0x2b84ac2
+                goto :read
+                :other
+                const-wide/32 v2, 0x2b84ac2
+                :read
+                invoke-static { v2, v3 }, LTest;->flag(J)Z
+                move-result v0
+                return-void
+            """
+        )
+
+        method.insertLiteralOverride(2, extensionMethod)
+
+        assertEquals(listOf(7), method.overrideIndices())
+    }
+
+    @Test
+    fun `overrides the reads of the literal of two branches each once`() {
+        val method = method(
+            6,
+            """
+                const/4 v0, 0x0
+                if-eqz v0, :other
+                const-wide/32 v2, 0x2b84ac2
+                invoke-static { v2, v3 }, LTest;->flag(J)Z
+                move-result v0
+                return-void
+                :other
+                const-wide/32 v2, 0x2b84ac2
+                invoke-static { v2, v3 }, LTest;->flag(J)Z
+                move-result v0
+                return-void
+            """
+        )
+
+        method.insertLiteralOverride(2, extensionMethod)
+
+        assertEquals(listOf(5, 11), method.overrideIndices())
+    }
+
+    @Test
+    fun `does not override a read already overridden with the same method`() {
+        val method = method(
+            6,
+            """
+                const-wide/32 v2, 0x2b4c1d7
+                invoke-static { v2, v3 }, LTest;->flag(J)Z
+                move-result v0
+                return-void
+            """
+        )
+
+        method.insertLiteralOverride(0, extensionMethod)
+        method.insertLiteralOverride(0, extensionMethod)
+
+        assertEquals(listOf(3), method.overrideIndices())
+    }
 }
