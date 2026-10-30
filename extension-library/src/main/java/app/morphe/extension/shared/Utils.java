@@ -72,6 +72,22 @@ public class Utils {
 
     private static boolean appIsUsingBoldIcons;
 
+    /**
+     * Shows a message in the app's own snackbar, set by the patch that hooks it.
+     */
+    public interface SnackbarPresenter {
+        /**
+         * Called on the main thread.
+         *
+         * @param longDuration Whether the message was asked to show for a long time.
+         * @return Whether the snackbar was shown. If not, the message is shown in a toast.
+         */
+        boolean showSnackbar(String message, boolean longDuration);
+    }
+
+    @Nullable
+    private static volatile SnackbarPresenter snackbarPresenter;
+
     private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("\\p{P}+");
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{M}");
 
@@ -730,6 +746,56 @@ public class Utils {
                 Logger.printDebug(() -> "Showing toast: " + messageToToast);
                 Toast.makeText(currentContext, messageToToast, toastDuration).show();
             }
+        });
+    }
+
+    /**
+     * @param presenter The app's own snackbar, or null to show toasts again.
+     */
+    public static void setSnackbarPresenter(@Nullable SnackbarPresenter presenter) {
+        snackbarPresenter = presenter;
+    }
+
+    /**
+     * Safe to call from any thread.
+     */
+    public static void showSnackbarShort(String message) {
+        showSnackbar(message, Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * Safe to call from any thread.
+     */
+    public static void showSnackbarLong(String message) {
+        showSnackbar(message, Toast.LENGTH_LONG);
+    }
+
+    /**
+     * Shows the message in the app's own snackbar, set with {@link #setSnackbarPresenter}.
+     * Where the app cannot show it, such as with no snackbar set, while the app is in the
+     * background or on a screen of its own, the message is shown in a toast instead.
+     * <p>
+     * Safe to call from any thread.
+     *
+     * @param message  Message to show.
+     * @param duration Either {@link Toast#LENGTH_SHORT} or {@link Toast#LENGTH_LONG}.
+     */
+    public static void showSnackbar(String message, int duration) {
+        Objects.requireNonNull(message);
+        runOnMainThreadNowOrLater(() -> {
+            SnackbarPresenter presenter = snackbarPresenter;
+            if (presenter != null) {
+                try {
+                    if (presenter.showSnackbar(message, duration == Toast.LENGTH_LONG)) {
+                        Logger.printDebug(() -> "Showing snackbar: " + message);
+                        return;
+                    }
+                } catch (Exception ex) {
+                    Logger.printException(() -> "showSnackbar failure", ex);
+                }
+            }
+
+            showToast(message, duration);
         });
     }
 

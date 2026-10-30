@@ -1,3 +1,24 @@
+# [2.1.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.0-dev.1...v2.1.0-dev.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Literal override is inserted twice when the literals of two branches reach the same read ([31ddc3f](https://github.com/MorpheApp/morphe-patches-library/commit/31ddc3fe35fca474dad3d9a7e0a3a8feb4ccc1ab))
+
+# [2.1.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.2-dev.1...v2.1.0-dev.1) (2026-10-28)
+
+
+### Features
+
+* **Utils:** Add snackbar methods that show the app's own snackbar, or a toast where the app cannot show it ([7a1b4c1](https://github.com/MorpheApp/morphe-patches-library/commit/7a1b4c1e558fbbeadb219cd3098906f426034e93))
+
+## [2.0.2-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.1...v2.0.2-dev.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **BytecodeUtils:** Literal override also overrides a read of a long written over the literal ([7f4362a](https://github.com/MorpheApp/morphe-patches-library/commit/7f4362a0ee7976e85ff7aeba691ff6ef749ea939))
+
 ## [2.0.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.0...v2.0.1) (2026-10-24)
 
 
