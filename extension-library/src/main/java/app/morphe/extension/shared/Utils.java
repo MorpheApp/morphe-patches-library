@@ -1142,9 +1142,12 @@ public class Utils {
 
     /**
      * @param maxSize The maximum number of elements to keep in the map.
-     * @param keepAccessOrder If true, the map maintains the order of insertion.
-     * @return A {@link LinkedHashMap} that automatically evicts the oldest entry
-     *        when the size exceeds {@code maxSize}.
+     * @param keepAccessOrder If true, entries are kept in access order and the least recently
+     *                        used entry is evicted (reads also change the order).
+     *                        If false, entries are kept in insertion order and the oldest
+     *                        inserted entry is evicted.
+     * @return A {@link LinkedHashMap} that automatically evicts an entry
+     *        when the size exceeds {@code maxSize}. The map is not thread safe.
      */
     public static <T, V> Map<T, V> createSizeRestrictedMap(int maxSize, boolean keepAccessOrder) {
         return new LinkedHashMap<>(2 * maxSize, 0.5f, keepAccessOrder) {
