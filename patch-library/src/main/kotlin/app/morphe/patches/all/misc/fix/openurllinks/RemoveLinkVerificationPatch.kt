@@ -1,6 +1,7 @@
 package app.morphe.patches.all.misc.fix.openurllinks
 
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.document
+import app.morphe.patcher.patch.patch
 import app.morphe.util.getNode
 import org.w3c.dom.Element
 
@@ -9,7 +10,7 @@ import org.w3c.dom.Element
  * to manually enable on some devices.
  */
 @Suppress("unused")
-val removeLinkVerification = resourcePatch {
+val removeLinkVerification = patch {
     execute {
         document("AndroidManifest.xml").use { document ->
             val manifest = document.getNode("manifest") as Element

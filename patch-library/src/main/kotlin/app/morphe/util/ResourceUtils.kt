@@ -29,7 +29,8 @@
 package app.morphe.util
 
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.ResourcePatchContext
+import app.morphe.patcher.patch.document
+import app.morphe.patcher.patch.resourceFile
 import app.morphe.patcher.util.Document
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
@@ -95,11 +96,11 @@ fun Node.insertFirst(node: Node) {
  * @param sourceResourceDirectory The source resource directory name.
  * @param resources The resources to copy.
  */
-fun ResourcePatchContext.copyResources(
+fun copyResources(
     sourceResourceDirectory: String,
     vararg resources: ResourceGroup,
 ) {
-    val targetResourceDirectory = this["res", false]
+    val targetResourceDirectory = resourceFile("res", false)
 
     for (resourceGroup in resources) {
         resourceGroup.resources.forEach { resource ->
@@ -141,7 +142,7 @@ class ResourceGroup(val resourceDirectoryName: String, vararg val resources: Str
  * @param targetTag The target XML node.
  * @param callback The callback to call when iterating over the nodes.
  */
-fun ResourcePatchContext.iterateXmlNodeChildren(
+fun iterateXmlNodeChildren(
     resource: String,
     targetTag: String,
     callback: (node: Node) -> Unit,

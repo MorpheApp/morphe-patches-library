@@ -26,7 +26,7 @@ package app.morphe.patches.all.misc.string
 import app.morphe.patcher.StringComparisonType
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.patch
 import app.morphe.patcher.string
 import app.morphe.patcher.util.getReference
 import app.morphe.patcher.util.matchAllMethodIndicesForEach
@@ -49,7 +49,7 @@ fun replaceStringPatch(
     to: String,
     requireMatches: Boolean = false,
     comparison: StringComparisonType = StringComparisonType.EQUALS,
-) = bytecodePatch(
+) = patch(
     description = "Replaces occurrences of '$from' with '$to' in String constants."
 ) {
     execute {

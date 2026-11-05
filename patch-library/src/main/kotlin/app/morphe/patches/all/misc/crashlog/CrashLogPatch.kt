@@ -25,9 +25,9 @@ package app.morphe.patches.all.misc.crashlog
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.patch.BytecodePatch
-import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.Patch
+import app.morphe.patcher.patch.document
+import app.morphe.patcher.patch.patch
 import app.morphe.patches.all.misc.gms.gmsCorePackageQueriesPatch
 
 private const val EXTENSION_CLASS = "Lapp/morphe/extension/shared/patches/CrashLogPatch;"
@@ -41,7 +41,7 @@ private const val MANAGER_PACKAGE_NAME = "app.morphe.manager"
  * Android 11+ requires declaring other apps in the manifest queries,
  * otherwise they are not visible and their versions cannot be logged.
  */
-private val crashLogResourcePatch = resourcePatch {
+private val crashLogResourcePatch = patch {
     // Adds MicroG to the manifest queries.
     dependsOn(gmsCorePackageQueriesPatch)
 
@@ -77,7 +77,7 @@ private val crashLogResourcePatch = resourcePatch {
 @Suppress("unused")
 fun crashLogPatch(
     mainActivityFingerprint: Fingerprint
-): BytecodePatch = bytecodePatch(
+): Patch = patch(
     description = "Writes a crash log file to the Documents folder when the app crashes."
 ) {
     dependsOn(crashLogResourcePatch)

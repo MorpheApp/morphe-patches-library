@@ -10,8 +10,9 @@ package app.morphe.patches.all.misc.fix.spoofsignature
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.mutableClassDefBy
+import app.morphe.patcher.patch.packageMetadata
+import app.morphe.patcher.patch.patch
 import app.morphe.patcher.util.getReference
 import app.morphe.patcher.util.matchAllMethodIndicesForEach
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableStringEncodedValue
@@ -26,7 +27,7 @@ import java.util.Base64
 private lateinit var packageName: String
 private lateinit var signature: String
 
-private val getMetadataPatch = resourcePatch {
+private val getMetadataPatch = patch {
     execute {
         val cert = getEndEntityCertificate(packageMetadata.signingCertificates)
 
@@ -38,7 +39,7 @@ private val getMetadataPatch = resourcePatch {
 }
 
 @Suppress("unused")
-val spoofSignaturePatch = bytecodePatch {
+val spoofSignaturePatch = patch {
     dependsOn(getMetadataPatch)
 
     extendWith("generated/extensions/signature.dex")
