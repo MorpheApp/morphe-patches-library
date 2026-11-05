@@ -26,7 +26,7 @@ package app.morphe.patches.all.misc.crashlog
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.Patch
-import app.morphe.patcher.patch.document
+import app.morphe.patcher.patch.resourceXml
 import app.morphe.patcher.patch.patch
 import app.morphe.patches.all.misc.gms.gmsCorePackageQueriesPatch
 
@@ -46,15 +46,12 @@ private val crashLogResourcePatch = patch {
     dependsOn(gmsCorePackageQueriesPatch)
 
     execute {
-        document("AndroidManifest.xml").use { document ->
-            val queries = document.getElementsByTagName("queries").item(0)
-                ?: document.createElement("queries").also { document.documentElement.appendChild(it) }
+        resourceXml("AndroidManifest.xml").use { manifest ->
+            val queries = manifest.elements("queries").firstOrNull() ?: manifest.root.appendChild("queries")
 
-            queries.appendChild(
-                document.createElement("package").apply {
-                    setAttribute("android:name", MANAGER_PACKAGE_NAME)
-                }
-            )
+            queries.appendChild("package") {
+                setAttribute("android:name", MANAGER_PACKAGE_NAME)
+            }
         }
     }
 }
