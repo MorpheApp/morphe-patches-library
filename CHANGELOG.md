@@ -1,3 +1,10 @@
+## [2.1.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.0...v2.1.1-dev.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* Use patch() and global functions instead of patch types and contexts ([#76](https://github.com/MorpheApp/morphe-patches-library/issues/76)) ([5c0cf7c](https://github.com/MorpheApp/morphe-patches-library/commit/5c0cf7c21732c4e9026ade139ee4355c0c76fe3b))
+
 # [2.1.0](https://github.com/MorpheApp/morphe-patches-library/compare/v2.0.1...v2.1.0) (2026-10-30)
 
 
