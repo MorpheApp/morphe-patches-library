@@ -1,3 +1,11 @@
+## [2.1.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.0...v2.1.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* Update to Patcher 2.3.0 ([#79](https://github.com/MorpheApp/morphe-patches-library/issues/79)) ([d9638d8](https://github.com/MorpheApp/morphe-patches-library/commit/d9638d81165d4ac0e6935221dd0ce1828d5cda7b))
+* Use patch() and global functions instead of patch types and contexts ([#76](https://github.com/MorpheApp/morphe-patches-library/issues/76)) ([5c0cf7c](https://github.com/MorpheApp/morphe-patches-library/commit/5c0cf7c21732c4e9026ade139ee4355c0c76fe3b))
+
 ## [2.1.1-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.1-dev.1...v2.1.1-dev.2) (2026-11-05)
 
 
