@@ -37,8 +37,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstruction
 import app.morphe.patcher.literal
-import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.mutableClassDefBy
+import app.morphe.patcher.patch.mutableClassDefByOrNull
 import app.morphe.patcher.resource.ResourceType
 import app.morphe.patcher.resource.resourceId
 import app.morphe.patcher.util.getReference
@@ -207,7 +208,6 @@ private fun Method.findInstructionIndexFromToString(fieldName: String, isField: 
  *
  * @param fieldName The name of the field to find. Partial matches are allowed.
  */
-context(patchContext: BytecodePatchContext)
 fun Method.findMethodFromToString(fieldName: String) : MutableMethod {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName, false)
     return getInstruction(methodUsageIndex).getReference<MethodReference>()!!.getMutableMethod()
@@ -471,7 +471,7 @@ fun Method.containsLiteralInstruction(literal: Double) = indexOfFirstLiteralInst
  * @param targetClass the class to start traversing the class hierarchy from.
  * @param callback function that is called for every class in the hierarchy.
  */
-fun BytecodePatchContext.traverseClassHierarchy(targetClass: MutableClass, callback: MutableClass.() -> Unit) {
+fun traverseClassHierarchy(targetClass: MutableClass, callback: MutableClass.() -> Unit) {
     callback(targetClass)
 
     targetClass.superclass ?: return
@@ -484,9 +484,8 @@ fun BytecodePatchContext.traverseClassHierarchy(targetClass: MutableClass, callb
 /**
  * @return The mutable method for this method call reference.
  */
-context(patchContext: BytecodePatchContext)
 fun MethodReference.getMutableMethod(): MutableMethod {
-    return patchContext.mutableClassDefBy(this.definingClass).methods.first { classMethod ->
+    return mutableClassDefBy(this.definingClass).methods.first { classMethod ->
         MethodUtil.methodSignaturesMatch(classMethod, this@getMutableMethod)
     }
 }
@@ -1183,7 +1182,7 @@ fun MutableField.removeFlags(vararg flags: AccessFlags) {
     this.accessFlags = this.accessFlags and bitField.inv()
 }
 
-fun BytecodePatchContext.addStaticFieldToExtension(
+fun addStaticFieldToExtension(
     className: String,
     methodName: String,
     fieldName: String,
@@ -1217,7 +1216,6 @@ fun BytecodePatchContext.addStaticFieldToExtension(
     }
 }
 
-context(patchContext: BytecodePatchContext)
 fun setExtensionIsPatchIncluded(patchExtensionClassType: String) {
     val methodName = "isPatchIncluded"
     val returnType = "Z"

@@ -3,7 +3,8 @@
 package app.morphe.patches.all.misc.hex
 
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.rawResourcePatch
+import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.resourceFile
 import app.morphe.util.byteArrayOf
 import java.io.RandomAccessFile
 import kotlin.math.max
@@ -51,10 +52,10 @@ class HexPatchBuilder internal constructor(
 // This isn't possible because the delegated property is not accessible at that time.
 @Deprecated("Use the hexPatch function with the builder parameter instead.")
 fun hexPatch(ignoreMissingTargetFiles: Boolean = false, replacementsSupplier: () -> Set<Replacement>) =
-    rawResourcePatch {
+    patch {
         execute {
             replacementsSupplier().groupBy { it.targetFilePath }.forEach { (targetFilePath, replacements) ->
-                val targetFile = get(targetFilePath, true)
+                val targetFile = resourceFile(targetFilePath, true)
                 if (ignoreMissingTargetFiles && !targetFile.exists()) return@forEach
 
                 RandomAccessFile(targetFile, "rw").use { raf ->

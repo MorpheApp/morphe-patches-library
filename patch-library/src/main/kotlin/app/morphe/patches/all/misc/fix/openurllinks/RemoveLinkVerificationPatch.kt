@@ -1,26 +1,18 @@
 package app.morphe.patches.all.misc.fix.openurllinks
 
-import app.morphe.patcher.patch.resourcePatch
-import app.morphe.util.getNode
-import org.w3c.dom.Element
+import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.resourceXml
 
 /**
  * Removes `autoVerify` from all intents. This fixes 'open link with' that are impossible
  * to manually enable on some devices.
  */
 @Suppress("unused")
-val removeLinkVerification = resourcePatch {
+val removeLinkVerification = patch {
     execute {
-        document("AndroidManifest.xml").use { document ->
-            val manifest = document.getNode("manifest") as Element
-            val intentFilters = manifest.getElementsByTagName("intent-filter")
-
-            for (i in 0 until intentFilters.length) {
-                val element = intentFilters.item(i) as Element
-                val attribute = "android:autoVerify"
-                if (element.hasAttribute(attribute)) {
-                    element.removeAttribute(attribute)
-                }
+        resourceXml("AndroidManifest.xml").use { manifest ->
+            manifest.elements("intent-filter").forEach { intentFilter ->
+                intentFilter.removeAttribute("android:autoVerify")
             }
         }
     }

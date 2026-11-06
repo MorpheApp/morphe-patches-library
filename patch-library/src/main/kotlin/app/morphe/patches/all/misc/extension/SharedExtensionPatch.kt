@@ -30,8 +30,8 @@ package app.morphe.patches.all.misc.extension
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.patch.BytecodePatchContext
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.classDefBy
+import app.morphe.patcher.patch.patch
 import app.morphe.patcher.util.returnEarly
 import com.android.tools.smali.dexlib2.iface.Method
 import java.net.URLDecoder
@@ -81,7 +81,7 @@ fun sharedExtensionPatch(
 private fun createSharedExtensionPatch(
     extensionName: List<String>,
     hooks: List<ExtensionHook>,
-) = bytecodePatch(
+) = patch(
     default = false
 ) {
     // Check if patcher supports loading multiple extension input streams and warn if not.
@@ -95,7 +95,7 @@ private fun createSharedExtensionPatch(
         }
     } else {
         for (name in extensionName.toMutableSet().also { it.add("shared") }) {
-            dependsOn(bytecodePatch { extendWith("extensions/$name.mpe") })
+            dependsOn(patch { extendWith("extensions/$name.mpe") })
         }
     }
 
@@ -153,15 +153,14 @@ private fun createSharedExtensionPatch(
  */
 open class ExtensionHook(
     val fingerprint: Fingerprint,
-    private val insertIndexResolver: BytecodePatchContext.(Method) -> Int = { 0 },
-    private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "p0" },
+    private val insertIndexResolver: (Method) -> Int = { 0 },
+    private val contextRegisterResolver: (Method) -> String = { "p0" },
 ) {
-    context(patchContext: BytecodePatchContext)
     operator fun invoke(extensionClassDescriptor: String) {
         fingerprint.clearMatch() // Fingerprint may be shared.
         fingerprint.method.apply {
-            val insertIndex = patchContext.insertIndexResolver(this)
-            val contextRegister = patchContext.contextRegisterResolver(this)
+            val insertIndex = insertIndexResolver(this)
+            val contextRegister = contextRegisterResolver(this)
 
             addInstruction(
                 insertIndex,

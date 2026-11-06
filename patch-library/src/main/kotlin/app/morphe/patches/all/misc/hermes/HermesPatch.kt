@@ -1,6 +1,7 @@
 package app.morphe.patches.all.misc.hermes
 
-import app.morphe.patcher.patch.rawResourcePatch
+import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.resourceFile
 import app.morphe.patches.all.misc.hex.Replacement
 import app.morphe.util.byteArrayOf
 import app.morphe.util.toInt
@@ -13,9 +14,9 @@ val HERMES_MAGIC = byteArrayOf("C6 1F BC 03 C1 03 19 1F")
 
 @Suppress("unused")
 fun hermesPatch(supplier: () -> Set<Pair<String, String>>) =
-    rawResourcePatch {
+    patch {
         execute {
-            val file = get(HERMES_BUNDLE_PATH, true)
+            val file = resourceFile(HERMES_BUNDLE_PATH, true)
             if (!file.exists())
                 throw FileNotFoundException("Hermes bytecode bundle not found at: $HERMES_BUNDLE_PATH")
 

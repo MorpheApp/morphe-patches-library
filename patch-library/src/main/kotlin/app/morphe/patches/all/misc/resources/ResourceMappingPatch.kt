@@ -5,7 +5,7 @@ package app.morphe.patches.all.misc.resources
 import app.morphe.patcher.InstructionLocation
 import app.morphe.patcher.LiteralFilter
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.patch
 
 @Deprecated(
     "Resource mappings are now provided by Morphe Patcher",
@@ -70,6 +70,6 @@ fun resourceLiteral(
 ) = app.morphe.patcher.resourceLiteral(type, name, exceptionIfResourceNotFound, location)
 
 @Deprecated("Resource mappings are now provided by Morphe Patcher")
-val resourceMappingPatch = resourcePatch(
+val resourceMappingPatch = patch(
     default = false
 ) {}

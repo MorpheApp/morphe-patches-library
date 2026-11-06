@@ -10,7 +10,8 @@ package app.morphe.patches.all.misc.fix.changepackageinstaller
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.methodCall
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.Patch
+import app.morphe.patcher.patch.patch
 import app.morphe.patcher.util.matchAllMethodIndicesForEach
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -36,7 +37,7 @@ private const val PACKAGE_INSTALLER_PACKAGE_SOURCE_STORE = 2
 @Suppress("unused")
 fun changePackageInstallerPatch(
     installerPackageNameProvider: () -> String = { "com.android.vending" }
-) = bytecodePatch {
+) = patch {
     execute {
         var changesMade = false
         val installerPackageName = installerPackageNameProvider()
@@ -76,7 +77,7 @@ fun changePackageInstallerPatch(
         }
 
         if (!changesMade) {
-            return@execute Logger.getLogger(this::class.java.name).info(
+            return@execute Logger.getLogger(Patch::class.java.name).info(
                 "No installer source checks found, no changes applied"
             )
         }

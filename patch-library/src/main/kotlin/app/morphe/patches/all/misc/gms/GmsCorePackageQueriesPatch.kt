@@ -23,7 +23,8 @@
 
 package app.morphe.patches.all.misc.gms
 
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.resourceXml
+import app.morphe.patcher.patch.patch
 
 /**
  * Makes every known MicroG / GMS variant visible to the package manager,
@@ -32,22 +33,19 @@ import app.morphe.patcher.patch.resourcePatch
  * Shared by multiple patches so the manifest queries are only added once.
  */
 @Suppress("unused")
-val gmsCorePackageQueriesPatch = resourcePatch {
+val gmsCorePackageQueriesPatch = patch {
     execute {
-        document("AndroidManifest.xml").use { document ->
-            val queries = document.getElementsByTagName("queries").item(0)
-                ?: document.createElement("queries").also { document.documentElement.appendChild(it) }
+        resourceXml("AndroidManifest.xml").use { manifest ->
+            val queries = manifest.elements("queries").firstOrNull() ?: manifest.root.appendChild("queries")
 
             listOf(
                 "app.revanced.android.gms",
                 "com.mgoogle.android.gms",
                 "org.microg.gms"
             ).forEach { packageName ->
-                queries.appendChild(
-                    document.createElement("package").apply {
-                        setAttribute("android:name", packageName)
-                    }
-                )
+                queries.appendChild("package") {
+                    setAttribute("android:name", packageName)
+                }
             }
         }
     }
