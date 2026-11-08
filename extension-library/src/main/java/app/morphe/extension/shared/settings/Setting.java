@@ -395,6 +395,7 @@ public abstract class Setting<T> {
         } else {
             saveToPreferences();
         }
+        Logger.traceSettingChange(this);
     }
 
     /**
