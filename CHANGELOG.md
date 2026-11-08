@@ -1,3 +1,10 @@
+# [2.2.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.1...v2.2.0-dev.1) (2026-11-08)
+
+
+### Features
+
+* **Logger:** Add times, threads and exception origins to the logs, and a timeline of the app state that is exported with the logs ([255c70f](https://github.com/MorpheApp/morphe-patches-library/commit/255c70f71681a53dd00d29520e464e92d45fc15e))
+
 ## [2.1.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.0...v2.1.1) (2026-11-06)
 
 
