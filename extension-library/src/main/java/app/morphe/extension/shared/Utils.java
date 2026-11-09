@@ -542,7 +542,6 @@ public class Utils {
         Logger.printInfo(() -> "Set context: " + appContext);
         // Must initially set context to check the app language.
         context = appContext;
-        Logger.startTimeline(appContext);
 
         if (appContext instanceof Activity activity) {
             setActivity(activity);

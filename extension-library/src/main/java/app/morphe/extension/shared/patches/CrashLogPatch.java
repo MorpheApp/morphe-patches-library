@@ -305,14 +305,6 @@ public final class CrashLogPatch {
                 + "Thread: " + thread.getName() + "\n"
                 + "\nStack trace:\n" + stackTrace;
 
-        StringBuilder timeline = new StringBuilder();
-        for (String entry : Logger.getTimeline()) {
-            timeline.append(entry).append('\n');
-        }
-        if (timeline.length() > 0) {
-            crashLog += "\nMorphe timeline:\n" + timeline;
-        }
-
         String debugLogs = Logger.getFilteredLogs();
         if (!debugLogs.isEmpty()) {
             crashLog += "\nMorphe logs:\n" + debugLogs + "\n";
