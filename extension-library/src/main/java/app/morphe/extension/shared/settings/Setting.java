@@ -89,6 +89,23 @@ public abstract class Setting<T> {
     }
 
     /**
+     * Availability based on an enum parent setting not being set to a value.
+     */
+    public static <T extends Enum<?>> Availability parentNot(EnumSetting<T> parent, T value) {
+        return new Availability() {
+            @Override
+            public boolean isAvailable() {
+                return parent.get() != value;
+            }
+
+            @Override
+            public List<Setting<?>> getParentSettings() {
+                return Collections.singletonList(parent);
+            }
+        };
+    }
+
+    /**
      * Availability based on all parents being enabled.
      */
     public static Availability parentsAll(BooleanSetting... parents) {
