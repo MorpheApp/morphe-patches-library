@@ -354,4 +354,28 @@ public class Logger {
     public static void printException(LogMessage message, @Nullable Throwable ex) {
         logInternal(LogLevel.ERROR, message, ex, includeStackTrace(), shouldShowErrorToast());
     }
+
+    /**
+     * Logs exceptions under the outer class name of the code calling this method,
+     * but only if debug logging is enabled.
+     * <p>
+     * Use this for unexpected situations that do no harm to the user but that are relevant
+     * to developers, such as an unknown UI component or blocking the main thread.
+     */
+    public static void printExceptionIfDebug(LogMessage message) {
+        printExceptionIfDebug(message, null);
+    }
+
+    /**
+     * Logs exceptions under the outer class name of the code calling this method,
+     * but only if debug logging is enabled.
+     * <p>
+     * Use this for unexpected situations that do no harm to the user but that are relevant
+     * to developers, such as an unknown UI component or blocking the main thread.
+     */
+    public static void printExceptionIfDebug(LogMessage message, @Nullable Throwable ex) {
+        if (isDebugEnabled()) {
+            printException(message, ex);
+        }
+    }
 }
