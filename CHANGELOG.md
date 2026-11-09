@@ -1,3 +1,10 @@
+# [2.2.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.1...v2.2.0-dev.2) (2026-11-09)
+
+
+### Features
+
+* **Logger:** Add verbose logging, replace the debug setting with a debug level, and allow log messages to return null to log nothing ([bdf32ee](https://github.com/MorpheApp/morphe-patches-library/commit/bdf32ee4c81d1bb458022b2675dc38b4e9710d0f))
+
 # [2.2.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.1...v2.2.0-dev.1) (2026-11-08)
 
 
