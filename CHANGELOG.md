@@ -1,3 +1,10 @@
+# [2.2.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.2...v2.2.0-dev.3) (2026-11-09)
+
+
+### Bug Fixes
+
+* **Logger:** Add exception if debug ([910fadf](https://github.com/MorpheApp/morphe-patches-library/commit/910fadf328f4345b9c87a486f4504241cef70d0c))
+
 # [2.2.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.1...v2.2.0-dev.2) (2026-11-09)
 
 
