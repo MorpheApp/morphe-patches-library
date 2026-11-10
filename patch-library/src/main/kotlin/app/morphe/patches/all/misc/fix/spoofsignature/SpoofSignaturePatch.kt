@@ -13,6 +13,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.mutableClassDefBy
 import app.morphe.patcher.patch.packageMetadata
 import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.resourceXml
 import app.morphe.patcher.util.getReference
 import app.morphe.patcher.util.matchAllMethodIndicesForEach
 import app.morphe.patcher.util.proxy.mutableTypes.encodedValue.MutableStringEncodedValue
@@ -24,6 +25,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import java.util.Base64
 
+/**
+ * Manifest metadata with the original signing certificate, so other apps patched with the same
+ * key can report it. Must match ORIGINAL_SIGNATURE_METADATA of the extension.
+ */
+private const val ORIGINAL_SIGNATURE_METADATA = "app.morphe.ORIGINAL_SIGNATURE"
+
 private lateinit var packageName: String
 private lateinit var signature: String
 
@@ -31,6 +38,9 @@ private val getMetadataPatch = patch {
     execute {
         val cert = getEndEntityCertificate(packageMetadata.signingCertificates)
 
+        // Failing the patch here is intentional. An APK that was already modified and re-signed
+        // no longer carries the original certificate, so spoofing would report the wrong one and
+        // the app's signature checks would still fail. Users must patch an unmodified original APK.
         if (isCertMaybeInauthentic(cert)) throw PatchException("Invalid signing certificate. Original APK is required.")
 
         signature = Base64.getEncoder().encodeToString(cert.encoded)
@@ -45,16 +55,29 @@ val spoofSignaturePatch = patch {
     extendWith("generated/extensions/signature.dex")
 
     execute {
-        GetPackageInfoFingerprint.matchAllMethodIndicesForEach(false) { index ->
-            val registers = fiveRegisters(index)
-            val instr = getInstruction<FiveRegisterInstruction>(index)
-            val params = "Landroid/content/pm/PackageManager;" +
-                    instr.getReference<MethodReference>()!!.parameterTypes.joinToString("")
+        // Publish the original certificate in the manifest. This looks unusual, but it lets other
+        // apps patched with this patch report the original certificate of this app, so apps of the
+        // same developer keep trusting each other after re-signing. A certificate is public data,
+        // and the extension only uses it if this app is signed with the same key as the app
+        // reading it, which only the user can do.
+        resourceXml("AndroidManifest.xml").use { manifest ->
+            manifest.elements("application").first().appendChild("meta-data") {
+                setAttribute("android:name", ORIGINAL_SIGNATURE_METADATA)
+                setAttribute("android:value", signature)
+            }
+        }
 
-            replaceInstruction(
-                index,
-                "invoke-static { $registers }, $SPOOF_CLASS_SMALI_NAME->getPackageInfo($params)Landroid/content/pm/PackageInfo;"
-            )
+        listOf(GetPackageInfoFingerprint, GetInstalledPackagesFingerprint).forEach { fingerprint ->
+            fingerprint.matchAllMethodIndicesForEach(false) { index ->
+                val registers = fiveRegisters(index)
+                val reference = getInstruction<FiveRegisterInstruction>(index).getReference<MethodReference>()!!
+                val params = "Landroid/content/pm/PackageManager;" + reference.parameterTypes.joinToString("")
+
+                replaceInstruction(
+                    index,
+                    "invoke-static { $registers }, $SPOOF_CLASS_SMALI_NAME->${reference.name}($params)${reference.returnType}"
+                )
+            }
         }
     }
 
