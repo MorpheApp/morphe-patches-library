@@ -36,6 +36,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -293,6 +294,16 @@ public class Utils {
             }
         } catch (PackageManager.NameNotFoundException e) {
             return false;
+        }
+    }
+
+    /**
+     * Best effort delete for cleanup code that continues either way.
+     * A file that is already gone is not a failure. A file that still exists is only logged.
+     */
+    public static void deleteQuietly(@Nullable File file) {
+        if (file != null && !file.delete() && file.exists()) {
+            Logger.printDebug(() -> "Could not delete: " + file);
         }
     }
 
