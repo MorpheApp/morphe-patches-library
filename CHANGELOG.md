@@ -1,3 +1,10 @@
+# [2.2.0-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.4...v2.2.0-dev.5) (2026-11-11)
+
+
+### Features
+
+* Add `Utils.deleteQuietly` ([#81](https://github.com/MorpheApp/morphe-patches-library/issues/81)) ([a1dd8df](https://github.com/MorpheApp/morphe-patches-library/commit/a1dd8df6961250ab784aba081ccd8bc06789e546))
+
 # [2.2.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.3...v2.2.0-dev.4) (2026-11-10)
 
 
