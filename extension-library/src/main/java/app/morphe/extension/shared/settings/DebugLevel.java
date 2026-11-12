@@ -3,6 +3,7 @@ package app.morphe.extension.shared.settings;
 /**
  * Debug logging level of {@link BaseSettings#DEBUG_LEVEL}.
  */
+@SuppressWarnings("unused")
 public enum DebugLevel {
     DISABLED,
     /**

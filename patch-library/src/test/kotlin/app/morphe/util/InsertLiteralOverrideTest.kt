@@ -42,6 +42,7 @@ class InsertLiteralOverrideTest {
     /**
      * Static method with the given smali.
      */
+    @Suppress("SameParameterValue")
     private fun method(registers: Int, smali: String) = ImmutableMethod(
         "LTest;",
         "test",
