@@ -32,7 +32,6 @@ import app.morphe.patcher.patch.patch
  *
  * Shared by multiple patches so the manifest queries are only added once.
  */
-@Suppress("unused")
 val gmsCorePackageQueriesPatch = patch {
     execute {
         resourceXml("AndroidManifest.xml").use { manifest ->

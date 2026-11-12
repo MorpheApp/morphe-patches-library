@@ -547,6 +547,7 @@ public class Utils {
         return context != null;
     }
 
+    @SuppressWarnings("AppBundleLocaleChanges")
     public static void setContext(Context appContext) {
         // Intentionally use logger before context is set,
         // to expose any bugs in the 'no context available' logger code.
@@ -1026,6 +1027,7 @@ public class Utils {
      * The recommended app version of this app to patch. Set during patching.
      * Returns an empty string if not set.
      */
+    @SuppressWarnings("SameReturnValue")
     public static String getRecommendedAppVersion() {
         return "";
     }
@@ -1068,7 +1070,7 @@ public class Utils {
                 .replaceAll("").toLowerCase(Locale.ROOT);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "ObsoleteSdkInt"})
     public static void setPreferenceTitlesToMultiLine(PreferenceGroup group) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;

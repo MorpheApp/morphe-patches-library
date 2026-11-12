@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"CanBeFinal", "unused"})
 public class SignatureSpoof {
     static String PACKAGE_NAME = "PACKAGE_NAME_PLACEHOLDER";
     static String SIGNATURE = "SIGNATURE_PLACEHOLDER";
