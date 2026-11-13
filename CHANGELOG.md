@@ -1,3 +1,10 @@
+# [2.2.0-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.5...v2.2.0-dev.6) (2026-11-13)
+
+
+### Bug Fixes
+
+* Add Setting.saveFromString, support JSON resource strings ([bc87ff1](https://github.com/MorpheApp/morphe-patches-library/commit/bc87ff1fbf864ce69d99195440933d2fbe157a4c))
+
 # [2.2.0-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.4...v2.2.0-dev.5) (2026-11-11)
 
 
