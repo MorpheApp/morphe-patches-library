@@ -3,6 +3,7 @@ package app.morphe.extension.shared;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.animation.Animation;
@@ -213,12 +214,52 @@ public class ResourceUtils {
 
     @Nullable
     public static String getString(String name) {
+        String translation = StringRef.getTranslation(getActivityOrContext(), name);
+        if (translation != null) {
+            return translation;
+        }
+
         final int identifier = getStringIdentifier(name);
         if (identifier == 0) {
             handleException(ResourceType.STRING, name);
             return name;
         }
         return getActivityOrContext().getString(identifier);
+    }
+
+    /**
+     * Strings referenced from resources, such as layouts, preferences and arrays, resolve to the
+     * string resources, which only have the default language. Their translations are looked up by
+     * the name of the resource.
+     *
+     * @return The translation of the string resource to the current language,
+     *         or null if it has none and the string resource is to be used.
+     */
+    @Nullable
+    public static String getTranslation(int stringIdentifier) {
+        Context context = getActivityOrContext();
+        if (!StringRef.hasTranslations(context)) {
+            return null;
+        }
+        return StringRef.getTranslation(context, context.getResources().getResourceEntryName(stringIdentifier));
+    }
+
+    /**
+     * @return If the current language has translations that the string resources do not have.
+     * @see #getTranslation(int)
+     */
+    public static boolean hasTranslations() {
+        return StringRef.hasTranslations(getActivityOrContext());
+    }
+
+    /**
+     * @return The string resource, translated to the current language.
+     */
+    public static String getString(int stringIdentifier) {
+        String translation = getTranslation(stringIdentifier);
+        return translation != null
+                ? translation
+                : getActivityOrContext().getString(stringIdentifier);
     }
 
     public static String getStringOrThrow(String name) {
@@ -253,7 +294,35 @@ public class ResourceUtils {
             handleException(ResourceType.ARRAY, name);
             return new String[0];
         }
-        return Utils.getResources().getStringArray(identifier);
+        return getStringArray(identifier);
+    }
+
+    /**
+     * @return The string array, with the strings it references translated to the current language.
+     */
+    public static String[] getStringArray(int arrayIdentifier) {
+        Resources resources = Utils.getResources();
+        String[] strings = resources.getStringArray(arrayIdentifier);
+        if (!hasTranslations()) {
+            return strings;
+        }
+
+        TypedArray array = resources.obtainTypedArray(arrayIdentifier);
+        try {
+            for (int i = 0, length = strings.length; i < length; i++) {
+                // Zero for a value written in the array itself.
+                final int stringIdentifier = array.getResourceId(i, 0);
+                if (stringIdentifier != 0) {
+                    String translation = getTranslation(stringIdentifier);
+                    if (translation != null) {
+                        strings[i] = translation;
+                    }
+                }
+            }
+        } finally {
+            array.recycle();
+        }
+        return strings;
     }
 
     public static String[] getStringArray(Setting<?> setting, String suffix) {

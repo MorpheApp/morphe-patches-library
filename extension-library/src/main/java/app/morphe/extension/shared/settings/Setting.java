@@ -415,6 +415,26 @@ public abstract class Setting<T> {
     }
 
     /**
+     * Persistently saves the value a string holds, such as the value of a list or text preference.
+     *
+     * @throws RuntimeException If the string is not a value of this setting.
+     *                          The value is then left as it was.
+     */
+    public final void saveFromString(String newValue) {
+        final T oldValue = value;
+        setValueFromString(newValue);
+        if (oldValue.equals(value)) {
+            return;
+        }
+
+        if (isSetToDefault()) {
+            removeFromPreferences();
+        } else {
+            saveToPreferences();
+        }
+    }
+
+    /**
      * Save {@link #value} to {@link #preferences}.
      */
     protected abstract void saveToPreferences();
