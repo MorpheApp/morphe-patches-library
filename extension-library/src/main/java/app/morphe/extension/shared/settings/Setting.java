@@ -89,6 +89,23 @@ public abstract class Setting<T> {
     }
 
     /**
+     * Availability based on an enum parent setting not being set to a value.
+     */
+    public static <T extends Enum<?>> Availability parentNot(EnumSetting<T> parent, T value) {
+        return new Availability() {
+            @Override
+            public boolean isAvailable() {
+                return parent.get() != value;
+            }
+
+            @Override
+            public List<Setting<?>> getParentSettings() {
+                return Collections.singletonList(parent);
+            }
+        };
+    }
+
+    /**
      * Availability based on all parents being enabled.
      */
     public static Availability parentsAll(BooleanSetting... parents) {
@@ -391,6 +408,26 @@ public abstract class Setting<T> {
         value = Objects.requireNonNull(newValue);
 
         if (defaultValue.equals(newValue)) {
+            removeFromPreferences();
+        } else {
+            saveToPreferences();
+        }
+    }
+
+    /**
+     * Persistently saves the value a string holds, such as the value of a list or text preference.
+     *
+     * @throws RuntimeException If the string is not a value of this setting.
+     *                          The value is then left as it was.
+     */
+    public final void saveFromString(String newValue) {
+        final T oldValue = value;
+        setValueFromString(newValue);
+        if (oldValue.equals(value)) {
+            return;
+        }
+
+        if (isSetToDefault()) {
             removeFromPreferences();
         } else {
             saveToPreferences();

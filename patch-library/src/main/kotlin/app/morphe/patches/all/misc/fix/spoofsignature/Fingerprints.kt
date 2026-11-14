@@ -26,6 +26,20 @@ object GetPackageInfoFingerprint : Fingerprint (
     }
 )
 
+object GetInstalledPackagesFingerprint : Fingerprint (
+    filters = listOf(
+        methodCall(
+            opcode = Opcode.INVOKE_VIRTUAL,
+            definingClass = "Landroid/content/pm/PackageManager;",
+            name = "getInstalledPackages",
+            returnType = "Ljava/util/List;"
+        )
+    ),
+    custom = { _, classDef ->
+        !classDef.type.startsWith("Lapp/morphe/extension")
+    }
+)
+
 
 object SignatureSpoofCtorFingerprint : Fingerprint (
     definingClass = Constants.SPOOF_CLASS_SMALI_NAME,
