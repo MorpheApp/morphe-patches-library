@@ -2,7 +2,7 @@ package app.morphe.extension.shared.settings;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static app.morphe.extension.shared.settings.Setting.parent;
+import static app.morphe.extension.shared.settings.Setting.parentNot;
 
 import app.morphe.extension.shared.Logger;
 
@@ -13,8 +13,11 @@ import app.morphe.extension.shared.Logger;
  * or reference this class.
  */
 public class BaseSettings {
-    public static final BooleanSetting DEBUG = new BooleanSetting("morphe_debug", FALSE);
-    public static final BooleanSetting DEBUG_STACKTRACE = new BooleanSetting("morphe_debug_stacktrace", FALSE, parent(DEBUG));
+    /**
+     * Use {@link Logger#isDebugEnabled()} or {@link Logger#isVerboseEnabled()} to check if logging is enabled.
+     */
+    public static final EnumSetting<DebugLevel> DEBUG_LEVEL = new EnumSetting<>("morphe_debug_level", DebugLevel.DISABLED);
+    public static final BooleanSetting DEBUG_STACKTRACE = new BooleanSetting("morphe_debug_stacktrace", FALSE, parentNot(DEBUG_LEVEL, DebugLevel.DISABLED));
     public static final BooleanSetting DEBUG_TOAST_ON_ERROR = new BooleanSetting("morphe_debug_toast_on_error", TRUE, "morphe_debug_toast_on_error_user_dialog_message");
 
     public static final EnumSetting<AppLanguage> MORPHE_LANGUAGE = new EnumSetting<>("morphe_language", AppLanguage.DEFAULT, true, "morphe_language_user_dialog_message");

@@ -1,12 +1,19 @@
+/*
+ * Copyright 2025 Morphe.
+ * https://github.com/MorpheApp/morphe-patches
+ *
+ * Original code hard forked from:
+ * https://github.com/ReVanced/revanced-patches/commit/724e6d61b2ecd868c1a9a37d465a688e83a74799
+ */
+
 package app.morphe.extension.shared;
 
-import static app.morphe.extension.shared.settings.BaseSettings.DEBUG;
+import static app.morphe.extension.shared.settings.BaseSettings.DEBUG_LEVEL;
 import static app.morphe.extension.shared.settings.BaseSettings.DEBUG_STACKTRACE;
 import static app.morphe.extension.shared.settings.BaseSettings.DEBUG_TOAST_ON_ERROR;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.PrintWriter;
@@ -17,6 +24,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import app.morphe.extension.shared.settings.BaseSettings;
+import app.morphe.extension.shared.settings.DebugLevel;
 
 /**
  * Morphe specific logger. Logging is done to standard device log (accessible through ADB),
@@ -110,13 +118,17 @@ public class Logger {
     @FunctionalInterface
     public interface LogMessage {
         /**
-         * @return Logger string message. This method is only called if logging is enabled.
+         * @return Logger string message, or null to not log anything.
+         *         This method is only called if logging is enabled, so any checks that are
+         *         only needed to decide what to log can be done here instead of before logging.
+         *         Null is meant for debug and verbose messages.
          */
-        @NonNull
+        @Nullable
         String buildMessageString();
     }
 
     private enum LogLevel {
+        VERBOSE,
         DEBUG,
         INFO,
         ERROR
@@ -172,6 +184,9 @@ public class Logger {
         // as this code is used when a context is not set and thus referencing
         // a setting will crash the app.
         String messageString = message.buildMessageString();
+        if (messageString == null) {
+            return;
+        }
         String className = getOuterClassSimpleName(message);
 
         String logText = messageString;
@@ -200,6 +215,10 @@ public class Logger {
 
         String logTag = MORPHE_LOG_TAG_PREFIX + className;
         switch (logLevel) {
+            case VERBOSE:
+                if (ex == null) Log.v(logTag, logText);
+                else Log.v(logTag, logText, ex);
+                break;
             case DEBUG:
                 if (ex == null) Log.d(logTag, logText);
                 else Log.d(logTag, logText, ex);
@@ -219,10 +238,26 @@ public class Logger {
         }
     }
 
-    private static boolean shouldLogDebug() {
+    /**
+     * @return If debug logging is enabled. Also true while the app is still starting up
+     *         and the context is not yet set, because the setting cannot be read yet.
+     *         Code that only builds a log message does not need to check this,
+     *         as {@link #printDebug(LogMessage)} already does.
+     */
+    public static boolean isDebugEnabled() {
         // If the app is still starting up and the context is not yet set,
         // then allow debug logging regardless what the debug setting actually is.
-        return Utils.context == null || DEBUG.get();
+        return Utils.context == null || DEBUG_LEVEL.get() != DebugLevel.DISABLED;
+    }
+
+    /**
+     * @return If verbose logging is enabled. Also true while the app is still starting up
+     *         and the context is not yet set, because the setting cannot be read yet.
+     *         Code that only builds a log message does not need to check this,
+     *         as {@link #printVerbose(LogMessage)} already does.
+     */
+    public static boolean isVerboseEnabled() {
+        return Utils.context == null || DEBUG_LEVEL.get() == DebugLevel.VERBOSE;
     }
 
     private static boolean shouldShowErrorToast() {
@@ -234,11 +269,39 @@ public class Logger {
     }
 
     /**
+     * Logs verbose messages under the outer class name of the code calling this method.
+     * Verbose messages are only logged if {@link BaseSettings#DEBUG_LEVEL} is {@link DebugLevel#VERBOSE}.
+     * Use this for messages that are too frequent or too detailed for normal debugging.
+     * <p>
+     * Whenever possible, the log string should be constructed entirely inside
+     * {@link LogMessage#buildMessageString()} so the performance cost of
+     * building strings is paid only if verbose logging is enabled.
+     */
+    public static void printVerbose(LogMessage message) {
+        printVerbose(message, null);
+    }
+
+    /**
+     * Logs verbose messages under the outer class name of the code calling this method.
+     * Verbose messages are only logged if {@link BaseSettings#DEBUG_LEVEL} is {@link DebugLevel#VERBOSE}.
+     * Use this for messages that are too frequent or too detailed for normal debugging.
+     * <p>
+     * Whenever possible, the log string should be constructed entirely inside
+     * {@link LogMessage#buildMessageString()} so the performance cost of
+     * building strings is paid only if verbose logging is enabled.
+     */
+    public static void printVerbose(LogMessage message, @Nullable Exception ex) {
+        if (isVerboseEnabled()) {
+            logInternal(LogLevel.VERBOSE, message, ex, includeStackTrace(), false);
+        }
+    }
+
+    /**
      * Logs debug messages under the outer class name of the code calling this method.
      * <p>
      * Whenever possible, the log string should be constructed entirely inside
      * {@link LogMessage#buildMessageString()} so the performance cost of
-     * building strings is paid only if {@link BaseSettings#DEBUG} is enabled.
+     * building strings is paid only if debug logging is enabled.
      */
     public static void printDebug(LogMessage message) {
         printDebug(message, null);
@@ -249,10 +312,10 @@ public class Logger {
      * <p>
      * Whenever possible, the log string should be constructed entirely inside
      * {@link LogMessage#buildMessageString()} so the performance cost of
-     * building strings is paid only if {@link BaseSettings#DEBUG} is enabled.
+     * building strings is paid only if debug logging is enabled.
      */
     public static void printDebug(LogMessage message, @Nullable Exception ex) {
-        if (shouldLogDebug()) {
+        if (isDebugEnabled()) {
             logInternal(LogLevel.DEBUG, message, ex, includeStackTrace(), false);
         }
     }
@@ -290,5 +353,29 @@ public class Logger {
      */
     public static void printException(LogMessage message, @Nullable Throwable ex) {
         logInternal(LogLevel.ERROR, message, ex, includeStackTrace(), shouldShowErrorToast());
+    }
+
+    /**
+     * Logs exceptions under the outer class name of the code calling this method,
+     * but only if debug logging is enabled.
+     * <p>
+     * Use this for unexpected situations that do no harm to the user but that are relevant
+     * to developers, such as an unknown UI component or blocking the main thread.
+     */
+    public static void printExceptionIfDebug(LogMessage message) {
+        printExceptionIfDebug(message, null);
+    }
+
+    /**
+     * Logs exceptions under the outer class name of the code calling this method,
+     * but only if debug logging is enabled.
+     * <p>
+     * Use this for unexpected situations that do no harm to the user but that are relevant
+     * to developers, such as an unknown UI component or blocking the main thread.
+     */
+    public static void printExceptionIfDebug(LogMessage message, @Nullable Throwable ex) {
+        if (isDebugEnabled()) {
+            printException(message, ex);
+        }
     }
 }

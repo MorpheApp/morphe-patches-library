@@ -36,6 +36,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -296,6 +297,16 @@ public class Utils {
         }
     }
 
+    /**
+     * Best effort delete for cleanup code that continues either way.
+     * A file that is already gone is not a failure. A file that still exists is only logged.
+     */
+    public static void deleteQuietly(@Nullable File file) {
+        if (file != null && !file.delete() && file.exists()) {
+            Logger.printDebug(() -> "Could not delete: " + file);
+        }
+    }
+
     public static boolean containsAny(CharSequence value, CharSequence... targets) {
         return indexOfFirstFound(value, targets) >= 0;
     }
@@ -536,6 +547,7 @@ public class Utils {
         return context != null;
     }
 
+    @SuppressWarnings("AppBundleLocaleChanges")
     public static void setContext(Context appContext) {
         // Intentionally use logger before context is set,
         // to expose any bugs in the 'no context available' logger code.
@@ -1015,6 +1027,7 @@ public class Utils {
      * The recommended app version of this app to patch. Set during patching.
      * Returns an empty string if not set.
      */
+    @SuppressWarnings("SameReturnValue")
     public static String getRecommendedAppVersion() {
         return "";
     }
@@ -1057,7 +1070,7 @@ public class Utils {
                 .replaceAll("").toLowerCase(Locale.ROOT);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "ObsoleteSdkInt"})
     public static void setPreferenceTitlesToMultiLine(PreferenceGroup group) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;

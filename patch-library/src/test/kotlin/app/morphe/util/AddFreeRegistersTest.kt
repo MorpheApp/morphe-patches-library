@@ -38,6 +38,7 @@ import org.antlr.runtime.tree.CommonTreeNodeStream
 import java.io.StringReader
 import kotlin.test.assertEquals
 
+@Suppress("unused")
 class AddFreeRegistersTest {
 
     /**

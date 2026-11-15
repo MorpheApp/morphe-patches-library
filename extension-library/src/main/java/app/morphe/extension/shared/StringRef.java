@@ -1,9 +1,18 @@
 package app.morphe.extension.shared;
 
-import androidx.annotation.NonNull;
+import android.content.Context;
+import android.util.JsonReader;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,6 +35,78 @@ public class StringRef {
 
             return String.format(str, args);
         }
+    }
+
+    /**
+     * Where the patches put the translated strings, a JSON object for each locale.
+     * The strings of the default language are string resources.
+     */
+    private static final String TRANSLATIONS_DIR = "morphe/strings/";
+
+    /**
+     * String resource with the name of the translations file of the language.
+     */
+    private static final String TRANSLATIONS_FILE_STRING = "morphe_translations_file";
+
+    @Nullable
+    private static String translationsLanguageTag;
+    private static Map<String, String> translations = Collections.emptyMap();
+
+    /**
+     * @return The string translated to the language of the context,
+     *         or null if it has no translation and the string resource is to be used.
+     */
+    @Nullable
+    static String getTranslation(Context context, String name) {
+        return getTranslations(context).get(name);
+    }
+
+    /**
+     * @return If the language of the context has translations, which string resources do not have.
+     */
+    static boolean hasTranslations(Context context) {
+        return !getTranslations(context).isEmpty();
+    }
+
+    private static synchronized Map<String, String> getTranslations(Context context) {
+        Locale locale = context.getResources().getConfiguration().locale;
+        String languageTag = locale.toLanguageTag();
+        if (!languageTag.equals(translationsLanguageTag)) {
+            translationsLanguageTag = languageTag;
+            translations = loadTranslations(context, locale);
+        }
+        return translations;
+    }
+
+    private static Map<String, String> loadTranslations(Context context, Locale locale) {
+        // The patches name the translations file of each language in a string resource of its
+        // values folder, so Android picks the file the way it picks the strings of the language.
+        // It is empty in the default values, as the strings of the default language are resources.
+        final int identifier = ResourceUtils.getIdentifier(context, ResourceType.STRING, TRANSLATIONS_FILE_STRING);
+        String name = identifier == 0 ? "" : context.getResources().getString(identifier);
+        if (name.isEmpty()) {
+            Logger.printDebug(() -> "No translations for: " + locale);
+            return Collections.emptyMap();
+        }
+
+        final long start = System.nanoTime();
+        Map<String, String> strings = new HashMap<>();
+        try (JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(
+                context.getAssets().open(TRANSLATIONS_DIR + name + ".json"), StandardCharsets.UTF_8), 32768))) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                // A later string of the same name replaces the earlier one.
+                strings.put(reader.nextName(), reader.nextString());
+            }
+            reader.endObject();
+        } catch (IOException | RuntimeException ex) {
+            Logger.printException(() -> "Could not read translations: " + name, ex);
+            return Collections.emptyMap();
+        }
+
+        final long millis = (System.nanoTime() - start) / 1_000_000;
+        Logger.printInfo(() -> "Loaded " + strings.size() + " translations of " + name + " in " + millis + "ms");
+        return strings;
     }
 
     // must use a thread safe map, as this class is used both on and off the main thread

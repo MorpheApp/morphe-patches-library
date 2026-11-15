@@ -1,3 +1,45 @@
+# [2.2.0-dev.6](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.5...v2.2.0-dev.6) (2026-11-13)
+
+
+### Bug Fixes
+
+* Add Setting.saveFromString, support JSON resource strings ([bc87ff1](https://github.com/MorpheApp/morphe-patches-library/commit/bc87ff1fbf864ce69d99195440933d2fbe157a4c))
+
+# [2.2.0-dev.5](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.4...v2.2.0-dev.5) (2026-11-11)
+
+
+### Features
+
+* Add `Utils.deleteQuietly` ([#81](https://github.com/MorpheApp/morphe-patches-library/issues/81)) ([a1dd8df](https://github.com/MorpheApp/morphe-patches-library/commit/a1dd8df6961250ab784aba081ccd8bc06789e546))
+
+# [2.2.0-dev.4](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.3...v2.2.0-dev.4) (2026-11-10)
+
+
+### Features
+
+* **Spoof signature:** Spoof installed packages, and report the original signature of other apps patched with the same key ([8e3f599](https://github.com/MorpheApp/morphe-patches-library/commit/8e3f599cde33253b83f16cd25c19880e329ec2f1))
+
+# [2.2.0-dev.3](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.2...v2.2.0-dev.3) (2026-11-09)
+
+
+### Bug Fixes
+
+* **Logger:** Add exception if debug ([910fadf](https://github.com/MorpheApp/morphe-patches-library/commit/910fadf328f4345b9c87a486f4504241cef70d0c))
+
+# [2.2.0-dev.2](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0-dev.1...v2.2.0-dev.2) (2026-11-09)
+
+
+### Features
+
+* **Logger:** Add verbose logging, replace the debug setting with a debug level, and allow log messages to return null to log nothing ([bdf32ee](https://github.com/MorpheApp/morphe-patches-library/commit/bdf32ee4c81d1bb458022b2675dc38b4e9710d0f))
+
+# [2.2.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.1...v2.2.0-dev.1) (2026-11-08)
+
+
+### Features
+
+* **Logger:** Add times, threads and exception origins to the logs, and a timeline of the app state that is exported with the logs ([255c70f](https://github.com/MorpheApp/morphe-patches-library/commit/255c70f71681a53dd00d29520e464e92d45fc15e))
+
 ## [2.1.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.0...v2.1.1) (2026-11-06)
 
 

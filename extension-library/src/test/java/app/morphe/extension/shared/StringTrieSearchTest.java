@@ -1,6 +1,7 @@
 package app.morphe.extension.shared;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
@@ -28,19 +29,18 @@ public class StringTrieSearchTest {
     }
 
     private static void compare(String value, boolean firstPatternAccepts, String... patterns) {
-        String searchedString = value;
         StringBuilder searchedBuilder = new StringBuilder(value);
         List<String> stringTrace = new ArrayList<>();
         List<String> builderTrace = new ArrayList<>();
         CharSequence[] stringSeen = new CharSequence[1];
         CharSequence[] builderSeen = new CharSequence[1];
 
-        search(searchedString, stringTrace, stringSeen, firstPatternAccepts, patterns);
+        search(value, stringTrace, stringSeen, firstPatternAccepts, patterns);
         search(searchedBuilder, builderTrace, builderSeen, firstPatternAccepts, patterns);
 
         assertEquals(stringTrace, builderTrace);
-        assertEquals(true, !stringTrace.isEmpty());
-        assertSame(searchedString, stringSeen[0]);
+        assertFalse(stringTrace.isEmpty());
+        assertSame(value, stringSeen[0]);
         assertSame(searchedBuilder, builderSeen[0]);
     }
 
