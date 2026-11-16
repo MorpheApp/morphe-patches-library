@@ -580,9 +580,13 @@ public class Utils {
     }
 
     @SuppressWarnings("SizeReplaceableByIsEmpty")
-    public static boolean isNotEmpty(@Nullable CharSequence str) {
+    public static boolean isEmpty(@Nullable CharSequence str) {
         // CharSequence.isEmpty() is only available with Android 15+.
-        return str != null && str.length() > 0;
+        return str == null || str.length() == 0;
+    }
+
+    public static boolean isNotEmpty(@Nullable CharSequence str) {
+        return !isEmpty(str);
     }
 
     public static boolean isTablet() {

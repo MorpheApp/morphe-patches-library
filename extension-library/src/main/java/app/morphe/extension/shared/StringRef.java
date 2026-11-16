@@ -1,6 +1,8 @@
 package app.morphe.extension.shared;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.util.JsonReader;
 
 import androidx.annotation.NonNull;
@@ -16,14 +18,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("unused")
 public class StringRef {
     /**
      * Simple class to assist with apps that currently cannot use resource patches.
      */
     public record StringKeyLookup(Map<String, String> stringMap) {
-        public StringKeyLookup(Map<String, String> stringMap) {
-            this.stringMap = Objects.requireNonNull(stringMap);
+        public StringKeyLookup {
+            Objects.requireNonNull(stringMap);
         }
 
         public String getString(String key, Object... args) {
@@ -69,13 +71,22 @@ public class StringRef {
     }
 
     private static synchronized Map<String, String> getTranslations(Context context) {
-        Locale locale = context.getResources().getConfiguration().locale;
+        Locale locale = getLocale(context);
         String languageTag = locale.toLanguageTag();
         if (!languageTag.equals(translationsLanguageTag)) {
             translationsLanguageTag = languageTag;
             translations = loadTranslations(context, locale);
         }
         return translations;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Locale getLocale(Context context) {
+        Configuration config = context.getResources().getConfiguration();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return config.getLocales().get(0);
+        }
+        return config.locale;
     }
 
     private static Map<String, String> loadTranslations(Context context, Locale locale) {
