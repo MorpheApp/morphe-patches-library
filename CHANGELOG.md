@@ -1,3 +1,10 @@
+# [2.3.0-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0...v2.3.0-dev.1) (2026-11-16)
+
+
+### Features
+
+* Add `CharSequence` emptiness helpers and modernize `StringRef` ([f0ffeed](https://github.com/MorpheApp/morphe-patches-library/commit/f0ffeed387e071ef0fc4f4c172d14e97b81acd33))
+
 # [2.2.0](https://github.com/MorpheApp/morphe-patches-library/compare/v2.1.1...v2.2.0) (2026-11-15)
 
 
