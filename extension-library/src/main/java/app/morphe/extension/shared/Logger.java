@@ -41,9 +41,9 @@ public class Logger {
      */
     public static final int CLIPBOARD_MAX_LENGTH = 900_000;
     /**
-     * Maximum character size of all buffer entries kept in memory (~10 MB).
+     * Maximum character size of all buffer entries kept in memory (~30 MB).
      */
-    private static final int BUFFER_MAX_BYTES = 10_000_000;
+    private static final int BUFFER_MAX_BYTES = 30_000_000;
     /**
      * Limit number of log entries in memory.
      */
