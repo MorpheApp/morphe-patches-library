@@ -24,18 +24,10 @@
 package app.morphe.patches.all.misc.string
 
 import app.morphe.patcher.StringComparisonType
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.patch
+import app.morphe.patcher.patch.replaceStrings
 import app.morphe.patcher.string
-import app.morphe.patcher.util.getReference
-import app.morphe.patcher.util.matchAllMethodIndicesForEach
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 
 /**
  * @param from Original string to replace.
@@ -43,6 +35,10 @@ import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringRefere
  * @param requireMatches If true and no matches exist, an exception is thrown.
  * @param comparison String comparison type. Defaults to [StringComparisonType.EQUALS].
  */
+@Deprecated(
+    "This function may be deleted in the future. Instead call replaceStrings() in the execute block " +
+            "of a patch, which replaces many strings with a single search."
+)
 @Suppress("unused")
 fun replaceStringPatch(
     from: String,
@@ -53,24 +49,23 @@ fun replaceStringPatch(
     description = "Replaces occurrences of '$from' with '$to' in String constants."
 ) {
     execute {
-        string(from, comparison).matchAllMethodIndicesForEach(requireMatches = requireMatches) { index ->
-            val replacement = when (comparison) {
-                StringComparisonType.EQUALS -> to
-                else -> {
-                    getInstruction<ReferenceInstruction>(index)
-                        .getReference<StringReference>()!!.string
-                        .replace(from, to)
-                }
-            }
+        val filter = string(from, comparison)
 
-            replaceInstruction(
-                index,
-                BuilderInstruction21c(
-                    Opcode.CONST_STRING,
-                    getInstruction<OneRegisterInstruction>(index).registerA,
-                    ImmutableStringReference(replacement),
-                )
-            )
+        val matchCount = if (from == to) {
+            // Replacing a string with itself changes nothing, so the matches are only counted.
+            var count = 0
+            replaceStrings(filter) { _, _, _ ->
+                count++
+                null
+            }
+            count
+        } else {
+            // Every matching string is changed, so each match is replaced.
+            replaceStrings(filter to to)
+        }
+
+        if (requireMatches && matchCount == 0) {
+            throw PatchException("Could not find any matches of '$from'")
         }
     }
 }
