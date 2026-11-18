@@ -41,7 +41,15 @@ private val getMetadataPatch = patch {
         // Failing the patch here is intentional. An APK that was already modified and re-signed
         // no longer carries the original certificate, so spoofing would report the wrong one and
         // the app's signature checks would still fail. Users must patch an unmodified original APK.
-        if (isCertMaybeInauthentic(cert)) throw PatchException("Invalid signing certificate. Original APK is required.")
+        if (isCertMaybeInauthentic(cert)) throw PatchException(
+            """
+                !!!
+                !!! The APK provided was previously patched or unsplit
+                !!!
+                !!! Please provide an unmodified original APK
+                !!!
+            """
+        )
 
         signature = Base64.getEncoder().encodeToString(cert.encoded)
         packageName = packageMetadata.packageName
