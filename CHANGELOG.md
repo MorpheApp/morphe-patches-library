@@ -1,3 +1,10 @@
+## [2.3.1-dev.1](https://github.com/MorpheApp/morphe-patches-library/compare/v2.3.0...v2.3.1-dev.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* Update Patcher dependency ([430bd0d](https://github.com/MorpheApp/morphe-patches-library/commit/430bd0d3cc7ee12121693148a5af20ac6f58fb2f))
+
 # [2.3.0](https://github.com/MorpheApp/morphe-patches-library/compare/v2.2.0...v2.3.0) (2026-11-21)
 
 
